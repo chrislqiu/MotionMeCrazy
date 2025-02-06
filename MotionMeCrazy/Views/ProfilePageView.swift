@@ -9,9 +9,20 @@ import SwiftUI
 
 struct ProfilePageView: View {
     var body: some View {
-        Image("background")
-            .resizable()
-            .ignoresSafeArea()
+        ZStack {
+            Image("background")
+                .resizable()
+                .ignoresSafeArea()
+            VStack {
+                CustomHeader(config: CustomHeaderConfig(title: "Profile Page"))
+                CustomButton(config: CustomButtonConfig(title: "Edit") {})
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .frame(width: 100)
+                    .padding(.bottom)
+            }
+        }
+        
+        
     }
 }
 
