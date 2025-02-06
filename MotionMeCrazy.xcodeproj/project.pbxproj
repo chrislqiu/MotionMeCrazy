@@ -28,10 +28,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		016671742D550E2A008DF279 /* MotionMeCrazy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = MotionMeCrazy.app; path = "/Users/chrisqiu/Documents/Code/MotionMeCrazy/build/Debug-iphoneos/MotionMeCrazy.app"; sourceTree = "<absolute>"; };
-		016671842D550E2B008DF279 /* MotionMeCrazyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = MotionMeCrazyTests.xctest; path = "/Users/chrisqiu/Documents/Code/MotionMeCrazy/build/Debug-iphoneos/MotionMeCrazy.app/PlugIns/MotionMeCrazyTests.xctest"; sourceTree = "<absolute>"; };
-		0166718E2D550E2B008DF279 /* MotionMeCrazyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = MotionMeCrazyUITests.xctest; path = "/Users/chrisqiu/Documents/Code/MotionMeCrazy/build/Debug-iphoneos/MotionMeCrazyUITests-Runner.app/PlugIns/MotionMeCrazyUITests.xctest"; sourceTree = "<absolute>"; };
 		016671C82D5519F8008DF279 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		CC887C352D551FA1007FD0B2 /* MotionMeCrazy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MotionMeCrazy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC887C362D551FA1007FD0B2 /* MotionMeCrazyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotionMeCrazyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC887C372D551FA1007FD0B2 /* MotionMeCrazyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotionMeCrazyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -84,6 +84,9 @@
 				016671762D550E2A008DF279 /* MotionMeCrazy */,
 				016671872D550E2B008DF279 /* MotionMeCrazyTests */,
 				016671912D550E2B008DF279 /* MotionMeCrazyUITests */,
+				CC887C352D551FA1007FD0B2 /* MotionMeCrazy.app */,
+				CC887C362D551FA1007FD0B2 /* MotionMeCrazyTests.xctest */,
+				CC887C372D551FA1007FD0B2 /* MotionMeCrazyUITests.xctest */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,7 +112,7 @@
 			packageProductDependencies = (
 			);
 			productName = MotionMeCrazy;
-			productReference = 016671742D550E2A008DF279 /* MotionMeCrazy.app */;
+			productReference = CC887C352D551FA1007FD0B2 /* MotionMeCrazy.app */;
 			productType = "com.apple.product-type.application";
 		};
 		016671832D550E2B008DF279 /* MotionMeCrazyTests */ = {
@@ -132,7 +135,7 @@
 			packageProductDependencies = (
 			);
 			productName = MotionMeCrazyTests;
-			productReference = 016671842D550E2B008DF279 /* MotionMeCrazyTests.xctest */;
+			productReference = CC887C362D551FA1007FD0B2 /* MotionMeCrazyTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		0166718D2D550E2B008DF279 /* MotionMeCrazyUITests */ = {
@@ -155,7 +158,7 @@
 			packageProductDependencies = (
 			);
 			productName = MotionMeCrazyUITests;
-			productReference = 0166718E2D550E2B008DF279 /* MotionMeCrazyUITests.xctest */;
+			productReference = CC887C372D551FA1007FD0B2 /* MotionMeCrazyUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
