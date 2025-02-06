@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		016671C92D5519FF008DF279 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 016671C82D5519F8008DF279 /* .gitignore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		016671852D550E2B008DF279 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,9 +28,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		016671742D550E2A008DF279 /* MotionMeCrazy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MotionMeCrazy.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		016671842D550E2B008DF279 /* MotionMeCrazyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotionMeCrazyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0166718E2D550E2B008DF279 /* MotionMeCrazyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotionMeCrazyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		016671742D550E2A008DF279 /* MotionMeCrazy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = MotionMeCrazy.app; path = "/Users/chrisqiu/Documents/Code/MotionMeCrazy/build/Debug-iphoneos/MotionMeCrazy.app"; sourceTree = "<absolute>"; };
+		016671842D550E2B008DF279 /* MotionMeCrazyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = MotionMeCrazyTests.xctest; path = "/Users/chrisqiu/Documents/Code/MotionMeCrazy/build/Debug-iphoneos/MotionMeCrazy.app/PlugIns/MotionMeCrazyTests.xctest"; sourceTree = "<absolute>"; };
+		0166718E2D550E2B008DF279 /* MotionMeCrazyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = MotionMeCrazyUITests.xctest; path = "/Users/chrisqiu/Documents/Code/MotionMeCrazy/build/Debug-iphoneos/MotionMeCrazyUITests-Runner.app/PlugIns/MotionMeCrazyUITests.xctest"; sourceTree = "<absolute>"; };
+		016671C82D5519F8008DF279 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,21 +80,11 @@
 		0166716B2D550E2A008DF279 = {
 			isa = PBXGroup;
 			children = (
+				016671C82D5519F8008DF279 /* .gitignore */,
 				016671762D550E2A008DF279 /* MotionMeCrazy */,
 				016671872D550E2B008DF279 /* MotionMeCrazyTests */,
 				016671912D550E2B008DF279 /* MotionMeCrazyUITests */,
-				016671752D550E2A008DF279 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		016671752D550E2A008DF279 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				016671742D550E2A008DF279 /* MotionMeCrazy.app */,
-				016671842D550E2B008DF279 /* MotionMeCrazyTests.xctest */,
-				0166718E2D550E2B008DF279 /* MotionMeCrazyUITests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -196,7 +191,7 @@
 			mainGroup = 0166716B2D550E2A008DF279;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 016671752D550E2A008DF279 /* Products */;
+			productRefGroup = 0166716B2D550E2A008DF279;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -212,6 +207,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				016671C92D5519FF008DF279 /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
