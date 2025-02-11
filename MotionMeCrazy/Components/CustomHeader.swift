@@ -17,10 +17,9 @@ struct CustomHeader: View {
     let config: CustomHeaderConfig
     var body: some View {
         Text(config.title)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .padding(10)
             .foregroundColor(config.titleColor)
             .font(.system(size: config.fontSize, weight: .bold))
+            .padding(.top, 10) 
     }
 }
 

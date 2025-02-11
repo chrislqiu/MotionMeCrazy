@@ -19,7 +19,7 @@ struct ProfilePageView: View {
                 .resizable()
                 .ignoresSafeArea()
             
-            VStack(alignment: .center, spacing: 150) {
+            VStack(alignment: .center) {
                 CustomHeader(config: CustomHeaderConfig(title: "Profile"))
                     .frame(maxWidth: .infinity, alignment: .center)
                 

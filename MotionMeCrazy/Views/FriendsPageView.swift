@@ -9,15 +9,24 @@ import SwiftUI
 
 struct FriendsPageView: View {
     @State private var searchText = ""
+    
+    // TODO: fetch friends from db
+    let sampleUsers = [
+        User(id: 1, username: "RachelLa", profilePicture: "pfp1"),
+        User(id: 2, username: "JohnDoe", profilePicture: "pfp2"),
+        User(id: 3, username: "JaneSmith", profilePicture: "pfp1")
+    ]
+    
     var body: some View {
         ZStack {
             Image("background")
                 .resizable()
                 .ignoresSafeArea()
-            VStack(alignment: .center, spacing: 125) {
+            VStack(alignment: .center, spacing: 10) {
                 CustomHeader(config: CustomHeaderConfig(title: "Friends"))
-                    .frame(maxWidth: .infinity, alignment: .center)
-                HStack(alignment: .top, spacing: 20) {
+                Spacer()
+
+                HStack(alignment: .top, spacing: 10) {
                     
                     CustomSelectedButton(config:
                         CustomSelectedButtonConfig(title: "All", width: 75) {})
@@ -27,7 +36,6 @@ struct FriendsPageView: View {
                         CustomButtonConfig(title: "Sent", width: 75) {})
                 }
                 
-                Spacer()
                 
                 VStack(alignment: .center, spacing: 10){
                     SearchBar(searchText: $searchText)
@@ -35,9 +43,12 @@ struct FriendsPageView: View {
                     CustomText(config: CustomTextConfig(text: "You are searching for: \(searchText)"))
                 }
                 
-                Spacer()
-                
-                
+                List(sampleUsers) { user in
+                    UserRowView(user: user)
+                        .listRowBackground(Color.clear)
+                }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
             }
         }
     }
@@ -67,6 +78,37 @@ struct SearchBar: View {
         .padding(.horizontal, 10)
     }
 }
+
+struct User: Identifiable {
+    let id: Int
+    let username: String
+    let profilePicture: String
+}
+
+struct UserRowView: View {
+    let user: User
+
+    var body: some View {
+        HStack {
+            Image(user.profilePicture)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 75, height: 75)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.white, lineWidth: 3))
+
+            VStack(alignment: .leading) {
+                CustomText(config: CustomTextConfig(text: user.username))
+                CustomText(config: CustomTextConfig(text: "ID: \(user.id)"))
+            }
+
+            Spacer()
+        }
+        .padding(.vertical, 5)
+    }
+}
+
+
 
 #Preview {
     FriendsPageView()
