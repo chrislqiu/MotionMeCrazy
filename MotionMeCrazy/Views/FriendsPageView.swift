@@ -18,41 +18,47 @@ struct FriendsPageView: View {
     ]
     
     var body: some View {
-        ZStack {
-            Image("background")
-                .resizable()
-                .ignoresSafeArea()
-            VStack(alignment: .center, spacing: 10) {
-                CustomHeader(config: CustomHeaderConfig(title: "Friends"))
-                Spacer()
-
-                HStack(alignment: .top, spacing: 10) {
+        NavigationStack {
+            ZStack {
+                Image("background")
+                    .resizable()
+                    .ignoresSafeArea()
+                
+                VStack(alignment: .center, spacing: 10) {
+                    CustomHeader(config: CustomHeaderConfig(title: "Friends"))
                     
-                    CustomSelectedButton(config:
-                        CustomSelectedButtonConfig(title: "All", width: 75) {})
-                    CustomButton(config:
-                        CustomButtonConfig(title: "Pending", width: 100) {})
-                    CustomButton(config:
-                        CustomButtonConfig(title: "Sent", width: 75) {})
+                    HStack(alignment: .top, spacing: 10) {
+                        CustomSelectedButton(config:
+                            CustomSelectedButtonConfig(title: "All", width: 75) {})
+                        
+                        CustomButton(config: CustomButtonConfig(
+                            title: "Pending",
+                            width: 100,
+                            destination: AnyView(PendingPageView()) 
+                        ))
+                        
+                        CustomButton(config:
+                            CustomButtonConfig(title: "Sent", width: 75) {})
+                    }
+                    .padding(.top, 10)
+
+                    VStack(alignment: .center, spacing: 10) {
+                        SearchBar(searchText: $searchText)
+                            .padding()
+                        CustomText(config: CustomTextConfig(text: "You are searching for: \(searchText)"))
+                    }
+                    
+                    List(sampleUsers) { user in
+                        UserRowView(user: user)
+                            .listRowBackground(Color.clear)
+                    }
+                    .scrollContentBackground(.hidden)
+                    .background(Color.clear)
                 }
-                
-                
-                VStack(alignment: .center, spacing: 10){
-                    SearchBar(searchText: $searchText)
-                        .padding()
-                    CustomText(config: CustomTextConfig(text: "You are searching for: \(searchText)"))
-                }
-                
-                List(sampleUsers) { user in
-                    UserRowView(user: user)
-                        .listRowBackground(Color.clear)
-                }
-                .scrollContentBackground(.hidden)
-                .background(Color.clear)
+                .padding(.horizontal, 20)
             }
         }
     }
-    
 }
 
 struct SearchBar: View {
@@ -63,6 +69,7 @@ struct SearchBar: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.darkBlue)
                 .font(.system(size: 24, weight: .bold))
+            
             CustomTextField(config: CustomTextFieldConfig(text: $searchText, placeholder: "Search..."))
                             
             if !searchText.isEmpty {
@@ -72,8 +79,6 @@ struct SearchBar: View {
                         .font(.system(size: 24, weight: .bold))
                 }
             }
-            
-            
         }
         .padding(.horizontal, 10)
     }
@@ -107,8 +112,6 @@ struct UserRowView: View {
         .padding(.vertical, 5)
     }
 }
-
-
 
 #Preview {
     FriendsPageView()

@@ -10,29 +10,37 @@ import SwiftUI
 struct CustomButtonConfig {
     let title: String
     let width: CGFloat
-    let action: () -> Void
+    var action: (() -> Void)? // optional
     var titleColor: Color = .white
     var fontSize: CGFloat = 20
+    var destination: AnyView? = nil // optional
 }
 
 struct CustomButton: View {
     let config: CustomButtonConfig
+    
     var body: some View {
-        ZStack {
-            Button(action: {config.action()}) {
-                Text(config.title)
-                    .foregroundColor(config.titleColor)
-                    .font(.system(size: config.fontSize, weight: .bold))
+        if let destination = config.destination {
+            NavigationLink(destination: destination) {
+                buttonView
             }
-            .foregroundColor(.clear)
-            .frame(width: config.width, height: 50)
-            .background {
-                Color(.darkBlue)
+        } else {
+            Button(action: { config.action?() }) {
+                buttonView
             }
-            .cornerRadius(15)
         }
     }
+    
+    private var buttonView: some View {
+        Text(config.title)
+            .foregroundColor(config.titleColor)
+            .font(.system(size: config.fontSize, weight: .bold))
+            .frame(width: config.width, height: 50)
+            .background(Color.darkBlue)
+            .cornerRadius(15)
+    }
 }
+
 
 #Preview {
     CustomButton(config: .init(title: "Test", width: 100,

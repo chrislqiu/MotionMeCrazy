@@ -35,7 +35,8 @@ struct CustomSelectedButton: View {
                     .stroke(config.titleColor, lineWidth: 5)
             )
             .cornerRadius(15)
-            
+            .disabled(true)
+
         }
     }
 }
