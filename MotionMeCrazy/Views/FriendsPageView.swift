@@ -19,8 +19,8 @@ struct FriendsPageView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                 HStack(alignment: .top, spacing: 20) {
                     
-                    CustomButton(config:
-                        CustomButtonConfig(title: "All", width: 75) {})
+                    CustomSelectedButton(config:
+                        CustomSelectedButtonConfig(title: "All", width: 75) {})
                     CustomButton(config:
                         CustomButtonConfig(title: "Pending", width: 100) {})
                     CustomButton(config:
@@ -32,8 +32,7 @@ struct FriendsPageView: View {
                 VStack(alignment: .center, spacing: 10){
                     SearchBar(searchText: $searchText)
                         .padding()
-                    
-                    Text("You are searching for: \(searchText)")
+                    CustomText(config: CustomTextConfig(text: "You are searching for: \(searchText)"))
                 }
                 
                 Spacer()
@@ -52,12 +51,14 @@ struct SearchBar: View {
         HStack {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.darkBlue)
+                .font(.system(size: 24, weight: .bold))
             CustomTextField(config: CustomTextFieldConfig(text: $searchText, placeholder: "Search..."))
                             
             if !searchText.isEmpty {
                 Button(action: { searchText = "" }) {
-                    Image(systemName: "xmark.circle.fill") // Clear button
+                    Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.darkBlue)
+                        .font(.system(size: 24, weight: .bold))
                 }
             }
             

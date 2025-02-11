@@ -36,8 +36,8 @@ struct ProfilePageView: View {
                             showSelector.toggle()
                         }
                     
-                    CustomText(config: CustomTextConfig(title: username))
-                    CustomText(config: CustomTextConfig(title: String(userid)))
+                    CustomText(config: CustomTextConfig(text: username))
+                    CustomText(config: CustomTextConfig(text: String(userid)))
                     
                     CustomButton(config: CustomButtonConfig(title: "Edit", width: 100) {
                         isEditing.toggle()
@@ -98,5 +98,5 @@ struct ProfilePageView: View {
 }
 
 #Preview {
-    ProfilePageView(username: "raquel", userid: 12345)
+    ProfilePageView(username: "test", userid: 12345)
 }
