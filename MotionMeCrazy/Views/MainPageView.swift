@@ -1,0 +1,38 @@
+//
+//  MainPageView.swift
+//  MotionMeCrazy
+//
+//  Created by Tea Lazareto on 2/12/25.
+//
+
+import SwiftUI
+
+//MAIN VIEW
+struct MainPageView: View {
+    var body: some View {
+        TabView {
+            GameCenterPageView()
+                .tabItem { Image("home") }
+            ProfilePageView(username: "user", userid: 69)
+                .tabItem { Image("profile") }
+            FriendsPageView()
+                .tabItem { Image("friends") }
+            StatisticsPageView()
+                .tabItem { Image("leaderboard") }
+            SettingsPageView()
+                .tabItem { Image("setting") }
+
+        }
+        .onAppear {
+
+            UITabBar.appearance().backgroundColor = .white  // Tab background color
+            UITabBar.appearance().barTintColor = .darkBlue  // Tab item color
+            UITabBar.appearance().tintColor = .white  // color for selected icon
+        }
+
+    }
+}
+
+#Preview {
+    MainPageView()
+}
