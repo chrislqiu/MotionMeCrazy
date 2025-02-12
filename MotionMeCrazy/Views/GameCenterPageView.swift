@@ -1,5 +1,11 @@
-import SwiftUI
+//
+//  SettingsPageView.swift
+//  MotionMeCrazy
+//  Tea Lazareto 2/12/2025
+//
 
+import SwiftUI
+//trying to push
 struct GameCenterPageView: View {
     @State private var selectedGame = 0 // current page index
     

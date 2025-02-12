@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-//MAIN VIEW
+//for tab bar and main view 
 struct MainPageView: View {
     var body: some View {
         TabView {

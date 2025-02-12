@@ -1,6 +1,7 @@
 //
 //  SettingsPageView.swift
 //  MotionMeCrazy
+// Tea Lazareto 2/12/2025
 //
 
 import SwiftUI
@@ -41,7 +42,7 @@ struct SettingsPageView: View {
         VStack(spacing: 20) {
             CustomHeader(config: .init(title: "Settings"))
             
-            // Audio Slider
+            // audio
             VStack(alignment: .leading) {
                 CustomText(config: .init(title: "Audio Level"))
                 Slider(value: $audioLevel, in: 0...1)
