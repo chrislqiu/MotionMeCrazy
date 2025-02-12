@@ -10,6 +10,7 @@ import SwiftUI
 struct CustomButtonConfig {
     let title: String
     let width: CGFloat
+    let buttonColor: Color
     var action: (() -> Void)? // optional
     var titleColor: Color = .white
     var fontSize: CGFloat = 20
@@ -36,14 +37,18 @@ struct CustomButton: View {
             .foregroundColor(config.titleColor)
             .font(.system(size: config.fontSize, weight: .bold))
             .frame(width: config.width, height: 50)
-            .background(Color.darkBlue)
+            .background(config.buttonColor)
+            .overlay(
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(config.titleColor, lineWidth: 5)
+            )
             .cornerRadius(15)
     }
 }
 
 
 #Preview {
-    CustomButton(config: .init(title: "Test", width: 100,
+    CustomButton(config: .init(title: "Test", width: 100, buttonColor: .darkBlue,
                  action: {
         
     }))

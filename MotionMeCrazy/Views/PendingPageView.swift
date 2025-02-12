@@ -28,16 +28,15 @@ struct PendingPageView: View {
                         CustomButton(config: CustomButtonConfig(
                             title: "All",
                             width: 75,
+                            buttonColor: .darkBlue,
                             destination: AnyView(FriendsPageView())
                         ))
                         
                         CustomSelectedButton(config:
                                                 CustomSelectedButtonConfig(title: "Pending", width: 100) {})
                         
-                        
-                        
                         CustomButton(config:
-                                        CustomButtonConfig(title: "Sent", width: 75) {})
+                                        CustomButtonConfig(title: "Sent", width: 75, buttonColor: .darkBlue) {})
                     }
                     .padding(.top, 10)
                     
@@ -50,6 +49,39 @@ struct PendingPageView: View {
                 }
             }
         }
+    }
+}
+
+private struct UserRowView: View {
+    let user: User
+
+    var body: some View {
+        HStack {
+            Image(user.profilePicture)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 75, height: 75)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.white, lineWidth: 3))
+
+            VStack(alignment: .leading) {
+                CustomText(config: CustomTextConfig(text: user.username))
+                CustomText(config: CustomTextConfig(text: "ID: \(user.id)"))
+                
+                HStack {
+                    CustomButton(config:
+                        CustomButtonConfig(title: "Accept", width: 100, buttonColor: .darkBlue) {})
+                    
+                    CustomButton(config:
+                                    CustomButtonConfig(title: "Decline", width: 100, buttonColor: .lightBlue) {})
+                }
+            }
+            
+            
+
+            Spacer()
+        }
+        .padding(.vertical, 5)
     }
 }
 

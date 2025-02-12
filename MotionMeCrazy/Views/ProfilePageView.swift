@@ -39,7 +39,8 @@ struct ProfilePageView: View {
                     CustomText(config: CustomTextConfig(text: username))
                     CustomText(config: CustomTextConfig(text: String(userid)))
                     
-                    CustomButton(config: CustomButtonConfig(title: "Edit", width: 100) {
+                    CustomButton(config: CustomButtonConfig(title: "Edit", width: 100, buttonColor: .darkBlue
+) {
                         isEditing.toggle()
                     })
                     .alert("Edit Username", isPresented: $isEditing) {

@@ -34,11 +34,12 @@ struct FriendsPageView: View {
                         CustomButton(config: CustomButtonConfig(
                             title: "Pending",
                             width: 100,
-                            destination: AnyView(PendingPageView()) 
+                            buttonColor: .darkBlue,
+                            destination: AnyView(PendingPageView())
                         ))
                         
                         CustomButton(config:
-                            CustomButtonConfig(title: "Sent", width: 75) {})
+                            CustomButtonConfig(title: "Sent", width: 75, buttonColor: .darkBlue) {})
                     }
                     .padding(.top, 10)
 
@@ -90,7 +91,7 @@ struct User: Identifiable {
     let profilePicture: String
 }
 
-struct UserRowView: View {
+private struct UserRowView: View {
     let user: User
 
     var body: some View {
@@ -105,6 +106,9 @@ struct UserRowView: View {
             VStack(alignment: .leading) {
                 CustomText(config: CustomTextConfig(text: user.username))
                 CustomText(config: CustomTextConfig(text: "ID: \(user.id)"))
+                
+                CustomButton(config:
+                                CustomButtonConfig(title: "Remove", width: 100, buttonColor: .lightBlue) {})
             }
 
             Spacer()
