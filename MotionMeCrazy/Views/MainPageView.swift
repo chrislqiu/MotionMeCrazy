@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-//for tab bar and main view 
+//for tab bar and main view
 struct MainPageView: View {
     var body: some View {
+
         TabView {
             GameCenterPageView()
                 .tabItem { Image("home") }
@@ -19,8 +20,16 @@ struct MainPageView: View {
                 .tabItem { Image("friends") }
             LeaguePageView()
                 .tabItem { Image("leaderboard") }
+            StatisticsPageView()
+                .tabItem {
+                    Image("badge")
+                    Text("Statistics")
+                }
             SettingsPageView()
-                .tabItem { Image("setting") }
+                .tabItem {
+                    Image("setting")
+                    Text("Settings")
+                }
 
         }
         .onAppear {
@@ -29,10 +38,10 @@ struct MainPageView: View {
             UITabBar.appearance().barTintColor = .darkBlue  // Tab item color
             UITabBar.appearance().tintColor = .white  // color for selected icon
         }
-
     }
 }
-
 #Preview {
-    MainPageView()
+    NavigationStack {
+        MainPageView()
+    }
 }
