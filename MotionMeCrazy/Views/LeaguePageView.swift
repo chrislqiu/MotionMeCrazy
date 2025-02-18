@@ -36,10 +36,10 @@ struct LeaguePageView: View {
             VStack {
                 CustomHeader(config: CustomHeaderConfig(title: "My Leagues"))
                 ForEach(my_leagues.indices, id: \.self) { index in
-                    CustomText(config: .init(title: my_leagues[index]))
+                    CustomText(config: .init(text: my_leagues[index]))
                 }
                 
-                CustomButton(config: .init(title: "Create League", width: 250) {
+                CustomButton(config: .init(title: "Create League", width: 250, buttonColor: .darkBlue) {
                     // action for create league
                     isCreatingLeague.toggle()
                 })
@@ -60,7 +60,7 @@ struct LeaguePopupView: View {
     var body: some View {
         NavigationView {
             VStack {
-                CustomText(config: .init(title: "Create Your League"))
+                CustomText(config: .init(text: "Create Your League"))
                     .font(.headline)
                     .padding()
                 TextField("Enter league name", text: $leagueName)
@@ -78,13 +78,13 @@ struct LeaguePopupView: View {
                 }
 
                 HStack {
-                    CustomButton(config: .init(title: "Create League", width: 150, action: {
+                    CustomButton(config: .init(title: "Create League", width: 150, buttonColor: .darkBlue, action: {
                         if leagueMembers.count >= 2 {
                             isCreatingLeague = false  // Close popup
                         }
                     }))
                                  
-                    CustomButton(config: .init(title: "Add Member", width: 150) {
+                    CustomButton(config: .init(title: "Add Member", width: 150, buttonColor: .darkBlue) {
                         leagueMembers.append("") // Add new text field
                     })
                     
