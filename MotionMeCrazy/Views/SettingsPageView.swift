@@ -44,7 +44,7 @@ struct SettingsPageView: View {
             
             // audio
             VStack(alignment: .leading) {
-                CustomText(config: .init(title: "Audio Level"))
+                CustomText(config: .init(text: "Audio Level"))
                 Slider(value: $audioLevel, in: 0...1)
                     .accentColor(.darkBlue)
                  
@@ -52,11 +52,9 @@ struct SettingsPageView: View {
             }
             .padding()
             
-            CustomButton(config: .init(title: "Change Theme", width: 200, action: {
-            }))
+            CustomButton(config: .init(title: "Change Theme", width: 200, buttonColor: .darkBlue) {})
             
-            CustomButton(config: .init(title: "Change Language", width: 200, action: {
-            }))
+            CustomButton(config: .init(title: "Change Language", width: 200,buttonColor: .darkBlue) {})
         }
     }
     
@@ -66,7 +64,7 @@ struct SettingsPageView: View {
             CustomHeader(config: .init(title: "Game Settings"))
             
             // Placeholder
-            CustomText(config: .init(title: "Game Settings"))
+            CustomText(config: .init(text: "Game Settings"))
         }
         .padding()
     }

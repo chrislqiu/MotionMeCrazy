@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CustomTextConfig {
-    let title: String
+    let text: String
     var titleColor: Color = .darkBlue
     var fontSize: CGFloat = 20
 }
@@ -16,7 +16,7 @@ struct CustomTextConfig {
 struct CustomText: View {
     let config: CustomTextConfig
     var body: some View {
-        Text(config.title)
+        Text(config.text)
             .foregroundColor(config.titleColor)
             .font(.system(size: config.fontSize, weight: .medium))
     }
@@ -24,6 +24,6 @@ struct CustomText: View {
 
 
 #Preview {
-    CustomText(config: .init(title: "Test"))
+    CustomText(config: .init(text: "Test"))
 }
 
