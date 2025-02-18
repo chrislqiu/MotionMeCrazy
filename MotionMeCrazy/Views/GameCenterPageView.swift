@@ -1,67 +1,69 @@
 //
-//  SettingsPageView.swift
+//  GameCenterPageView.swift
 //  MotionMeCrazy
 //  Tea Lazareto 2/12/2025
 //
 
 import SwiftUI
-//trying to push
+
 struct GameCenterPageView: View {
-    @State private var selectedGame = 0 // current page index
-    
-    // games
-    private let games: [(name: String, icon: String)] = [
-        ("Hole in the Wall", "figure.run"),
-        ("Game 2", "gamecontroller.fill")
+    @State private var selectedGame = 0
+    // game items for carousel
+    private let games: [(name: String, icon: String, buttonColor: Color)] = [
+        ("Hole in the Wall", "figure.run", .darkBlue),
+        ("Game 2", "gamecontroller.fill", .darkBlue)
     ]
 
     init() {
-        // this is to customize tge page indicator
-        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Color.darkBlue) // shows active dot
-        UIPageControl.appearance().pageIndicatorTintColor = UIColor(Color.blue.opacity(0.5)) // inactive dots
+        // custom page indicator color
+        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor.systemBlue
+        UIPageControl.appearance().pageIndicatorTintColor = UIColor.systemBlue.withAlphaComponent(0.5)
     }
 
     var body: some View {
-        
         ZStack {
-           
             Image("background")
                 .resizable()
                 .ignoresSafeArea()
             
-            
             VStack(spacing: 175) {
                 CustomHeader(config: .init(title: "Game Center"))
                 
-                // Dynamic Game Carousel
                 TabView(selection: $selectedGame) {
-                    ForEach(games.indices, id: \.self) { index in
-                        VStack {
-                            Image(systemName: games[index].icon)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 100, height: 100)
-                                .foregroundColor(.darkBlue)
-                                .padding(.bottom, 10)
-                            
-                            CustomButton(config: .init(title: games[index].name, width: 250) {
-                                // Action for each game
-                            })
-                        }
-                        .frame(width: 250, height: 150)
-                        .scaleEffect(selectedGame == index ? 1.2 : 1.0)
-                        .tag(index)
+                    ForEach(Array(games.indices), id: \.self) { index in
+                        SelectGame(game: games[index])
+                            .scaleEffect(selectedGame == index ? 1.2 : 1.0)
+                            .tag(index)
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .always))
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
                 .frame(height: 325)
+                
                 Spacer()
             }
         }
     }
 }
 
+
+struct SelectGame: View {
+    let game: (name: String, icon: String, buttonColor: Color)
+    
+    var body: some View {
+        VStack {
+            Image(systemName: game.icon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+                .foregroundColor(game.buttonColor)
+                .padding(.bottom, 10)
+            
+            CustomButton(config: .init(title: game.name, width: 250, buttonColor: game.buttonColor))
+        }
+        .frame(width: 250, height: 150)
+    }
+}
+
 #Preview {
     GameCenterPageView()
-        
 }
