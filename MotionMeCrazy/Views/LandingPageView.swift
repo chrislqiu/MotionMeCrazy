@@ -8,10 +8,11 @@
 import SwiftUI
 
 struct LandingPageView: View {
-    @State private var selectedImage: String = "pfp1"  // Initial profile image
-    @State private var showSelector = false  // Controls modal visibility
-    @State private var showCopiedMessage = false
-    @State private var username: String = ""
+    @State var selectedImage: String = "pfp1"  // Initial profile image
+    @State var showSelector = false  // Controls modal visibility
+    @State var showCopiedMessage = false
+    @State var username: String = ""
+    @State var errorMessage: String?  // For displaying errors
 
     let adjectives = [
         "Swift", "Crazy", "Fast", "Brave", "Happy", "Funky", "Epic", "Chill",
@@ -55,6 +56,7 @@ struct LandingPageView: View {
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 35)
+                    .accessibilityIdentifier("appTitle")
 
                 // Profile Image Display (Now Opens Selector When Tapped)
                 Image(selectedImage)
@@ -66,6 +68,7 @@ struct LandingPageView: View {
                     .onTapGesture {
                         showSelector.toggle()  // Open selector when tapped
                     }
+                    .accessibilityIdentifier("profilePicture")
 
                 HStack {
                     TextField("Enter your username", text: $username)
@@ -82,7 +85,8 @@ struct LandingPageView: View {
                         .onAppear {
                             username = generateRandomUsername()
                         }
-
+                        .accessibilityLabel("usernameField")
+                    
                     // Copy to Clipboard Button
                     Button(action: {
                         UIPasteboard.general.string = username
@@ -98,6 +102,7 @@ struct LandingPageView: View {
                             .foregroundColor(.black)
                     }
                     .padding(.leading, 5)
+                    .accessibilityIdentifier("copyButton")
 
                     // Refresh Button
                     Button(action: {
@@ -107,7 +112,9 @@ struct LandingPageView: View {
                             .font(.title2.bold())
                             .foregroundColor(.black)
                     }
-                }.padding(.top, 10)
+                }
+                .padding(.top, 10)
+                .accessibilityIdentifier("generateUsernameButton")
 
                 // Show confirmation message
                 if showCopiedMessage {
@@ -115,8 +122,20 @@ struct LandingPageView: View {
                         .font(.caption)
                         .foregroundColor(.green)
                         .padding(.top, 5)
+                        .accessibilityIdentifier("copyMessage")
                 }
+
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.orange)
+                        .padding(.top, 5)
+                        .accessibilityIdentifier("errorMessage")
+                }
+
                 Button(action: {
+                    createUser()
                     print("Start button tapped!")  // Replace with actual action
                 }) {
                     Text("Start")
@@ -128,6 +147,7 @@ struct LandingPageView: View {
                         .cornerRadius(25)
                         .shadow(radius: 5)
                 }.padding(.top, 20)
+                    .accessibilityIdentifier("startButton")
                 Spacer()
             }
         }
@@ -138,6 +158,7 @@ struct LandingPageView: View {
                     .fontWeight(.bold)
                     .foregroundColor(Color("DarkBlue"))
                     .padding(.top, 20)
+                    .accessibilityIdentifier("picSelectScreen")
 
                 LazyVGrid(
                     columns: Array(repeating: .init(.flexible()), count: 3),
@@ -160,6 +181,8 @@ struct LandingPageView: View {
                                 selectedImage = imageName
                                 showSelector = false  // Close modal after selection
                             }
+                            .accessibilityIdentifier("picOption")
+
                     }
                 }
                 Spacer()
@@ -177,6 +200,48 @@ struct LandingPageView: View {
         let randomNum = Int.random(in: 100...999)
 
         return "\(randomAdj)\(randomNoun)\(randomNum)"
+    }
+
+    func createUser() {
+        guard let url = URL(string: "http://localhost:3000/user") else {
+            print("Invalid URL")
+            return
+        }
+
+        let body: [String: Any] = [
+            "username": username,
+            "profilePicId": selectedImage,
+        ]
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
+        else {
+            print("Failed to encode JSON")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if error != nil {
+                    self.errorMessage = "Network error, please try again"
+                    return
+                }
+
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode == 200 {
+                        print("User successfully created!")
+                        self.errorMessage = nil
+                    } else {
+                        self.errorMessage =
+                            "Username already exists, please try again"
+                    }
+                }
+            }
+        }.resume()
     }
 }
 
