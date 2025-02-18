@@ -18,18 +18,10 @@ struct StatisticsPageView: View {
                 .ignoresSafeArea()
 
             VStack {
-                //Navigation Bar
+                // Navigation Bar
                 HStack {
-                    // Home Button
-                    Button(action: {
-                        print("Home button tapped")  // Replace with action
-                    }) {
-                        Image(systemName: "house.fill")
-                            .font(.title)
-                            .foregroundColor(.white)
-                    }
 
-                    Spacer()
+                    Spacer()  // Pushes the title to the center
 
                     // Page Title
                     Text("Statistics")
@@ -37,17 +29,7 @@ struct StatisticsPageView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.white)
 
-                    Spacer()
-
-                    // Settings Button
-                    Button(action: {
-                        print("Settings button tapped")  // Replace with action
-                    }) {
-                        Image(systemName: "gearshape.fill")
-                            .font(.title)
-                            .foregroundColor(.white)
-                    }
-                    
+                    Spacer()  // Ensures the title is centered
                 }
                 .padding()
                 .background(Color("DarkBlue"))
@@ -77,7 +59,6 @@ struct StatisticsPageView: View {
                                 .frame(width: 100, height: 40)
                                 .background(Color("DarkBlue"))
                                 .cornerRadius(8)
-                                
                         }
 
                         Button(action: {
