@@ -20,6 +20,7 @@ struct GameCenterPageView: View {
         UIPageControl.appearance().pageIndicatorTintColor = UIColor.systemBlue.withAlphaComponent(0.5)
     }
 
+    //main view for the carousel
     var body: some View {
         ZStack {
             Image("background")
@@ -45,7 +46,7 @@ struct GameCenterPageView: View {
     }
 }
 
-
+//individuaal game
 struct SelectGame: View {
     let game: (name: String, icon: String, buttonColor: Color)
     
