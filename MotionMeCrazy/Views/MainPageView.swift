@@ -10,6 +10,7 @@ import SwiftUI
 //for tab bar and main view 
 struct MainPageView: View {
     var body: some View {
+        //TODO hide tab view when game is active
         TabView {
             GameCenterPageView()
                 .tabItem { Image("home") }
@@ -24,7 +25,6 @@ struct MainPageView: View {
 
         }
         .onAppear {
-
             UITabBar.appearance().backgroundColor = .white  // Tab background color
             UITabBar.appearance().barTintColor = .darkBlue  // Tab item color
             UITabBar.appearance().tintColor = .white  // color for selected icon
