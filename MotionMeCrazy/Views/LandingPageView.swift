@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct LandingPageView: View {
-    @State var selectedImage: String = "pfp1"  // Initial profile image
-    @State var showSelector = false  // Controls modal visibility
-    @State var showCopiedMessage = false
-    @State var username: String = ""
-    @State var errorMessage: String?  // For displaying errors
+    @State private var selectedImage: String = "pfp1"  // Initial profile image
+    @State private var showSelector = false  // Controls modal visibility
+    @State private var showCopiedMessage = false
+    @State private var username: String = ""
+    @State private var errorMessage: String?  // For displaying errors
 
     let adjectives = [
         "Swift", "Crazy", "Fast", "Brave", "Happy", "Funky", "Epic", "Chill",
