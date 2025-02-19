@@ -12,83 +12,100 @@ struct ProfilePageView: View {
     }
     @State private var selectedImage: String = "pfp1"  // Initial profile image
     @State private var showSelector = false  // Controls modal visibility
+
     let images = ["pfp1", "pfp2"]
     var body: some View {
-        ZStack {
-            Image("background")
-                .resizable()
-                .ignoresSafeArea()
-            
-            VStack(alignment: .center) {
-                CustomHeader(config: CustomHeaderConfig(title: "Profile"))
-                    .frame(maxWidth: .infinity, alignment: .center)
-                
-                Spacer()
-                
-                VStack(alignment: .center, spacing: 10) {
-                    Image(selectedImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 120, height: 120)
-                        .clipShape(Circle())
-                        .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
-                        .onTapGesture {
-                            showSelector.toggle()
-                        }
-                    
-                    CustomText(config: CustomTextConfig(text: username))
-                    CustomText(config: CustomTextConfig(text: String(userid)))
-                    
-                    CustomButton(config: CustomButtonConfig(title: "Edit", width: 100, buttonColor: .darkBlue
-) {
-                        isEditing.toggle()
-                    })
-                    .alert("Edit Username", isPresented: $isEditing) {
-                        TextField("Enter a new username", text: $newUsername)
-                        Button("Cancel", action: { isEditing.toggle() })
-                        Button("Submit", action: submit)
-                    } message: {
-                        Text("Please enter a new username")
-                    }
-                }
-                
-                Spacer()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            
-        }
-        .sheet(isPresented: $showSelector) {
-            VStack {
-                Text("Select Your Profile Picture")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(Color("DarkBlue"))
-                    .padding(.top, 20)
-                
-                LazyVGrid(
-                    columns: Array(repeating: .init(.flexible()), count: 3),
-                    spacing: 15
-                ) {
-                    ForEach(images, id: \.self) { imageName in
-                        Image(imageName)
+        NavigationStack {
+            ZStack {
+                Image("background")
+                    .resizable()
+                    .ignoresSafeArea()
+
+                VStack(alignment: .center) {
+                    CustomHeader(config: CustomHeaderConfig(title: "Profile"))
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                    Spacer()
+
+                    VStack(alignment: .center, spacing: 10) {
+                        Image(selectedImage)
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 80, height: 80)
+                            .frame(width: 120, height: 120)
                             .clipShape(Circle())
-                            .overlay(
-                                Circle()
-                                    .stroke(
-                                        selectedImage == imageName
-                                        ? Color.blue : Color.clear,
-                                        lineWidth: 4)
-                            )
+                            .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
                             .onTapGesture {
-                                selectedImage = imageName
-                                showSelector = false  // Close modal after selection
+                                showSelector.toggle()
                             }
+
+                        CustomText(config: CustomTextConfig(text: username))
+                        CustomText(
+                            config: CustomTextConfig(text: String(userid)))
+
+                        CustomButton(
+                            config: CustomButtonConfig(
+                                title: "Edit", width: 100,
+                                buttonColor: .darkBlue
+                            ) {
+                                isEditing.toggle()
+                            }
+                        )
+                        .alert("Edit Username", isPresented: $isEditing) {
+                            TextField(
+                                "Enter a new username", text: $newUsername)
+                            Button("Cancel", action: { isEditing.toggle() })
+                            Button("Submit", action: submit)
+                        } message: {
+                            Text("Please enter a new username")
+                        }
+                        CustomButton(
+                            config: CustomButtonConfig(
+                                title: "Stats",
+                                width: 100,
+                                buttonColor: .darkBlue,
+                                destination: AnyView(StatisticsPageView())  // Ensure type erasure with AnyView
+                            ))
+
                     }
+                    Spacer()
                 }
-                Spacer()
+                .frame(
+                    maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+            }
+            .sheet(isPresented: $showSelector) {
+                VStack {
+                    Text("Select Your Profile Picture")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("DarkBlue"))
+                        .padding(.top, 20)
+
+                    LazyVGrid(
+                        columns: Array(repeating: .init(.flexible()), count: 3),
+                        spacing: 15
+                    ) {
+                        ForEach(images, id: \.self) { imageName in
+                            Image(imageName)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 80, height: 80)
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            selectedImage == imageName
+                                                ? Color.blue : Color.clear,
+                                            lineWidth: 4)
+                                )
+                                .onTapGesture {
+                                    selectedImage = imageName
+                                    showSelector = false  // Close modal after selection
+                                }
+                        }
+                    }
+                    Spacer()
+                }
             }
         }
     }
@@ -99,5 +116,7 @@ struct ProfilePageView: View {
 }
 
 #Preview {
-    ProfilePageView(username: "test", userid: 12345)
+
+    ProfilePageView(username: "user", userid: 69)
+
 }
