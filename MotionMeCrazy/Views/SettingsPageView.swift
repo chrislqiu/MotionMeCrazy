@@ -17,22 +17,22 @@ struct SettingsPageView: View {
                 .ignoresSafeArea()
             
             VStack {
-                HStack {
-                    TabButton(title: "Settings", isSelected: selectedTab == 0) {
-                        selectedTab = 0
-                    }.accessibilityIdentifier("settingsButton")
-                    TabButton(title: "Game Settings", isSelected: selectedTab == 1) {
-                        selectedTab = 1
-                    }.accessibilityIdentifier("gameSettingsButton")
-                }
-                .padding()
+//                HStack {
+//                    TabButton(title: "Settings", isSelected: selectedTab == 0) {
+//                        selectedTab = 0
+//                    }
+//                    TabButton(title: "Game Settings", isSelected: selectedTab == 1) {
+//                        selectedTab = 1
+//                    }
+//                }
+//                .padding()
                 
                 // Show settings content when "Settings" tab is selected
-                if selectedTab == 0 {
-                    settingsContent
-                } else {
-                    gameSettingsContent
-                }
+//                if selectedTab == 0 {
+                settingsContent
+//                } else {
+//                    gameSettingsContent
+//                }
             }
             .padding()
         }
@@ -52,42 +52,41 @@ struct SettingsPageView: View {
             }
             .padding()
             
-            CustomButton(config: .init(title: "Change Theme", width: 200, buttonColor: .darkBlue) {}).accessibilityIdentifier("themeButton")
+            CustomButton(config: .init(title: "Change Theme", width: 200, buttonColor: .darkBlue) {})
             
-            CustomButton(config: .init(title: "Change Language", width: 200,buttonColor: .darkBlue) {}).accessibilityIdentifier("languageButton")
+            CustomButton(config: .init(title: "Change Language", width: 200,buttonColor: .darkBlue) {})
         }
     }
     
-    // idk if necessary
-    var gameSettingsContent: some View {
-        VStack(spacing: 20) {
-            CustomHeader(config: .init(title: "Game Settings"))               .accessibilityIdentifier("gameSettingsScreen")
-
-            
-            // Placeholder
-            CustomText(config: .init(text: "Game Settings"))
-        }
-        .padding()
-    }
+//    // idk if necessary
+//    var gameSettingsContent: some View {
+//        VStack(spacing: 20) {
+//            CustomHeader(config: .init(title: "Game Settings"))
+//            
+//            // Placeholder
+//            CustomText(config: .init(text: "Game Settings"))
+//        }
+//        .padding()
+//    }
 }
 
-struct TabButton: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 18, weight: .bold))
-                .padding()
-                .background(isSelected ? Color(.darkBlue) : Color.clear) // Use darkBlue for selected background
-                .foregroundColor(isSelected ? .white : Color(.darkBlue)) // White text for selected, darkBlue for unselected
-                .border(isSelected ? Color.clear : Color(.darkBlue), width: 2) // darkBlue border for unselected
-                .cornerRadius(10)
-        }
-    }
-}
+//struct TabButton: View {
+//    let title: String
+//    let isSelected: Bool
+//    let action: () -> Void
+//    
+//    var body: some View {
+//        Button(action: action) {
+//            Text(title)
+//                .font(.system(size: 18, weight: .bold))
+//                .padding()
+//                .background(isSelected ? Color(.darkBlue) : Color.clear) // Use darkBlue for selected background
+//                .foregroundColor(isSelected ? .white : Color(.darkBlue)) // White text for selected, darkBlue for unselected
+//                .border(isSelected ? Color.clear : Color(.darkBlue), width: 2) // darkBlue border for unselected
+//                .cornerRadius(10)
+//        }
+//    }
+//}
 
 #Preview {
     SettingsPageView()
