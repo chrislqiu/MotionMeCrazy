@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct HIWGameLobbyView: View {
-    
+
     @Environment(\.presentationMode) var presentationMode
-    @State private var showSettings = false // shows settings pop up
-    @State private var showPauseMenu = false // shows pause menu pop up
-    @State private var isPlaying = false // checks if game is active
+    @State private var showSettings = false  // shows settings pop up
+    @State private var showPauseMenu = false  // shows pause menu pop up
+    @State private var isPlaying = false  // checks if game is active
+    @State private var selectedDifficulty: SettingsView.Difficulty = .normal  // Store difficulty here
 
     var body: some View {
         ZStack {
@@ -35,7 +36,7 @@ struct HIWGameLobbyView: View {
             VStack {
                 HStack {
                     Spacer()
-                    
+
                     // the main settings button before you get into an active game
                     //only want this button when game not active
                     if !isPlaying {
@@ -50,7 +51,7 @@ struct HIWGameLobbyView: View {
                                 .padding(.trailing, -5)
                         }
                     }
-                    
+
                     if isPlaying {
                         // pause button during gameplay
                         Button(action: {
@@ -66,7 +67,7 @@ struct HIWGameLobbyView: View {
                     } else {
                         // exit button thats present when ur on the game landing page thing
                         Button(action: {
-                            presentationMode.wrappedValue.dismiss() //basically gets rid of this game view and returns to home
+                            presentationMode.wrappedValue.dismiss()  //basically gets rid of this game view and returns to home
                         }) {
                             Image(systemName: "x.circle.fill")
                                 .resizable()
@@ -89,7 +90,8 @@ struct HIWGameLobbyView: View {
                         showSettings = false
                     }
 
-                SettingsView(showSettings: $showSettings)
+                SettingsView(showSettings: $showSettings, selectedDifficulty: $selectedDifficulty)
+
                     .frame(width: 300, height: 350)
                     .background(Color.white)
                     .cornerRadius(20)
@@ -104,11 +106,14 @@ struct HIWGameLobbyView: View {
                         showPauseMenu = false
                     }
 
-                PauseMenuView(isPlaying: $isPlaying, showPauseMenu: $showPauseMenu, showSettings: $showSettings)
-                    .frame(width: 300, height: 300)
-                    .background(Color.white)
-                    .cornerRadius(20)
-                    .shadow(radius: 20)
+                PauseMenuView(
+                    isPlaying: $isPlaying, showPauseMenu: $showPauseMenu,
+                    showSettings: $showSettings
+                )
+                .frame(width: 300, height: 300)
+                .background(Color.white)
+                .cornerRadius(20)
+                .shadow(radius: 20)
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -118,17 +123,49 @@ struct HIWGameLobbyView: View {
 // the actual pop up stuff for settings
 struct SettingsView: View {
     @Binding var showSettings: Bool
+    @Binding var selectedDifficulty: Difficulty  // Corrected binding
+
+    enum Difficulty: String, CaseIterable, Identifiable {
+        case easy = "Easy"
+        case normal = "Normal"
+        case hard = "Hard"
+
+        var id: String { self.rawValue }
+    }
+
 
     var body: some View {
         VStack(spacing: 15) {
             CustomHeader(config: .init(title: "Game Settings"))
             //idk what to put here still
-            CustomButton(config: CustomButtonConfig(title: "Setting 1", width: 150, buttonColor: .lightBlue) {})
-            CustomButton(config: CustomButtonConfig(title: "Setting 2", width: 150, buttonColor: .lightBlue) {})
+            // Difficulty Dropdown
+            // Difficulty Dropdown
+            VStack {
+                Text("Difficulty")
+                    .font(.headline)
+                    .foregroundColor(.darkBlue)
 
-            CustomButton(config: CustomButtonConfig(title: "Close", width: 150, buttonColor: .darkBlue, action: {
-                showSettings = false
-            }))
+                Picker("Difficulty", selection: $selectedDifficulty) {
+                    ForEach(Difficulty.allCases) { difficulty in
+                        Text(difficulty.rawValue).tag(difficulty)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())  // Makes it a dropdown menu
+                .frame(width: 150)
+                .background(Color.lightBlue)
+                .cornerRadius(8)
+            }
+            CustomButton(
+                config: CustomButtonConfig(
+                    title: "Setting 2", width: 150, buttonColor: .lightBlue
+                ) {})
+
+            CustomButton(
+                config: CustomButtonConfig(
+                    title: "Close", width: 150, buttonColor: .darkBlue,
+                    action: {
+                        showSettings = false
+                    }))
 
             Spacer()
         }
@@ -136,30 +173,39 @@ struct SettingsView: View {
     }
 }
 
-// pause menu 
+// pause menu
 struct PauseMenuView: View {
-    @Binding var isPlaying: Bool //checks if playing
-    @Binding var showPauseMenu: Bool // shows pause
-    @Binding var showSettings: Bool // shows settings
+    @Binding var isPlaying: Bool  //checks if playing
+    @Binding var showPauseMenu: Bool  // shows pause
+    @Binding var showSettings: Bool  // shows settings
 
     var body: some View {
         VStack(spacing: 15) {
 
             CustomHeader(config: .init(title: "Game Paused"))
 
-            CustomButton(config: CustomButtonConfig(title: "Resume", width: 175, buttonColor: .lightBlue, action: {
-                showPauseMenu = false
-            }))
+            CustomButton(
+                config: CustomButtonConfig(
+                    title: "Resume", width: 175, buttonColor: .lightBlue,
+                    action: {
+                        showPauseMenu = false
+                    }))
 
-            CustomButton(config: CustomButtonConfig(title: "Game Settings", width: 175, buttonColor: .lightBlue, action: {
-                showSettings = true
-                showPauseMenu = false
-            }))
+            CustomButton(
+                config: CustomButtonConfig(
+                    title: "Game Settings", width: 175, buttonColor: .lightBlue,
+                    action: {
+                        showSettings = true
+                        showPauseMenu = false
+                    }))
 
-            CustomButton(config: CustomButtonConfig(title: "Quit Game", width: 175, buttonColor: .darkBlue, action: {
-                isPlaying = false
-                showPauseMenu = false
-            }))
+            CustomButton(
+                config: CustomButtonConfig(
+                    title: "Quit Game", width: 175, buttonColor: .darkBlue,
+                    action: {
+                        isPlaying = false
+                        showPauseMenu = false
+                    }))
 
             Spacer()
         }
@@ -170,4 +216,3 @@ struct PauseMenuView: View {
 #Preview {
     HIWGameLobbyView()
 }
-
