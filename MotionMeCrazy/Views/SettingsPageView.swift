@@ -20,10 +20,10 @@ struct SettingsPageView: View {
                 HStack {
                     TabButton(title: "Settings", isSelected: selectedTab == 0) {
                         selectedTab = 0
-                    }
+                    }.accessibilityIdentifier("settingsButton")
                     TabButton(title: "Game Settings", isSelected: selectedTab == 1) {
                         selectedTab = 1
-                    }
+                    }.accessibilityIdentifier("gameSettingsButton")
                 }
                 .padding()
                 
@@ -52,16 +52,17 @@ struct SettingsPageView: View {
             }
             .padding()
             
-            CustomButton(config: .init(title: "Change Theme", width: 200, buttonColor: .darkBlue) {})
+            CustomButton(config: .init(title: "Change Theme", width: 200, buttonColor: .darkBlue) {}).accessibilityIdentifier("themeButton")
             
-            CustomButton(config: .init(title: "Change Language", width: 200,buttonColor: .darkBlue) {})
+            CustomButton(config: .init(title: "Change Language", width: 200,buttonColor: .darkBlue) {}).accessibilityIdentifier("languageButton")
         }
     }
     
     // idk if necessary
     var gameSettingsContent: some View {
         VStack(spacing: 20) {
-            CustomHeader(config: .init(title: "Game Settings"))
+            CustomHeader(config: .init(title: "Game Settings"))               .accessibilityIdentifier("gameSettingsScreen")
+
             
             // Placeholder
             CustomText(config: .init(text: "Game Settings"))
