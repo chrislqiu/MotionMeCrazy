@@ -20,8 +20,16 @@ struct MainPageView: View {
                 .tabItem { Image("friends") }
             LeaguePageView()
                 .tabItem { Image("leaderboard") }
+            StatisticsPageView()
+                .tabItem {
+                    Image("badge")
+                    Text("Statistics")
+                }
             SettingsPageView()
-                .tabItem { Image("setting") }
+                .tabItem {
+                    Image("setting")
+                    Text("Settings")
+                }
 
         }
         .onAppear {
@@ -34,5 +42,7 @@ struct MainPageView: View {
 }
 
 #Preview {
-    MainPageView()
+    NavigationStack {
+        MainPageView()
+    }
 }

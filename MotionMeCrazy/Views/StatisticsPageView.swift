@@ -50,27 +50,27 @@ struct StatisticsPageView: View {
 
                     HStack {
                         Spacer()
-                        Button(action: {
-                            print("Share button tapped")
-                        }) {
-                            Text("Share")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(width: 100, height: 40)
-                                .background(Color("DarkBlue"))
-                                .cornerRadius(8)
-                        }
+                        CustomButton(
+                            config: CustomButtonConfig(
+                                title: "Share",
+                                width: 100,
+                                buttonColor: .darkBlue,
+                                action: {
+                                    //TODO: add share func
+                                }
+                            )
+                        )
 
-                        Button(action: {
-                            print("Clear button tapped")
-                        }) {
-                            Text("Clear")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(width: 100, height: 40)
-                                .background(Color("DarkBlue"))
-                                .cornerRadius(8)
-                        }
+                        CustomButton(
+                            config: CustomButtonConfig(
+                                title: "Clear",
+                                width: 100,
+                                buttonColor: .darkBlue,
+                                action: {
+                                    //TODO: add clear func
+                                }
+                            )
+                        )
                     }
                     .padding(.trailing, 20)
                     .padding(.top, 20)
