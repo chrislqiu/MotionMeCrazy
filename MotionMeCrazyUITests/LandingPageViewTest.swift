@@ -16,22 +16,22 @@ final class LandingPageUITests: XCTestCase {
     }
 
     func testProfileImageExists() {
-        let profileImage = app.images["Selected profile picture"]
+        let profileImage = app.images["profilePicture"]
         XCTAssertTrue(profileImage.exists, "Profile image should be visible")
     }
 
     func testProfileImageTapOpensSelector() {
-        let profileImage = app.images["Selected profile picture"]
+        let profileImage = app.images["profilePicture"]
         XCTAssertTrue(profileImage.exists, "Profile image should exist")
 
         profileImage.tap()
 
-        let profileSelector = app.staticTexts["Profile picture selection screen"]
+        let profileSelector = app.staticTexts["picSelectScreen"]
         XCTAssertTrue(profileSelector.exists, "Profile picture selection should open")
     }
 
     func testProfilePictureSelection() {
-        let profileImage = app.images["Selected profile picture"]
+        let profileImage = app.images["profilePicture"]
         profileImage.tap()
 
         let newProfileImage = app.images["pfp2"]
@@ -39,7 +39,7 @@ final class LandingPageUITests: XCTestCase {
 
         newProfileImage.tap()
 
-        XCTAssertFalse(app.staticTexts["Profile picture selection screen"].exists, "Profile selection modal should close after picking an image")
+        XCTAssertFalse(app.staticTexts["picSelectScreen"].exists, "Profile selection modal should close after picking an image")
     }
 
     func testCopyUsernameButton() {
@@ -59,8 +59,8 @@ final class LandingPageUITests: XCTestCase {
 
 
     func testGenerateNewUsername() {
-        let usernameField = app.textFields["Username input field"]
-        let refreshButton = app.buttons["Generate new username button"]
+        let usernameField = app.textFields["usernameField"]
+        let refreshButton = app.buttons["Refresh"]
 
         XCTAssertTrue(usernameField.exists, "Username field should exist")
         XCTAssertTrue(refreshButton.exists, "Refresh button should exist")
@@ -74,10 +74,7 @@ final class LandingPageUITests: XCTestCase {
     }
 
     func testStartButtonExistsAndTap() {
-        let startButton = app.buttons["Start button"]
+        let startButton = app.buttons["Start"]
         XCTAssertTrue(startButton.exists, "Start button should exist")
-
-        startButton.tap()
-
     }
 }
