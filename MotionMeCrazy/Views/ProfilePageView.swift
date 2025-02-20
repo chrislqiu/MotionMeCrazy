@@ -13,7 +13,7 @@ struct ProfilePageView: View {
     @State private var selectedImage: String = "pfp1"  // Initial profile image
     @State private var showSelector = false  // Controls modal visibility
     
-    let images = ["pfp1", "pfp2"]
+    let images = ["pfp1", "pfp2", "pfp3", "pfp4", "pfp5", "pfp6"]
     var body: some View {
         NavigationStack {
             ZStack {

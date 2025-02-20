@@ -41,7 +41,7 @@ struct LandingPageView: View {
         "Magician", "Specter", "Phantom", "Alchemist", "Sniper", "Hunter",
         "Beast", "Viking", "Knight", "Titan",
     ]
-    let images = ["pfp1", "pfp2"]
+    let images = ["pfp1", "pfp2", "pfp3", "pfp4", "pfp5", "pfp6"]
 
     var body: some View {
         NavigationView {
@@ -66,7 +66,7 @@ struct LandingPageView: View {
                         .scaledToFit()
                         .frame(width: 120, height: 120)
                         .clipShape(Circle())
-                        .overlay(Circle().stroke(Color.gray, lineWidth: 2))
+                        .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
                         .onTapGesture {
                             showSelector.toggle()  // Open selector when tapped
                         }
