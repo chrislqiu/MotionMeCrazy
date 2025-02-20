@@ -16,6 +16,7 @@ struct HIWGameLobbyView: View {
             VStack(spacing: 50) {
                 if !isPlaying {
                     CustomHeader(config: .init(title: "Hole in the Wall"))
+                        .accessibilityIdentifier("holeInTheWallTitle")
                 }
 
                 VStack(spacing: 40) {
@@ -29,6 +30,7 @@ struct HIWGameLobbyView: View {
                                 .frame(width: 150, height: 150)
                                 .foregroundColor(.darkBlue)
                         }
+                        .accessibilityIdentifier("playButton")
                     }
                 }
             }
@@ -50,6 +52,7 @@ struct HIWGameLobbyView: View {
                                 .foregroundColor(.darkBlue)
                                 .padding(.trailing, -5)
                         }
+                        .accessibilityIdentifier("modeButton")
                     }
 
                     if isPlaying {
@@ -64,6 +67,7 @@ struct HIWGameLobbyView: View {
                                 .foregroundColor(.darkBlue)
                                 .padding()
                         }
+                        .accessibilityIdentifier("pauseButton")
                     } else {
                         // exit button thats present when ur on the game landing page thing
                         Button(action: {
@@ -76,6 +80,7 @@ struct HIWGameLobbyView: View {
                                 .foregroundColor(.darkBlue)
                                 .padding()
                         }
+                        .accessibilityIdentifier("exitButton")
                     }
                 }
 
@@ -91,11 +96,11 @@ struct HIWGameLobbyView: View {
                     }
 
                 SettingsView(showSettings: $showSettings, selectedDifficulty: $selectedDifficulty)
-
                     .frame(width: 300, height: 350)
                     .background(Color.white)
                     .cornerRadius(20)
                     .shadow(radius: 20)
+                    .accessibilityIdentifier("settingsView")
             }
 
             // pause menu for game
@@ -114,6 +119,7 @@ struct HIWGameLobbyView: View {
                 .background(Color.white)
                 .cornerRadius(20)
                 .shadow(radius: 20)
+                .accessibilityIdentifier("pauseMenuView")
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -133,13 +139,13 @@ struct SettingsView: View {
         var id: String { self.rawValue }
     }
 
-
     var body: some View {
         VStack(spacing: 15) {
             CustomHeader(config: .init(title: "Game Settings"))
             //idk what to put here still
             // Difficulty Dropdown
-            // Difficulty Dropdown
+                .accessibilityLabel("modeSelectionTitle")
+
             VStack {
                 Text("Difficulty")
                     .font(.headline)
@@ -154,11 +160,14 @@ struct SettingsView: View {
                 .frame(width: 150)
                 .background(Color.lightBlue)
                 .cornerRadius(8)
+                .accessibilityIdentifier("difficultyPicker")
             }
+
             CustomButton(
                 config: CustomButtonConfig(
                     title: "Setting 2", width: 150, buttonColor: .lightBlue
                 ) {})
+                .accessibilityIdentifier("setting2Button")
 
             CustomButton(
                 config: CustomButtonConfig(
@@ -166,6 +175,7 @@ struct SettingsView: View {
                     action: {
                         showSettings = false
                     }))
+                .accessibilityIdentifier("closeButton")
 
             Spacer()
         }
@@ -183,6 +193,7 @@ struct PauseMenuView: View {
         VStack(spacing: 15) {
 
             CustomHeader(config: .init(title: "Game Paused"))
+                .accessibilityIdentifier("pauseMenuTitle")
 
             CustomButton(
                 config: CustomButtonConfig(
@@ -190,6 +201,7 @@ struct PauseMenuView: View {
                     action: {
                         showPauseMenu = false
                     }))
+                .accessibilityIdentifier("resumeButton")
 
             CustomButton(
                 config: CustomButtonConfig(
@@ -198,6 +210,7 @@ struct PauseMenuView: View {
                         showSettings = true
                         showPauseMenu = false
                     }))
+                .accessibilityIdentifier("gameSettingsButton")
 
             CustomButton(
                 config: CustomButtonConfig(
@@ -206,6 +219,7 @@ struct PauseMenuView: View {
                         isPlaying = false
                         showPauseMenu = false
                     }))
+                .accessibilityIdentifier("quitGameButton")
 
             Spacer()
         }
