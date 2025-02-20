@@ -5,14 +5,14 @@ struct ProfilePageView: View {
     let userid: Int
     @State private var isEditing: Bool = false
     @State private var newUsername: String = ""
-
+    
     init(username: String, userid: Int) {
         _username = State(initialValue: username)
         self.userid = userid
     }
     @State private var selectedImage: String = "pfp1"  // Initial profile image
     @State private var showSelector = false  // Controls modal visibility
-
+    
     let images = ["pfp1", "pfp2"]
     var body: some View {
         NavigationStack {
@@ -20,13 +20,13 @@ struct ProfilePageView: View {
                 Image("background")
                     .resizable()
                     .ignoresSafeArea()
-
+                
                 VStack(alignment: .center) {
                     CustomHeader(config: CustomHeaderConfig(title: "Profile"))
                         .frame(maxWidth: .infinity, alignment: .center)
-
+                    
                     Spacer()
-
+                    
                     VStack(alignment: .center, spacing: 10) {
                         Image(selectedImage)
                             .resizable()
@@ -36,12 +36,13 @@ struct ProfilePageView: View {
                             .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
                             .onTapGesture {
                                 showSelector.toggle()
-                            }
-
+                            }                       .accessibilityIdentifier("profilePicture")
+                        
                         CustomText(config: CustomTextConfig(text: username))
+                            .accessibilityIdentifier("username")
                         CustomText(
-                            config: CustomTextConfig(text: String(userid)))
-
+                            config: CustomTextConfig(text: String(userid)))                            .accessibilityIdentifier("userid")
+                        
                         CustomButton(
                             config: CustomButtonConfig(
                                 title: "Edit", width: 100,
@@ -50,11 +51,14 @@ struct ProfilePageView: View {
                                 isEditing.toggle()
                             }
                         )
+                        .accessibilityIdentifier("Edit")
                         .alert("Edit Username", isPresented: $isEditing) {
                             TextField(
                                 "Enter a new username", text: $newUsername)
+                            .accessibilityIdentifier("editUsernameField")
                             Button("Cancel", action: { isEditing.toggle() })
                             Button("Submit", action: submit)
+                                .accessibilityIdentifier("submitUsernameButton")
                         } message: {
                             Text("Please enter a new username")
                         }
@@ -64,14 +68,14 @@ struct ProfilePageView: View {
                                 width: 100,
                                 buttonColor: .darkBlue,
                                 destination: AnyView(StatisticsPageView())  // Ensure type erasure with AnyView
-                            ))
-
+                            ))                            .accessibilityIdentifier("statsButton")
+                        
                     }
                     Spacer()
                 }
                 .frame(
                     maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-
+                
             }
             .sheet(isPresented: $showSelector) {
                 VStack {
@@ -80,7 +84,8 @@ struct ProfilePageView: View {
                         .fontWeight(.bold)
                         .foregroundColor(Color("DarkBlue"))
                         .padding(.top, 20)
-
+                        .accessibilityIdentifier("profilePictureSelector")
+                    
                     LazyVGrid(
                         columns: Array(repeating: .init(.flexible()), count: 3),
                         spacing: 15
@@ -95,13 +100,13 @@ struct ProfilePageView: View {
                                     Circle()
                                         .stroke(
                                             selectedImage == imageName
-                                                ? Color.blue : Color.clear,
+                                            ? Color.blue : Color.clear,
                                             lineWidth: 4)
                                 )
                                 .onTapGesture {
                                     selectedImage = imageName
                                     showSelector = false  // Close modal after selection
-                                }
+                                }.accessibilityIdentifier(imageName)
                         }
                     }
                     Spacer()
@@ -116,7 +121,7 @@ struct ProfilePageView: View {
 }
 
 #Preview {
-
+    
     ProfilePageView(username: "user", userid: 69)
-
+    
 }
