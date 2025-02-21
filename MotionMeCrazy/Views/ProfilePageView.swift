@@ -69,7 +69,7 @@ struct ProfilePageView: View {
                                 title: "Stats",
                                 width: 100,
                                 buttonColor: .darkBlue,
-                                destination: AnyView(StatisticsPageView())  // Ensure type erasure with AnyView
+                                destination: AnyView(StatisticsPageView(user: "test"))  // Ensure type erasure with AnyView
                             )
                         ).accessibilityIdentifier("statsButton")
                         
