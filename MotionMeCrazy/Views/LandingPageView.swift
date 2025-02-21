@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct LandingPageView: View {
+    @StateObject private var userViewModel = UserViewModel()
+
     @State private var selectedImage: String = "pfp1"  // Initial profile image
     @State private var showSelector = false  // Controls modal visibility
     @State private var showCopiedMessage = false
@@ -137,7 +139,7 @@ struct LandingPageView: View {
                     }
                     
                     NavigationLink(
-                        destination: MainPageView(),
+                        destination: MainPageView().environmentObject(userViewModel),
                         isActive: $navigateToMainPage
                     ) {
                         Button(action: {
@@ -210,7 +212,7 @@ struct LandingPageView: View {
 
         return "\(randomAdj)\(randomNoun)\(randomNum)"
     }
-
+    
     func createUser() {
         guard let url = URL(string: "http://localhost:3000/user") else {
             print("Invalid URL")
@@ -242,6 +244,18 @@ struct LandingPageView: View {
 
                 if let httpResponse = response as? HTTPURLResponse {
                     if httpResponse.statusCode == 200 {
+                        if let data = data {
+                            do {
+                                let userResponse = try JSONDecoder().decode(UserResponse.self, from: data)
+                                userViewModel.userid = userResponse.userid
+                                userViewModel.username = userResponse.username
+                                userViewModel.profilePicId = userResponse.profilepicid
+                                self.errorMessage = nil
+                            } catch {
+                                self.errorMessage = "Failed to parse response"
+                                print(error)
+                            }
+                        }
                         print("User successfully created!")
                         self.errorMessage = nil
                     } else {
@@ -252,6 +266,12 @@ struct LandingPageView: View {
             }
         }.resume()
     }
+}
+
+struct UserResponse: Codable {
+    let userid: Int
+    let username: String
+    let profilepicid: String
 }
 
 #Preview {
