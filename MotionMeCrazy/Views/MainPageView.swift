@@ -20,7 +20,7 @@ struct MainPageView: View {
                 .tabItem { Image("friends") }
             LeaguePageView()
                 .tabItem { Image("leaderboard") }
-            StatisticsPageView()
+            StatisticsPageView(user: "test")
                 .tabItem {
                     Image("badge")
                     Text("Statistics")
