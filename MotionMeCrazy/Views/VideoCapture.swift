@@ -39,8 +39,7 @@ class VideoCapture: NSObject {
 
     /// The dispatch queue responsible for processing camera set up and frame capture.
     private let sessionQueue = DispatchQueue(
-        label: "com.example.apple-samplecode.estimating-human-pose-with-posenet.sessionqueue")
-
+        label: "videoSessionQueue")
 
     /// Asynchronously sets up the capture session.
     ///

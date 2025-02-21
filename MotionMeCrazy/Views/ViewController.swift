@@ -17,6 +17,10 @@ import AVFoundation
 import UIKit
 import VideoToolbox
 
+struct Pose {
+    var joints: [(x: CGFloat, y: CGFloat)]
+}
+
 struct CameraPreview: UIViewRepresentable {
     func makeUIView(context: Context) -> PreviewView {
         let preview = PreviewView()
@@ -26,7 +30,7 @@ struct CameraPreview: UIViewRepresentable {
     func updateUIView(_ previewView: PreviewView, context: Context) { }
 }
 
-class PreviewView: UIView, PreviewTarget {
+class PreviewView: UIView {
     override class var layerClass: AnyClass {
         AVCaptureVideoPreviewLayer.self
     }
@@ -40,21 +44,39 @@ class PreviewView: UIView, PreviewTarget {
     }
 }
 
+class PoseOverlayView: UIView {
+    private var poses: [Pose] = []
+    
+    func update(with poses: [Pose]) {
+        self.poses = poses
+        setNeedsDisplay()
+    }
+    
+    override func draw(_ rect: CGRect) {
+        guard let context = UIGraphicsGetCurrentContext() else { return }
+        for pose in poses {
+            for joint in pose.joints {
+                let point = CGPoint(x: joint.x * bounds.width, y: joint.y * bounds.height)
+                context.setFillColor(UIColor.red.cgColor)
+                context.fillEllipse(in: CGRect(x: point.x - 5, y: point.y - 5, width: 10, height: 10))
+            }
+        }
+    }
+}
+
+
 class ViewController: UIViewController {
     @IBOutlet private var previewView: PreviewView!
-    //TODO
-    //@IBOutlet private var poseNetView: PoseNetView!
+    @IBOutlet private var overlayView: PoseOverlayView!
 
     private let videoCapture = VideoCapture()
 
-    //TODO
+    //TODO: add PoseNet Model
     //private var poseNet: PoseNet!
 
+    //TODO: might change to pixelbuffer
     /// The frame the PoseNet model is currently making pose predictions from.
     private var currentFrame: CGImage?
-
-    /// The algorithm the controller uses to extract poses from the current frame.
-    private var algorithm: Algorithm = .single
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,7 +84,8 @@ class ViewController: UIViewController {
         // For convenience, the idle timer is disabled to prevent the screen from locking.
         UIApplication.shared.isIdleTimerDisabled = true
 
-        //TODO
+        setupAndBeginCapturingVideoFrames()
+        //TODO: set up PoseNet model
         // do {
         //     poseNet = try PoseNet()
         // } catch {
@@ -70,7 +93,6 @@ class ViewController: UIViewController {
         // }
 
         // poseNet.delegate = self
-        setupAndBeginCapturingVideoFrames()
     }
 
     private func setupAndBeginCapturingVideoFrames() {
@@ -83,6 +105,12 @@ class ViewController: UIViewController {
             self.videoCapture.delegate = self
 
             previewView.setSession(self.videoCapture.captureSession)
+            previewView.previewLayer.videoGravity = .resizeAspectFill
+            previewView.previewLayer.frame = view.layer.bounds
+            view.layer.addSublayer(previewView.previewLayer)
+            
+            overlayView = PoseOverlayView(frame: view.bounds)
+            view.addSubview(overlayView)
 
             self.videoCapture.startCapturing()
         }
