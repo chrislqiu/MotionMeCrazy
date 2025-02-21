@@ -113,7 +113,7 @@ private struct UserRowView: View {
 
             Spacer()
         }
-        .padding(.vertical, 5)
+        .padding(.vertical, 5).accessibilityIdentifier("userRow")
     }
 }
 
