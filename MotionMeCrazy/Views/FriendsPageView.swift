@@ -101,7 +101,7 @@ private struct UserRowView: View {
                 .scaledToFit()
                 .frame(width: 75, height: 75)
                 .clipShape(Circle())
-                .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                .overlay(Circle().stroke(Color.darkBlue, lineWidth: 3))
 
             VStack(alignment: .leading) {
                 CustomText(config: CustomTextConfig(text: user.username))

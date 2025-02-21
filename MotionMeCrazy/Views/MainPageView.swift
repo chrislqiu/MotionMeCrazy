@@ -9,12 +9,13 @@ import SwiftUI
 
 //for tab bar and main view 
 struct MainPageView: View {
+    @EnvironmentObject var userViewModel: UserViewModel
     var body: some View {
         //TODO hide tab view when game is active
         TabView {
             GameCenterPageView()
                 .tabItem { Image("home") }
-            ProfilePageView(username: "user", userid: 69)
+            ProfilePageView(userViewModel: userViewModel)
                 .tabItem { Image("profile") }
             FriendsPageView()
                 .tabItem { Image("friends") }
