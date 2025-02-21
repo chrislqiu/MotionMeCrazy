@@ -11,7 +11,6 @@ struct HIWGameLobbyView: View {
     var body: some View {
         ZStack {
             CameraPreview()
-                .edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 50) {
                 if !isPlaying {
