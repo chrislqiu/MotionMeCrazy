@@ -14,6 +14,8 @@ The implementation of the application's view controller, responsible for coordin
 */
 
 import AVFoundation
+import CoreImage
+import TensorFlowLite
 import UIKit
 import VideoToolbox
 
@@ -68,14 +70,8 @@ class PoseOverlayView: UIView {
 class ViewController: UIViewController {
     @IBOutlet private var previewView: PreviewView!
     @IBOutlet private var overlayView: PoseOverlayView!
-
-    private let videoCapture = VideoCapture()
-
-    //TODO: add PoseNet Model
-    //private var poseNet: PoseNet!
-
-    //TODO: might change to pixelbuffer
-    /// The frame the PoseNet model is currently making pose predictions from.
+    private var videoCapture: VideoCapture!
+    private var poseNetModel: PoseNetModel!
     private var currentFrame: CGImage?
 
     override func viewDidLoad() {
@@ -96,6 +92,7 @@ class ViewController: UIViewController {
     }
 
     private func setupAndBeginCapturingVideoFrames() {
+        let videoCapture = VideoCapture()
         videoCapture.setUpAVCapture { error in
             if let error = error {
                 print("Failed to setup camera with error \(error)")
@@ -114,6 +111,10 @@ class ViewController: UIViewController {
 
             self.videoCapture.startCapturing()
         }
+    }
+
+    private func setupPoseNetModel() {
+        poseNetModel = PoseNetModel()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -135,8 +136,45 @@ extension ViewController: VideoCaptureDelegate {
         }
 
         currentFrame = image
-        //TODO
-        //poseNet.predict(image)
+        let pixelBuffer = image.convertToPixelBuffer()
+        
+        //TODO: implement PoseNet model
+        poseNetModel.estimatePoses(from: pixelBuffer) { poses in
+            DispatchQueue.main.async {
+                self.overlayView.update(with: poses)
+            }
+        }
+    }
+}
+class PoseNetModel {
+    private var interpreter: Interpreter!
+    
+    init() {
+        guard let modelPath = Bundle.main.path(forResource: "posenet_mobilenet_v1_100_257x257_multi_kpt_stripped", ofType: "tflite") else { return }
+        interpreter = try? Interpreter(modelPath: modelPath)
+    }
+    
+    func estimatePoses(from pixelBuffer: CVPixelBuffer, completion: @escaping ([Pose]) -> Void) {
+        guard let resizedBuffer = pixelBuffer.resize(to: CGSize(width: 257, height: 257)) else { return }
+        
+        do {
+            try interpreter.allocateTensors()
+            
+            let inputTensor = try interpreter.input(at: 0)
+            let inputData = convertToTensorData(pixelBuffer: resizedBuffer, tensor: inputTensor)
+            
+            try interpreter.copy(inputData, toInputAt: 0)
+            try interpreter.invoke()
+            
+            let outputTensor = try interpreter.output(at: 0)
+            let outputData = [Float](unsafeData: outputTensor.data)
+            
+            let poses = parsePoseData(outputData)
+            completion(poses)
+        } catch {
+            print("Error running inference: \(error)")
+            completion([])
+        }
     }
 }
 
@@ -165,3 +203,30 @@ extension ViewController: VideoCaptureDelegate {
 //         previewImageView.show(poses: poses, on: currentFrame)
 //     }
 // }
+
+extension CGImage {
+    func convertToPixelBuffer() -> CVPixelBuffer? {
+        let width = self.width
+        let height = self.height
+        
+        var pixelBuffer: CVPixelBuffer?
+        let attributes: [CFString: Any] = [
+            kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA,
+            kCVPixelBufferWidthKey: width,
+            kCVPixelBufferHeightKey: height,
+            kCVPixelBufferBytesPerRowAlignmentKey: width * 4
+        ]
+        
+        CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, attributes as CFDictionary, &pixelBuffer)
+        
+        guard let buffer = pixelBuffer else { return nil }
+        let context = CIContext.shared
+        context.render(CIImage(cgImage: self), to: buffer)
+        
+        return buffer
+    }
+}
+
+extension CIContext {
+    static let shared = CIContext()
+}
