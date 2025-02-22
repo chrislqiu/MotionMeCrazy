@@ -8,14 +8,11 @@
 import SwiftUI
 
 struct FriendsPageView: View {
+    // TODO: fetch userId
+    @State private var userId = 194
     @State private var searchText = ""
-    
-    // TODO: fetch friends from db
-    let sampleUsers = [
-        User(id: 1, username: "RachelLa", profilePicture: "pfp1"),
-        User(id: 2, username: "JohnDoe", profilePicture: "pfp2"),
-        User(id: 3, username: "JaneSmith", profilePicture: "pfp1")
-    ]
+    @State private var errorMessage: String?  // For displaying errors
+    @State private var friends: [UserViewModel] = []
     
     var body: some View {
         NavigationStack {
@@ -49,15 +46,121 @@ struct FriendsPageView: View {
                         CustomText(config: CustomTextConfig(text: "You are searching for: \(searchText)"))
                     }
                     
-                    List(sampleUsers) { user in
+                    ScrollView {
+                        LazyVStack(spacing: 10) {
+                            ForEach(friends, id: \.userid) { user in
+                                UserRowView(user: user)
+                                    .padding()
+                                    .background(Color.clear)
+                                    .cornerRadius(10)
+                                    .shadow(radius: 2)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                    /*List(friends) { user in
                         UserRowView(user: user)
                             .listRowBackground(Color.clear)
                     }
                     .scrollContentBackground(.hidden)
-                    .background(Color.clear)
+                    .background(Color.clear)*/
                 }
                 .padding(.horizontal, 20)
             }
+        }.onAppear() {
+            getFriendsId()
+        }
+    }
+    
+    func getFriendsId() {
+        var friendIds: [Int] = []
+        guard let url = URL(string: "http://localhost:3000/friend?userId=\(userId)") else {
+            print("Invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if error != nil {
+                    self.errorMessage = "Network error, please try again"
+                    return
+                }
+                
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode == 200 {
+                        if let data = data {
+                            do {
+                                friendIds = try JSONDecoder().decode(Array<Int>.self, from: data)
+                                print(friendIds)
+                                self.getFriends(friendIds: friendIds)
+                                self.errorMessage = nil
+                            } catch {
+                                self.errorMessage = "Failed to parse response"
+                                print(error)
+                            }
+                        }
+                        print("Successfully retrieved friend ids!")
+                        self.errorMessage = nil
+                    } else {
+                        self.errorMessage =
+                        "Username already exists, please try again"
+                    }
+                }
+            }
+        }.resume()
+        
+        
+    }
+    
+    func getFriends(friendIds: Array<Int>) {
+        for friendId in friendIds {
+            guard let url = URL(string: "http://localhost:3000/user?userId=\(friendId)") else {
+                print("Invalid URL")
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                DispatchQueue.main.async {
+                    if error != nil {
+                        self.errorMessage = "Network error, please try again"
+                        return
+                    }
+                    
+                    if let httpResponse = response as? HTTPURLResponse {
+                        if httpResponse.statusCode == 200 {
+                            if let data = data {
+                                do {
+                                    let userViewModel = UserViewModel()
+                                    let userResponse = try JSONDecoder().decode(UserResponse.self, from: data)
+                                    print(userResponse)
+                                    userViewModel.userid = userResponse.userid
+                                    userViewModel.username = userResponse.username
+                                    userViewModel.profilePicId = userResponse.profilepicid
+                                    friends.append(userViewModel)
+                                    self.errorMessage = nil
+                                } catch {
+                                    self.errorMessage = "Failed to parse response"
+                                    print(error)
+                                }
+                            }
+                            print("Successfully retrieved friend information!")
+                            self.errorMessage = nil
+                        } else {
+                            self.errorMessage =
+                            "Username already exists, please try again"
+                        }
+                    }
+                }
+            }.resume()
         }
     }
 }
@@ -83,20 +186,15 @@ struct SearchBar: View {
         }
         .padding(.horizontal, 10)
     }
-}
-
-struct User: Identifiable {
-    let id: Int
-    let username: String
-    let profilePicture: String
+    
 }
 
 private struct UserRowView: View {
-    let user: User
-
+    let user: UserViewModel
+    
     var body: some View {
         HStack {
-            Image(user.profilePicture)
+            Image(user.profilePicId)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 75, height: 75)
@@ -105,7 +203,7 @@ private struct UserRowView: View {
 
             VStack(alignment: .leading) {
                 CustomText(config: CustomTextConfig(text: user.username))
-                CustomText(config: CustomTextConfig(text: "ID: \(user.id)"))
+                CustomText(config: CustomTextConfig(text: "ID: \(user.userid)"))
                 
                 CustomButton(config:
                                 CustomButtonConfig(title: "Remove", width: 100, buttonColor: .lightBlue) {})
