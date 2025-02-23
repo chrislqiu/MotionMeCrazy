@@ -11,7 +11,8 @@ import SwiftUI
 struct MotionMeCrazyApp: App {
     var body: some Scene {
         WindowGroup {
-            MainPageView()
+            //MainPageView()
+            LandingPageView()
         }
     }
 }
