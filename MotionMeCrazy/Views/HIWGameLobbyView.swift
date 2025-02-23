@@ -5,6 +5,7 @@ struct HIWGameLobbyView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var showSettings = false  // shows settings pop up
     @State private var showPauseMenu = false  // shows pause menu pop up
+    @State private var showQuitConfirmation = false // shows quit confirmation pop up
     @State private var isPlaying = false  // checks if game is active
     @State private var selectedDifficulty: SettingsView.Difficulty = .normal  // Store difficulty here
 
@@ -113,7 +114,7 @@ struct HIWGameLobbyView: View {
 
                 PauseMenuView(
                     isPlaying: $isPlaying, showPauseMenu: $showPauseMenu,
-                    showSettings: $showSettings
+                    showSettings: $showSettings, showQuitConfirmation: $showQuitConfirmation
                 )
                 .frame(width: 300, height: 300)
                 .background(Color.white)
@@ -185,9 +186,12 @@ struct SettingsView: View {
 
 // pause menu
 struct PauseMenuView: View {
+    @Environment(\.presentationMode) var presentationMode
     @Binding var isPlaying: Bool  //checks if playing
     @Binding var showPauseMenu: Bool  // shows pause
     @Binding var showSettings: Bool  // shows settings
+    @Binding var showQuitConfirmation: Bool // shows quit confirmation
+
 
     var body: some View {
         VStack(spacing: 15) {
@@ -216,10 +220,17 @@ struct PauseMenuView: View {
                 config: CustomButtonConfig(
                     title: "Quit Game", width: 175, buttonColor: .darkBlue,
                     action: {
-                        isPlaying = false
-                        showPauseMenu = false
+                        showQuitConfirmation = true
                     }))
                 .accessibilityIdentifier("quitGameButton")
+                .alert("Are you sure you want to quit?", isPresented: $showQuitConfirmation) {
+                            Button("No", role: .cancel) { }
+                            Button("Yes", role: .destructive) {
+                                presentationMode.wrappedValue.dismiss()
+                                isPlaying = false
+                                showPauseMenu = false
+                            }
+                        }
 
             Spacer()
         }
