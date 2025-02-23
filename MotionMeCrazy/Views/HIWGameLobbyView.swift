@@ -186,6 +186,7 @@ struct SettingsView: View {
 
 // pause menu
 struct PauseMenuView: View {
+    @Environment(\.presentationMode) var presentationMode
     @Binding var isPlaying: Bool  //checks if playing
     @Binding var showPauseMenu: Bool  // shows pause
     @Binding var showSettings: Bool  // shows settings
@@ -225,6 +226,7 @@ struct PauseMenuView: View {
                 .alert("Are you sure you want to quit?", isPresented: $showQuitConfirmation) {
                             Button("No", role: .cancel) { }
                             Button("Yes", role: .destructive) {
+                                presentationMode.wrappedValue.dismiss()
                                 isPlaying = false
                                 showPauseMenu = false
                             }
