@@ -18,44 +18,220 @@ QUESTIONS:
  - how does a league work
 */
 
+struct League: Identifiable, Codable {
+    let id: Int
+    let name: String
+    let code: String
+
+    enum CodingKeys: String, CodingKey {
+        case id = "league_id"
+        case name = "league_name"
+        case code = "league_code"
+    }
+}
+
 struct LeaguePageView: View {
-    @State private var leagues: [String] = [] // TODO: create League object
+    @State private var myLeagues: [League] = []
+    @State private var otherLeagues: [League] = []
     @State private var isCreatingLeague: Bool = false
     @State private var leagueName: String = ""
-    @State private var leagueMembers: [String] = [""]
-    
-    // leagues
-    private let my_leagues: [String] = ["League 1", "League 2", "League 3"]
-    
+    @State private var userId: Int?
+
+    let user: String
+
     var body: some View {
-        
         ZStack {
             Image("background")
                 .resizable()
                 .ignoresSafeArea()
+
             VStack {
                 CustomHeader(config: CustomHeaderConfig(title: "My Leagues"))
-                ForEach(my_leagues.indices, id: \.self) { index in
-                    CustomText(config: .init(text: my_leagues[index]))
+
+                if myLeagues.isEmpty {
+                    Text("No leagues available")
+                        .foregroundColor(.black)
+                        .padding()
+                } else {
+                    ScrollView {
+                        VStack {
+                            ForEach(myLeagues, id: \.id) { league in
+                                CustomText(config: .init(text: "\(league.name) (Code: \(league.code))"))
+                            }
+                        }
+                    }
                 }
-                
+
+                Text("Other Leagues")
+                    .font(.title2)
+                    .bold()
+                    .padding(.bottom, 5)
+
+                if otherLeagues.isEmpty {
+                    Text("No other leagues available")
+                        .foregroundColor(.black)
+                        .padding()
+                } else {
+                    ScrollView {
+                        VStack {
+                            ForEach(otherLeagues, id: \.id) { league in
+                                CustomText(config: .init(text: "\(league.name)"))
+                            }
+                        }
+                    }
+                }
+
                 CustomButton(config: .init(title: "Create League", width: 250, buttonColor: .darkBlue) {
                     // action for create league
                     isCreatingLeague.toggle()
                 })
                 .padding()
                 .sheet(isPresented: $isCreatingLeague) {
-                    LeaguePopupView(isCreatingLeague: $isCreatingLeague, leagueName: $leagueName, leagueMembers: $leagueMembers)
+                    LeaguePopupView(isCreatingLeague: $isCreatingLeague, leagueName: $leagueName, userId: $userId, onCreateLeague: fetchLeagues)
+                }
+
+            }
+        }
+        .onAppear {
+            getID(username: user) { userId in
+                if let id = userId {
+                    self.userId = id
+                    fetchLeagues()
+                    fetchOtherLeagues()
+                } else {
+                    print("Failed to retrieve User ID")
                 }
             }
         }
+    }
+
+    private func fetchLeagues() {
+        guard let userId = userId,
+              let url = URL(string: "http://localhost:3000/leagues?userId=\(userId)") else {
+            print("Invalid URL or user ID not available")
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Network error while fetching leagues: \(error.localizedDescription)")
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse, let data = data else {
+                print("Invalid response from server")
+                return
+            }
+
+            if httpResponse.statusCode == 200 {
+                do {
+                    let decodedLeagues = try JSONDecoder().decode([League].self, from: data)
+                    DispatchQueue.main.async {
+                        myLeagues = decodedLeagues
+                    }
+                } catch {
+                    print("Error decoding leagues: \(error.localizedDescription)")
+                }
+            } else {
+                print("Failed to fetch leagues. Status code: \(httpResponse.statusCode)")
+            }
+        }.resume()
+    }
+
+    private func fetchOtherLeagues() {
+        guard let userId = userId,
+              let url = URL(string: "http://localhost:3000/leagues/not-joined?userId=\(userId)") else {
+            print("Invalid URL or user ID not available")
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Network error while fetching other leagues: \(error.localizedDescription)")
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse, let data = data else {
+                print("Invalid response from server")
+                return
+            }
+
+            if httpResponse.statusCode == 200 {
+                do {
+                    let decodedLeagues = try JSONDecoder().decode([League].self, from: data)
+                    DispatchQueue.main.async {
+                        otherLeagues = decodedLeagues
+                    }
+                } catch {
+                    print("Error decoding other leagues: \(error.localizedDescription)")
+                }
+            } else {
+                print("Failed to fetch other leagues. Status code: \(httpResponse.statusCode)")
+            }
+        }.resume()
+    }
+
+    private func getID(username: String, completion: @escaping (Int?) -> Void) {
+        guard
+            let url = URL(
+                string: "http://localhost:3000/userId?username=\(username)")
+        else {
+            print("Invalid URL")
+            completion(nil)
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    completion(nil)
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    print("Invalid response")
+                    completion(nil)
+                    return
+                }
+
+                if httpResponse.statusCode == 200, let data = data {
+                    do {
+                        let json =
+                        try JSONSerialization.jsonObject(
+                            with: data, options: []) as? [String: Any]
+                        if let userId = json?["userId"] as? Int {
+                            completion(userId)
+                        } else {
+                            print("Invalid response format")
+                            completion(nil)
+                        }
+                    } catch {
+                        print(
+                            "Failed to decode JSON: \(error.localizedDescription)"
+                        )
+                        completion(nil)
+                    }
+                } else {
+                    print(
+                        "Username not found (status: \(httpResponse.statusCode))"
+                    )
+                    completion(nil)
+                }
+            }
+        }.resume()
     }
 }
 
 struct LeaguePopupView: View {
     @Binding var isCreatingLeague: Bool
     @Binding var leagueName: String
-    @Binding var leagueMembers: [String]
+    @Binding var userId: Int?
+    var onCreateLeague: () -> Void
 
     var body: some View {
         NavigationView {
@@ -63,41 +239,67 @@ struct LeaguePopupView: View {
                 CustomText(config: .init(text: "Create Your League"))
                     .font(.headline)
                     .padding()
+
                 TextField("Enter league name", text: $leagueName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal)
 
-                ScrollView {
-                    VStack {
-                        ForEach(leagueMembers.indices, id: \.self) { index in
-                            TextField("Enter username", text: $leagueMembers[index])
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding(.horizontal)
-                        }
-                    }
-                }
-
                 HStack {
-                    CustomButton(config: .init(title: "Create League", width: 150, buttonColor: .darkBlue, action: {
-                        if leagueMembers.count >= 2 {
-                            isCreatingLeague = false  // Close popup
-                        }
-                    }))
-                                 
-                    CustomButton(config: .init(title: "Add Member", width: 150, buttonColor: .darkBlue) {
-                        leagueMembers.append("") // Add new text field
+                    CustomButton(config: .init(title: "Create", width: 150, buttonColor: .darkBlue) {
+                        createLeague()
                     })
-                    
+
+                    CustomButton(config: .init(title: "Cancel", width: 150, buttonColor: .gray) {
+                        isCreatingLeague = false
+                    })
                 }
                 .padding()
             }
             .navigationBarItems(trailing: Button("Close") { isCreatingLeague = false })
         }
     }
-}
 
-struct LeaguePageView_Previews: PreviewProvider {
-    static var previews: some View {
-        LeaguePageView()
+    private func createLeague() {
+        guard let userId = userId else {
+            print("User ID is missing")
+            return
+        }
+
+        guard let url = URL(string: "http://localhost:3000/league") else {
+            print("Invalid URL")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "leagueName": leagueName,
+            "userId": userId
+        ]
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Network error while creating league: \(error.localizedDescription)")
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid response")
+                return
+            }
+
+            if httpResponse.statusCode == 200 {
+                DispatchQueue.main.async {
+                    self.isCreatingLeague = false
+                    onCreateLeague()
+                }
+            } else {
+                print("Failed to create league. Status code: \(httpResponse.statusCode)")
+            }
+        }.resume()
     }
 }

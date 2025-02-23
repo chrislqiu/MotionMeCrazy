@@ -89,6 +89,66 @@ struct StatisticsPageView: View {
                 Spacer()
             }
         }
+        .onAppear {
+            getID(username: user) { userId in
+                if let id = userId {
+                    fetchUserStatistics(userId: id)
+                } else {
+                    self.errorMessage = "Failed to retrieve User ID"
+                }
+            }
+        }
+    }
+    
+    func fetchUserStatistics(userId: Int) {
+        guard let url = URL(string: "http://localhost:3000/stats/userStatistics?userId=\(userId)") else {
+            print("Invalid URL")
+            self.errorMessage = "Invalid URL"
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    self.errorMessage = "Network error: \(error.localizedDescription)"
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse, let data = data else {
+                    print("Invalid response from server")
+                    self.errorMessage = "Invalid response from server"
+                    return
+                }
+
+                if httpResponse.statusCode == 200 {
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                        if let bestScore = json?["best_score"] as? Int,
+                           let totalTimePlayed = json?["total_time_played"] as? String {
+                            self.highScore = bestScore
+                            self.timePlayed = totalTimePlayed
+                        } else {
+                            print("Invalid response format: \(String(data: data, encoding: .utf8) ?? "N/A")")
+                            self.errorMessage = "Invalid response format"
+                        }
+                    } catch {
+                        print("Failed to decode JSON: \(error.localizedDescription)")
+                        self.errorMessage = "Failed to decode JSON: \(error.localizedDescription)"
+                    }
+                } else if httpResponse.statusCode == 404 {
+                    print("User statistics not found (404)")
+                    self.errorMessage = "User statistics not found"
+                } else {
+                    print("Failed to fetch stats. Status code: \(httpResponse.statusCode)")
+                    self.errorMessage = "Failed to fetch stats. Status code: \(httpResponse.statusCode)"
+                }
+            }
+        }.resume()
     }
     func clearStats(userId: Int) {
         guard let url = URL(string: "http://localhost:3000/stats/userGameSessions?userId=\(userId)")
