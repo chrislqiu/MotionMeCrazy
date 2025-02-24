@@ -120,7 +120,7 @@ struct HIWGameLobbyView: View {
             
             // HIW game tutorial
             if showTutorial {
-                SettingsPageView()
+                HIWTutorialPageView()
             }
 
             // pause menu for game
