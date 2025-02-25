@@ -1,17 +1,15 @@
 import SwiftUI
 
 struct GameCenterPageView: View {
+    @ObservedObject var userViewModel: UserViewModel
     @State private var selectedGame = 0
     
+    
     private let games: [(name: String, icon: String, buttonColor: Color, destination: AnyView)] = [
-        ("Hole in the Wall", "figure.run", .darkBlue, AnyView(HIWGameLobbyView())),
+        ("Hole in the Wall", "figure.run", .darkBlue, AnyView(HIWGameLobbyView(userViewModel: UserViewModel()))),
         ("Game 2", "gamecontroller.fill", .darkBlue, AnyView(Text("Coming Soon!")))
     ]
     
-    init() {
-        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor.systemBlue
-        UIPageControl.appearance().pageIndicatorTintColor = UIColor.systemBlue.withAlphaComponent(0.5)
-    }
     
     var body: some View {
         NavigationView {
@@ -36,7 +34,10 @@ struct GameCenterPageView: View {
                     Spacer()
                 }
             }
-        }
+            
+        }/* .onAppear {
+            print("UserViewModel - ID: \(userViewModel.userid)") //just for testing the object
+        } */
     }
 }
 
@@ -59,5 +60,6 @@ struct SelectGame: View {
 }
 
 #Preview {
-    GameCenterPageView()
+    
+    GameCenterPageView(userViewModel: UserViewModel())
 }

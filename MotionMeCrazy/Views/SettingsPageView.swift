@@ -1,92 +1,57 @@
-//
-//  SettingsPageView.swift
-//  MotionMeCrazy
-// Tea Lazareto 2/12/2025
-//
-
 import SwiftUI
 
 struct SettingsPageView: View {
     @State private var audioLevel: Double = 0.5
-    @State private var selectedTab: Int = 0
+    @State private var showLanguageAlert = false
     
+    let languages = [
+        ("English", "en"),
+        ("Español", "es")
+    ]
+
     var body: some View {
         ZStack {
             Image("background")
                 .resizable()
                 .ignoresSafeArea()
-            
+
             VStack {
-//                HStack {
-//                    TabButton(title: "Settings", isSelected: selectedTab == 0) {
-//                        selectedTab = 0
-//                    }
-//                    TabButton(title: "Game Settings", isSelected: selectedTab == 1) {
-//                        selectedTab = 1
-//                    }
-//                }
-//                .padding()
-                
-                // Show settings content when "Settings" tab is selected
-//                if selectedTab == 0 {
                 settingsContent
-//                } else {
-//                    gameSettingsContent
-//                }
             }
             .padding()
+            .environment(\.locale, Locale(identifier: LanguageManager.shared.selectedLanguage))
         }
     }
-    
+
     var settingsContent: some View {
         VStack(spacing: 20) {
-            CustomHeader(config: .init(title: "Settings"))
-            
-            // audio
+            CustomHeader(config: .init(title: NSLocalizedString("Settings", comment: "")))
+
+            // Audio Settings
             VStack(alignment: .leading) {
-                CustomText(config: .init(text: "Audio Level"))
+                CustomText(config: .init(text: NSLocalizedString("Audio Level", comment: "")))
                 Slider(value: $audioLevel, in: 0...1)
                     .accentColor(.darkBlue)
-                 
-                    
             }
             .padding()
-            
-            CustomButton(config: .init(title: "Change Theme", width: 200, buttonColor: .darkBlue) {})
-            
-            CustomButton(config: .init(title: "Change Language", width: 200,buttonColor: .darkBlue) {})
+
+            CustomButton(config: .init(title: NSLocalizedString("Change Theme", comment: ""), width: 200, buttonColor: .darkBlue) {})
+
+            // using alert
+            CustomButton(config: .init(title: NSLocalizedString("Change Language", comment: ""), width: 200, buttonColor: .darkBlue) {
+                showLanguageAlert.toggle()
+            })
+        }
+        .alert("Select Language", isPresented: $showLanguageAlert) {
+            ForEach(languages, id: \.1) { language in
+                Button(language.0) {
+                    LanguageManager.shared.selectedLanguage = language.1 //change language
+                }
+            }
+            Button("Cancel", role: .cancel) {}
         }
     }
-    
-//    // idk if necessary
-//    var gameSettingsContent: some View {
-//        VStack(spacing: 20) {
-//            CustomHeader(config: .init(title: "Game Settings"))
-//            
-//            // Placeholder
-//            CustomText(config: .init(text: "Game Settings"))
-//        }
-//        .padding()
-//    }
 }
-
-//struct TabButton: View {
-//    let title: String
-//    let isSelected: Bool
-//    let action: () -> Void
-//    
-//    var body: some View {
-//        Button(action: action) {
-//            Text(title)
-//                .font(.system(size: 18, weight: .bold))
-//                .padding()
-//                .background(isSelected ? Color(.darkBlue) : Color.clear) // Use darkBlue for selected background
-//                .foregroundColor(isSelected ? .white : Color(.darkBlue)) // White text for selected, darkBlue for unselected
-//                .border(isSelected ? Color.clear : Color(.darkBlue), width: 2) // darkBlue border for unselected
-//                .cornerRadius(10)
-//        }
-//    }
-//}
 
 #Preview {
     SettingsPageView()

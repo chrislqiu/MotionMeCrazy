@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct HIWGameLobbyView: View {
-
-    @Environment(\.presentationMode) var presentationMode
+    @ObservedObject var userViewModel: UserViewModel
+    @Environment(\.presentationMode) var presentationMode //for leaving game view to return to the start screen
+    
     @State private var showSettings = false  // shows settings pop up
     @State private var showPauseMenu = false  // shows pause menu pop up
     @State private var isPlaying = false  // checks if game is active
@@ -228,5 +229,5 @@ struct PauseMenuView: View {
 }
 
 #Preview {
-    HIWGameLobbyView()
+    HIWGameLobbyView(userViewModel: UserViewModel())
 }
