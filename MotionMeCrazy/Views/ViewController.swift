@@ -76,19 +76,8 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // For convenience, the idle timer is disabled to prevent the screen from locking.
-        UIApplication.shared.isIdleTimerDisabled = true
-
         setupAndBeginCapturingVideoFrames()
-        //TODO: set up PoseNet model
-        // do {
-        //     poseNet = try PoseNet()
-        // } catch {
-        //     fatalError("Failed to load model. \(error.localizedDescription)")
-        // }
-
-        // poseNet.delegate = self
+        setupPoseNetModel()
     }
 
     private func setupAndBeginCapturingVideoFrames() {
@@ -122,6 +111,50 @@ class ViewController: UIViewController {
             super.viewWillDisappear(animated)
         }
     }
+
+    func convertCGImageToPixelBuffer(_ image: CGImage) -> CVPixelBuffer? {
+        let width = image.width
+        let height = image.height
+
+        var pixelBuffer: CVPixelBuffer?
+        let attributes: [CFString: Any] = [
+            kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA,
+            kCVPixelBufferWidthKey: width,
+            kCVPixelBufferHeightKey: height,
+            kCVPixelBufferBytesPerRowAlignmentKey: width * 4,
+            kCVPixelBufferIOSurfacePropertiesKey: [:]
+        ]
+
+        let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height,
+                                        kCVPixelFormatType_32BGRA,
+                                        attributes as CFDictionary,
+                                        &pixelBuffer)
+
+        guard status == kCVReturnSuccess, let buffer = pixelBuffer else {
+            print("Failed to create pixel buffer")
+            return nil
+        }
+
+        CVPixelBufferLockBaseAddress(buffer, [])
+        guard let context = CGContext(
+            data: CVPixelBufferGetBaseAddress(buffer),
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: CVPixelBufferGetBytesPerRow(buffer),
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue
+        ) else {
+            print("Failed to create CGContext")
+            CVPixelBufferUnlockBaseAddress(buffer, [])
+            return nil
+        }
+
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        CVPixelBufferUnlockBaseAddress(buffer, [])
+
+        return buffer
+    }
 }
 
 // MARK: - VideoCaptureDelegate
@@ -136,16 +169,16 @@ extension ViewController: VideoCaptureDelegate {
         }
 
         currentFrame = image
-        let pixelBuffer = image.convertToPixelBuffer()
-        
-        //TODO: implement PoseNet model
-        poseNetModel.estimatePoses(from: pixelBuffer) { poses in
-            DispatchQueue.main.async {
-                self.overlayView.update(with: poses)
+        if let pixelBuffer = convertCGImageToPixelBuffer(currentFrame) {
+            poseNetModel.estimatePoses(from: pixelBuffer) { poses in
+                DispatchQueue.main.async {
+                    self.overlayView.update(with: poses)
+                }
             }
         }
     }
 }
+
 class PoseNetModel {
     private var interpreter: Interpreter!
     
@@ -176,57 +209,4 @@ class PoseNetModel {
             completion([])
         }
     }
-}
-
-// MARK: - PoseNetDelegate
-
-//TODO
-// extension ViewController: PoseNetDelegate {
-//     func poseNet(_ poseNet: PoseNet, didPredict predictions: PoseNetOutput) {
-//         defer {
-//             // Release `currentFrame` when exiting this method.
-//             self.currentFrame = nil
-//         }
-
-//         guard let currentFrame = currentFrame else {
-//             return
-//         }
-
-//         let poseBuilder = PoseBuilder(output: predictions,
-//                                       configuration: poseBuilderConfiguration,
-//                                       inputImage: currentFrame)
-
-//         let poses = algorithm == .single
-//             ? [poseBuilder.pose]
-//             : poseBuilder.poses
-
-//         previewImageView.show(poses: poses, on: currentFrame)
-//     }
-// }
-
-extension CGImage {
-    func convertToPixelBuffer() -> CVPixelBuffer? {
-        let width = self.width
-        let height = self.height
-        
-        var pixelBuffer: CVPixelBuffer?
-        let attributes: [CFString: Any] = [
-            kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA,
-            kCVPixelBufferWidthKey: width,
-            kCVPixelBufferHeightKey: height,
-            kCVPixelBufferBytesPerRowAlignmentKey: width * 4
-        ]
-        
-        CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, attributes as CFDictionary, &pixelBuffer)
-        
-        guard let buffer = pixelBuffer else { return nil }
-        let context = CIContext.shared
-        context.render(CIImage(cgImage: self), to: buffer)
-        
-        return buffer
-    }
-}
-
-extension CIContext {
-    static let shared = CIContext()
 }
