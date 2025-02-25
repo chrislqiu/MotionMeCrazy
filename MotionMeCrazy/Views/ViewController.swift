@@ -14,11 +14,11 @@ The implementation of the application's view controller, responsible for coordin
 */
 
 import AVFoundation
-import CoreImage
+import CoreGraphics
+import CoreVideo
 import SwiftUI
 import TensorFlowLite
 import UIKit
-import VideoToolbox
 
 struct ViewControllerView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> ViewController {

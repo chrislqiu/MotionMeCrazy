@@ -5,7 +5,7 @@
 //  Created by Elasia Rodriguez on 2/2/25.
 //
 
-import CoreImage
+import CoreVideo
 import TensorFlowLite
 
 class PoseNetModel {
