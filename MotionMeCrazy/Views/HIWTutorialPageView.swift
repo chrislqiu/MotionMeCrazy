@@ -11,20 +11,31 @@ struct HIWTutorialPageView: View {
     @State private var isPlaying = false // will not be true until tutorial is completed
     @State private var tutorialStep = 0  // track tutorial step
     @State private var showTutorial = true  // toggle tutorial visibility
+    @State private var sectionFrames: [Int: CGRect] = [:]
+
+    
     
     var body: some View {
         ZStack{
             
             // main HIW game play
-            HIWGamePageView()
-            
-            
+            HIWGamePageView(sectionFrames: Binding($sectionFrames))
             
             if showTutorial {
-                Color.black.opacity(0.2)  // dim background
+                Color.black.opacity(0.5)  // dim background
                     .edgesIgnoringSafeArea(.all)
                 
-                highlightSection()
+                
+                // highlight game sections
+                if let highlightRect = sectionFrames[tutorialStep] {
+                    highlightSection(rect: highlightRect)
+                }
+                
+                // highlight pause button
+                if tutorialStep == 3 {
+                    highlightPauseButton()
+                    
+                }
                 
                 VStack {
                     Spacer()
@@ -36,9 +47,6 @@ struct HIWTutorialPageView: View {
                         .cornerRadius(10)
                         .shadow(radius: 5)
                         .padding()
-                    
-                    
-                    
 
                     HStack {
                         // skip tutorial Button
@@ -102,11 +110,28 @@ struct HIWTutorialPageView: View {
             }
     }
     
-    // adds a highlight effect for each tutorial step
     @ViewBuilder
-    func highlightSection() -> some View {
+    func highlightSection(rect: CGRect) -> some View {
+        GeometryReader { _ in
+            Color.black.opacity(0.7)
+                .mask(
+                    Rectangle()
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .frame(width: rect.width + 18, height: rect.height + 10)
+                                .position(x: rect.midX, y: rect.midY)
+                                .blendMode(.destinationOut)
+                        )
+                )
+                .edgesIgnoringSafeArea(.all)
+        }
+    }
+    
+    // adds a highlight effect for pause step
+    @ViewBuilder
+    func highlightPauseButton() -> some View {
         GeometryReader { geometry in
-            let highlightRect = highlightFrame(for: tutorialStep, in: geometry)
+            let highlightRect = CGRect(x: geometry.size.width - 60, y: 108, width: 50, height: 50)
 
             // overlay with cut-out effect
             Color.black.opacity(0.6)
@@ -122,23 +147,6 @@ struct HIWTutorialPageView: View {
                 .edgesIgnoringSafeArea(.all)
         }
     }
-
-    // determines highlight position and size based on tutorial step
-    func highlightFrame(for step: Int, in geometry: GeometryProxy) -> CGRect {
-        switch step {
-        case 0: // score section
-            return CGRect(x: 20, y: 185, width: 375, height: 40)
-        case 1: // health section
-            return CGRect(x: 20, y: 220, width: 375, height: 40)
-        case 2: // progress section
-            return CGRect(x: 20, y: 255, width: 375, height: 40)
-        case 3: // pause button (top-right)
-            return CGRect(x: geometry.size.width - 60, y: 108, width: 50, height: 50)
-        default:
-            return CGRect.zero
-        }
-    }
-
 }
 
 #Preview {

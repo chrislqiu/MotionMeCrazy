@@ -20,6 +20,13 @@ struct HIWGamePageView:View {
     @State private var maxHealth: Double = 100
     @State private var progress: String = "Level 1/10"
     
+    // tutorial
+    @Binding var sectionFrames: [Int: CGRect]?
+    init(sectionFrames: Binding<[Int: CGRect]?> = .constant(nil)) {
+            _sectionFrames = sectionFrames
+    }
+    
+    
     var body: some View {
         ZStack{
             Image("background")
@@ -46,6 +53,9 @@ struct HIWGamePageView:View {
                         }
                         .accessibilityIdentifier("pauseButton")
                     }
+                    .background(GeometryReader { proxy in
+                        Color.clear.preference(key: SectionFrameKey.self, value: [3: proxy.frame(in: .global)])
+                    })
                     
                     
                 }
@@ -61,6 +71,10 @@ struct HIWGamePageView:View {
                             .font(.body)
                         
                     }
+                    .background(GeometryReader { proxy in
+                        Color.clear.preference(key: SectionFrameKey.self, value: [0: proxy.frame(in: .global)])
+                    })
+                    
                     
                     // Health Section
                     HStack {
@@ -77,6 +91,9 @@ struct HIWGamePageView:View {
                         CustomText(config: CustomTextConfig(text:"100", titleColor: .darkBlue, fontSize: 18))
                             .font(.body)
                     }
+                    .background(GeometryReader { proxy in
+                        Color.clear.preference(key: SectionFrameKey.self, value: [1: proxy.frame(in: .global)])
+                    })
                     
                     // Progress Section
                     HStack {
@@ -87,11 +104,20 @@ struct HIWGamePageView:View {
                         CustomText(config: CustomTextConfig(text:"\(progress)", titleColor: .darkBlue, fontSize: 18))
                             .font(.body)
                     }
+                    .background(GeometryReader { proxy in
+                        Color.clear.preference(key: SectionFrameKey.self, value: [2: proxy.frame(in: .global)])
+                    })
                 }
                 .padding()
                 .background(Color(UIColor.systemGray6))
                 .cornerRadius(10)  
                 .padding(.horizontal)
+                .onPreferenceChange(SectionFrameKey.self) { newValues in
+                    if var frames = sectionFrames {
+                        frames.merge(newValues) { _, new in new }
+                        sectionFrames = frames
+                    }
+                }
                 Spacer()
                 
             }
@@ -119,6 +145,14 @@ struct HIWGamePageView:View {
         
     }
     
+}
+
+// Preference Key to track section positions
+struct SectionFrameKey: PreferenceKey {
+    static var defaultValue: [Int: CGRect] = [:]
+    static func reduce(value: inout [Int: CGRect], nextValue: () -> [Int: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { $1 })
+    }
 }
 
 
