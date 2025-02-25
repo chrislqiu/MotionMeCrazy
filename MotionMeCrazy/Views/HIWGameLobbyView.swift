@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct HIWGameLobbyView: View {
-
+    
     @Environment(\.presentationMode) var presentationMode
     @State private var showSettings = false  // shows settings pop up
     @State private var showPauseMenu = false  // shows pause menu pop up
     @State private var showQuitConfirmation = false // shows quit confirmation pop up
+    @State private var showTutorial = false // show tutorial view
     @State private var isPlaying = false  // checks if game is active
     @State private var selectedDifficulty: SettingsView.Difficulty = .normal  // Store difficulty here
 
@@ -40,9 +41,22 @@ struct HIWGameLobbyView: View {
                 HStack {
                     Spacer()
 
-                    // the main settings button before you get into an active game
-                    //only want this button when game not active
+                    
                     if !isPlaying {
+                        Button(action: {
+                            showTutorial = true
+                        }) {
+                            Image(systemName: "play.rectangle.on.rectangle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 40, height: 40)
+                                .foregroundColor(.darkBlue)
+                                .padding(.trailing, 10)
+                            
+                        }
+                        
+                        // the main settings button before you get into an active game
+                        //only want this button when game not active
                         Button(action: {
                             showSettings = true
                         }) {
@@ -62,7 +76,7 @@ struct HIWGameLobbyView: View {
                             showPauseMenu = true
                         }) {
                             Image(systemName: "pause.circle.fill")
-                                .resizable()
+                              .resizable()
                                 .scaledToFit()
                                 .frame(width: 40, height: 40)
                                 .foregroundColor(.darkBlue)
@@ -102,6 +116,11 @@ struct HIWGameLobbyView: View {
                     .cornerRadius(20)
                     .shadow(radius: 20)
                     .accessibilityIdentifier("settingsView")
+            }
+            
+            // HIW game tutorial
+            if showTutorial {
+                HIWTutorialPageView()
             }
 
             // pause menu for game
