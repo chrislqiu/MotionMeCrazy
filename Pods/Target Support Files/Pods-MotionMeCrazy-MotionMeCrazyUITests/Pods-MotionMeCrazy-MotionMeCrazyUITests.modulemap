@@ -1,0 +1,6 @@
+framework module Pods_MotionMeCrazy_MotionMeCrazyUITests {
+  umbrella header "Pods-MotionMeCrazy-MotionMeCrazyUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}
