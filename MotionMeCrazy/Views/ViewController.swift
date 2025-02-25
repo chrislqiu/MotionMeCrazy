@@ -15,6 +15,7 @@ The implementation of the application's view controller, responsible for coordin
 
 import AVFoundation
 import CoreImage
+import SwiftUI
 import TensorFlowLite
 import UIKit
 import VideoToolbox
@@ -23,27 +24,13 @@ struct Pose {
     var joints: [(x: CGFloat, y: CGFloat)]
 }
 
-struct CameraPreview: UIViewRepresentable {
-    func makeUIView(context: Context) -> PreviewView {
-        let preview = PreviewView()
-        return preview
+struct ViewControllerView: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> ViewController {
+        let vc = ViewController()
+        return vc
     }
     
-    func updateUIView(_ previewView: PreviewView, context: Context) { }
-}
-
-class PreviewView: UIView {
-    override class var layerClass: AnyClass {
-        AVCaptureVideoPreviewLayer.self
-    }
-    
-    var previewLayer: AVCaptureVideoPreviewLayer {
-        layer as! AVCaptureVideoPreviewLayer
-    }
-    
-    func setSession(_ session: AVCaptureSession) {
-        previewLayer.session = session
-    }
+    func updateUIViewController(_ uiViewController: ViewController, context: Context) {}
 }
 
 class PoseOverlayView: UIView {
@@ -66,9 +53,8 @@ class PoseOverlayView: UIView {
     }
 }
 
-
 class ViewController: UIViewController {
-    @IBOutlet private var previewView: PreviewView!
+    @IBOutlet private var previewLayer: AVCaptureVideoPreviewLayer!
     @IBOutlet private var overlayView: PoseOverlayView!
     private var videoCapture: VideoCapture!
     private var poseNetModel: PoseNetModel!
@@ -76,30 +62,32 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupAndBeginCapturingVideoFrames()
+        setupVideoCapture()
         setupPoseNetModel()
     }
 
-    private func setupAndBeginCapturingVideoFrames() {
-        let videoCapture = VideoCapture()
+    private func setupVideoCapture() {
+        videoCapture = VideoCapture()
+        videoCapture.delegate = self
         videoCapture.setUpAVCapture { error in
             if let error = error {
                 print("Failed to setup camera with error \(error)")
                 return
             }
 
-            self.videoCapture.delegate = self
-
-            previewView.setSession(self.videoCapture.captureSession)
-            previewView.previewLayer.videoGravity = .resizeAspectFill
-            previewView.previewLayer.frame = view.layer.bounds
-            view.layer.addSublayer(previewView.previewLayer)
-            
-            overlayView = PoseOverlayView(frame: view.bounds)
-            view.addSubview(overlayView)
-
+            self.setupPreviewLayer()
             self.videoCapture.startCapturing()
         }
+
+        overlayView = PoseOverlayView(frame: view.bounds)
+        view.addSubview(overlayView)
+    }
+
+    private func setupPreviewLayer() {
+        previewLayer = AVCaptureVideoPreviewLayer(session: videoCapture.captureSession)
+        previewLayer.videoGravity = .resizeAspectFill
+        previewLayer.frame = view.bounds
+        view.layer.insertSublayer(previewLayer, at: 0)
     }
 
     private func setupPoseNetModel() {
@@ -158,7 +146,6 @@ class ViewController: UIViewController {
 }
 
 // MARK: - VideoCaptureDelegate
-
 extension ViewController: VideoCaptureDelegate {
     func videoCapture(_ videoCapture: VideoCapture, didCaptureFrame capturedImage: CGImage?) {
         guard currentFrame == nil else {
