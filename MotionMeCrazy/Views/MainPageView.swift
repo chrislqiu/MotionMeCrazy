@@ -44,6 +44,6 @@ struct MainPageView: View {
 
 #Preview {
     NavigationStack {
-        MainPageView()
+        MainPageView().environmentObject(UserViewModel())
     }
 }

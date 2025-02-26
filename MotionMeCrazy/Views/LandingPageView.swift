@@ -139,7 +139,9 @@ struct LandingPageView: View {
                     }
                     
                     NavigationLink(
-                        destination: MainPageView().environmentObject(userViewModel),
+                        destination: MainPageView()
+                            .environmentObject(userViewModel)
+                            .navigationBarBackButtonHidden(true),
                         isActive: $navigateToMainPage
                     ) {
                         Button(action: {
