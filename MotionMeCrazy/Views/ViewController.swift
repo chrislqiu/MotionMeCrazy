@@ -133,10 +133,12 @@ extension ViewController: VideoCaptureDelegate {
 
         currentFrame = image
         if let pixelBuffer = convertCGImageToPixelBuffer(image) {
-            let result = poseNetModel.estimatePose(from: pixelBuffer)
-            DispatchQueue.main.async {
-                self.overlayView.draw(at: image, person: result)
-                self.currentFrame = nil
+            poseNetModel.estimatePoses(from: pixelBuffer) { result in
+                DispatchQueue.main.async {
+                    let uiImage = UIImage(CGImage: image)
+                    self.overlayView.draw(at: uiImage, person: result)
+                    self.currentFrame = nil
+                }
             }
         } else {
             currentFrame = nil

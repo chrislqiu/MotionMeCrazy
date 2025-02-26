@@ -34,10 +34,9 @@ class PoseNetModel {
         }
     }
 
-    func estimatePose(from pixelBuffer: CVPixelBuffer, completion: @escaping (Person) -> Void) {
+    func estimatePose(from pixelBuffer: CVPixelBuffer) -> Person {
         guard let resizedBuffer = resizePixelBuffer(pixelBuffer, to: CGSize(width: 257, height: 257)) else {
             print("Failed to resize pixel buffer.")
-            completion([])
             return
         }
 
@@ -53,17 +52,15 @@ class PoseNetModel {
 
         } catch {
             print("Failed to invoke interpreter: \(error)")
-            completion([])
             return
         }
 
-        guard let result = postprocess(to: pixelBuffer.size) else {
+        guard let result = parsePoseData(to: pixelBuffer.size) else {
             print("Post-processing failed: \(error)")
-            completion([])
             return
         }
 
-        completion(result)
+        return result
     }
 
     /// Parses PoseNet model output to extract keypoints.
@@ -149,6 +146,44 @@ class PoseNetModel {
         }
 
         return buffer
+    }
+
+    private func sigmoid(_ x: Float32) -> Float32 {
+        return (1.0 / (1.0 + exp(-x)))
+    }
+}
+
+fileprivate struct FlatArray<Element: AdditiveArithmetic> {
+    private var array: [Element]
+    var dimensions: [Int]
+
+    init(tensor: Tensor) {
+        dimensions = tensor.shape.dimensions
+        array = tensor.data.toArray(type: Element.self)
+    }
+
+    private func flatIndex(_ indices: [Int]) -> Int {
+        guard indices.count == dimensions.count else {
+        fatalError("Invalid index: got \(indices.count) index(es) for \(dimensions.count) index(es).")
+        }
+
+        var result = 0
+        for (dimension, index) in zip(dimensions, indices) {
+        guard dimension > index else {
+            fatalError("Invalid index: \(index) is bigger than \(dimension)")
+        }
+        result = dimension * result + index
+        }
+        return result
+    }
+
+    subscript(_ index: Int...) -> Element {
+        get {
+            return array[flatIndex(index)]
+        }
+        set(newValue) {
+            array[flatIndex(index)] = newValue
+        }
     }
 }
 
