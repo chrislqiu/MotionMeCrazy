@@ -129,24 +129,13 @@ class VideoCapture: NSObject {
 
         captureSession.addOutput(videoOutput)
 
-        /* TODO: is this needed?
-        // Update the video orientation
-        if let connection = videoOutput.connection(with: .video),
-            connection.isVideoOrientationSupported {
-            connection.videoOrientation =
-                AVCaptureVideoOrientation(deviceOrientation: UIDevice.current.orientation)
-            connection.isVideoMirrored = cameraPostion == .front
-
-            // Inverse the landscape orientation to force the image in the upward
-            // orientation.
-            if connection.videoOrientation == .landscapeLeft {
-                connection.videoOrientation = .landscapeRight
-            } else if connection.videoOrientation == .landscapeRight {
-                connection.videoOrientation = .landscapeLeft
-            }
+        // Force portrait orientation
+        if let connection = videoOutput.connection(with: .video), connection.isVideoOrientationSupported {
+            connection.videoOrientation = .portrait
+            connection.isVideoMirrored = (cameraPostion == .front)  // Mirror front camera
         }
-        */
     }
+
 
     /// Begin capturing frames.
     ///
