@@ -129,6 +129,7 @@ class VideoCapture: NSObject {
 
         captureSession.addOutput(videoOutput)
 
+        /* TODO: is this needed?
         // Update the video orientation
         if let connection = videoOutput.connection(with: .video),
             connection.isVideoOrientationSupported {
@@ -144,6 +145,7 @@ class VideoCapture: NSObject {
                 connection.videoOrientation = .landscapeLeft
             }
         }
+        */
     }
 
     /// Begin capturing frames.
