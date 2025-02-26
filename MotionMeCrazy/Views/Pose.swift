@@ -66,10 +66,6 @@ struct Pose {
     ]
 
     init(jointPositions : [Float]) {
-        var joints = [String: Joint]
-        var edges = [Edge]
-        for jointPosition in jointPositions {
-
-        }
+        
     }
 }

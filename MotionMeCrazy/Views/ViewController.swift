@@ -38,14 +38,7 @@ class PoseOverlayView: UIView {
     }
     
     override func draw(_ rect: CGRect) {
-        guard let context = UIGraphicsGetCurrentContext() else { return }
-        for pose in poses {
-            for joint in pose.joints {
-                let point = CGPoint(x: joint.x * bounds.width, y: joint.y * bounds.height)
-                context.setFillColor(UIColor.red.cgColor)
-                context.fillEllipse(in: CGRect(x: point.x - 5, y: point.y - 5, width: 10, height: 10))
-            }
-        }
+        
     }
 }
 

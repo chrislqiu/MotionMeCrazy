@@ -27,7 +27,7 @@ class PoseNetModel {
     }
 
     func estimatePoses(from pixelBuffer: CVPixelBuffer, completion: @escaping ([Pose]) -> Void) {
-        guard let resizedBuffer = resizePixelBuffer(pixelBuffer, to: CGSize(width: 257, height: 257)) else {
+        /*guard let resizedBuffer = resizePixelBuffer(pixelBuffer, to: CGSize(width: 257, height: 257)) else {
             print("Failed to resize pixel buffer.")
             completion([])
             return
@@ -48,7 +48,7 @@ class PoseNetModel {
         } catch {
             print("Error running inference: \(error)")
             completion([])
-        }
+        }*/
     }
 
     /// Converts a CVPixelBuffer to TensorFlow-compatible Data
@@ -67,10 +67,7 @@ class PoseNetModel {
 
     /// Parses PoseNet model output to extract keypoints.
     private func parsePoseData(_ outputData: [Float]) -> [Pose] {
-        var pose: Pose = Pose()
-        for index in outputData {
-            // TODO
-        }
+        
         var poses: [Pose] = []
         // Process outputData and populate poses
         return poses
