@@ -34,9 +34,10 @@ class PoseNetModel {
         }
     }
 
-    func estimatePose(from pixelBuffer: CVPixelBuffer) -> Person {
+    func estimatePose(from pixelBuffer: CVPixelBuffer, completion: @escaping (Person) -> Void) {
         guard let resizedBuffer = resizePixelBuffer(pixelBuffer, to: CGSize(width: 257, height: 257)) else {
             print("Failed to resize pixel buffer.")
+            completion([])
             return
         }
 
@@ -52,16 +53,17 @@ class PoseNetModel {
 
         } catch {
             print("Failed to invoke interpreter: \(error)")
+            completion([])
             return
         }
 
         guard let result = parsePoseData(to: pixelBuffer.size) else {
             print("Post-processing failed: \(error)")
+            completion([])
             return
         }
 
-        return result
-    }
+        completion(result)
 
     /// Parses PoseNet model output to extract keypoints.
     private func parsePoseData(to viewSize: CGSize) -> Person {
