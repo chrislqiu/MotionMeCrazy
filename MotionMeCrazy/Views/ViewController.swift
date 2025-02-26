@@ -29,22 +29,9 @@ struct ViewControllerView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: ViewController, context: Context) {}
 }
 
-class PoseOverlayView: UIView {
-    private var poses: [Pose] = []
-    
-    func update(with poses: [Pose]) {
-        self.poses = poses
-        setNeedsDisplay()
-    }
-    
-    override func draw(_ rect: CGRect) {
-        
-    }
-}
-
 class ViewController: UIViewController {
     @IBOutlet private var previewLayer: AVCaptureVideoPreviewLayer!
-    @IBOutlet private var overlayView: PoseOverlayView!
+    @IBOutlet private var overlayView: OverlayView!
     private var videoCapture: VideoCapture!
     private var poseNetModel: PoseNetModel!
     private var currentFrame: CGImage?
@@ -68,7 +55,7 @@ class ViewController: UIViewController {
             self.videoCapture.startCapturing()
         }
 
-        overlayView = PoseOverlayView(frame: view.bounds)
+        overlayView = OverlayView(frame: view.bounds)
         view.addSubview(overlayView)
     }
 
@@ -146,11 +133,10 @@ extension ViewController: VideoCaptureDelegate {
 
         currentFrame = image
         if let pixelBuffer = convertCGImageToPixelBuffer(image) {
-            poseNetModel.estimatePoses(from: pixelBuffer) { poses in
-                DispatchQueue.main.async {
-                    self.overlayView.update(with: poses)
-                    self.currentFrame = nil
-                }
+            let result = poseNetModel.estimatePose(from: pixelBuffer)
+            DispatchQueue.main.async {
+                self.overlayView.draw(at: image, person: result)
+                self.currentFrame = nil
             }
         } else {
             currentFrame = nil
