@@ -8,6 +8,7 @@ import SwiftUI
 //
 
 struct HIWTutorialPageView: View {
+    @Environment(\.presentationMode) var presentationMode
     @State private var isPlaying = false // will not be true until tutorial is completed
     @State private var tutorialStep = 0  // track tutorial step
     @State private var showTutorial = true  // toggle tutorial visibility
@@ -82,6 +83,8 @@ struct HIWTutorialPageView: View {
                 
                 Button(action: {
                     isPlaying = true
+                    //HIWGameLobbyView()
+                    presentationMode.wrappedValue.dismiss()
                 }) {
                     Image(systemName: "play.circle.fill")
                         .resizable()
@@ -94,7 +97,8 @@ struct HIWTutorialPageView: View {
             }
             
             if isPlaying {
-                HIWGamePageView()
+                // when we update the HIW game with the stats, use this page
+                //HIWGamePageView()
             }
         }
     }

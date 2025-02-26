@@ -54,6 +54,9 @@ struct HIWGameLobbyView: View {
                                 .padding(.trailing, 10)
                             
                         }
+                        .sheet(isPresented: $showTutorial) {
+                            HIWTutorialPageView()
+                        }
                         
                         // the main settings button before you get into an active game
                         //only want this button when game not active
@@ -120,7 +123,7 @@ struct HIWGameLobbyView: View {
             
             // HIW game tutorial
             if showTutorial {
-                HIWTutorialPageView()
+                //HIWTutorialPageView()
             }
 
             // pause menu for game
