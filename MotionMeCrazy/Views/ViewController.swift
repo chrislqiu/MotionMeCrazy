@@ -135,8 +135,13 @@ extension ViewController: VideoCaptureDelegate {
         if let pixelBuffer = convertCGImageToPixelBuffer(image) {
             poseNetModel.estimatePose(from: pixelBuffer) { result in
                 DispatchQueue.main.async {
-                    let uiImage = UIImage(CGImage: image)
-                    self.overlayView.draw(at: uiImage, person: result)
+                    let uiImage = UIImage(cgImage: image)
+                    print(result)
+                    if let firstPerson = result.first {
+                        self.overlayView.draw(at: uiImage, person: firstPerson)
+                    } else {
+                        print("No person detected in the frame.")
+                    }
                     self.currentFrame = nil
                 }
             }
