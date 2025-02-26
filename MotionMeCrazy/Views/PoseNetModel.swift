@@ -34,6 +34,42 @@ class PoseNetModel {
         }
     }
 
+//    func estimatePose(from pixelBuffer: CVPixelBuffer, completion: @escaping ([Person]) -> Void) {
+//        guard let resizedBuffer = resizePixelBuffer(pixelBuffer, to: CGSize(width: 257, height: 257)) else {
+//            print("Failed to resize pixel buffer.")
+//            completion([])
+//            return
+//        }
+//
+//        do {
+//            guard let inputData = preprocess(pixelBuffer) else {
+//                print("Failed to preprocess")
+//                completion([])
+//                return
+//            }
+//            try interpreter.copy(inputData, toInputAt: 0)
+//
+//            // Run inference by invoking the `Interpreter`.
+//            try interpreter.invoke()
+//
+//            // Get the output `Tensor` to process the inference results.
+//            heatsTensor = try interpreter.output(at: 0)
+//            offsetsTensor = try interpreter.output(at: 1)
+//            
+//        } catch {
+//            print("Failed to invoke interpreter: ")
+//            completion([])
+//            return
+//        }
+//
+//        guard let result = parsePoseData(to: pixelBuffer.size) else {
+//            print("Post-processing failed")
+//            completion([])
+//            return
+//        }
+//
+//        completion([result])
+//    }
     func estimatePose(from pixelBuffer: CVPixelBuffer, completion: @escaping ([Person]) -> Void) {
         guard let resizedBuffer = resizePixelBuffer(pixelBuffer, to: CGSize(width: 257, height: 257)) else {
             print("Failed to resize pixel buffer.")
