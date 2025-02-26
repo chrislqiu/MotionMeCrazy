@@ -56,13 +56,17 @@ class ViewController: UIViewController {
         }
 
         overlayView = OverlayView(frame: view.bounds)
+        overlayView.backgroundColor = .clear // Ensure transparency
+        overlayView.autoresizingMask = [.flexibleWidth, .flexibleHeight] // Resizes correctly
         view.addSubview(overlayView)
     }
 
     private func setupPreviewLayer() {
         previewLayer = AVCaptureVideoPreviewLayer(session: videoCapture.captureSession)
-        previewLayer.videoGravity = .resizeAspectFill
-        previewLayer.frame = view.bounds
+        previewLayer.videoGravity = .resizeAspect  // Ensures proper scaling without squishing
+        previewLayer.frame = view.layer.bounds
+        previewLayer.contentsScale = UIScreen.main.scale // Ensures sharp rendering
+ 
         view.layer.insertSublayer(previewLayer, at: 0)
     }
 
