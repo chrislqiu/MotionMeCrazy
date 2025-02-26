@@ -160,7 +160,9 @@ class PoseNetModel {
         for (index, part) in BodyPart.allCases.enumerated() {
             let x = CGFloat(coords[index].x) * viewSize.width / CGFloat(inputWidth)
             let y = CGFloat(coords[index].y) * viewSize.height / CGFloat(inputHeight)
-            let keyPoint = KeyPoint(bodyPart: part, coordinate: CGPoint(x: x, y: y))
+            let correctedX = y
+            let correctedY = viewSize.width - x
+            let keyPoint = KeyPoint(bodyPart: part, coordinate: CGPoint(x: correctedX, y: correctedY))
             result.keyPoints.append(keyPoint)
         }
 
