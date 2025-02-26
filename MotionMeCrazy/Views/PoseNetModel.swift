@@ -34,42 +34,6 @@ class PoseNetModel {
         }
     }
 
-//    func estimatePose(from pixelBuffer: CVPixelBuffer, completion: @escaping ([Person]) -> Void) {
-//        guard let resizedBuffer = resizePixelBuffer(pixelBuffer, to: CGSize(width: 257, height: 257)) else {
-//            print("Failed to resize pixel buffer.")
-//            completion([])
-//            return
-//        }
-//
-//        do {
-//            guard let inputData = preprocess(pixelBuffer) else {
-//                print("Failed to preprocess")
-//                completion([])
-//                return
-//            }
-//            try interpreter.copy(inputData, toInputAt: 0)
-//
-//            // Run inference by invoking the `Interpreter`.
-//            try interpreter.invoke()
-//
-//            // Get the output `Tensor` to process the inference results.
-//            heatsTensor = try interpreter.output(at: 0)
-//            offsetsTensor = try interpreter.output(at: 1)
-//            
-//        } catch {
-//            print("Failed to invoke interpreter: ")
-//            completion([])
-//            return
-//        }
-//
-//        guard let result = parsePoseData(to: pixelBuffer.size) else {
-//            print("Post-processing failed")
-//            completion([])
-//            return
-//        }
-//
-//        completion([result])
-//    }
     func estimatePose(from pixelBuffer: CVPixelBuffer, completion: @escaping ([Person]) -> Void) {
         guard let resizedBuffer = resizePixelBuffer(pixelBuffer, to: CGSize(width: 257, height: 257)) else {
             print("Failed to resize pixel buffer.")
@@ -109,8 +73,7 @@ class PoseNetModel {
 
     private func preprocess(_ pixelBuffer: CVPixelBuffer) -> Data? {
         let sourcePixelFormat = CVPixelBufferGetPixelFormatType(pixelBuffer)
-        assert(
-          sourcePixelFormat == kCVPixelFormatType_32BGRA
+        assert(sourcePixelFormat == kCVPixelFormatType_32BGRA
             || sourcePixelFormat == kCVPixelFormatType_32ARGB)
 
         // Resize `targetSquare` of input image to `modelSize`.
@@ -124,20 +87,6 @@ class PoseNetModel {
         // Remove the alpha component from the image buffer to get the initialized `Data`.
         return thumbnail.rgbData(isModelQuantized: false, imageMean: imageMean, imageStd: imageStd)
       }
-    
-    /// Converts a CVPixelBuffer to TensorFlow-compatible Data
-    private func convertToTensorData(pixelBuffer: CVPixelBuffer, tensor: Tensor) -> Data {
-        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
-        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly) }
-
-        guard let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) else {
-            print("Failed to get pixel buffer base address.")
-            return Data()
-        }
-
-        let byteCount = CVPixelBufferGetDataSize(pixelBuffer)
-        return Data(bytes: baseAddress, count: byteCount)
-    }
 
     /// Parses PoseNet model output to extract keypoints.
     private func parsePoseData(to viewSize: CGSize) -> Person? {

@@ -30,9 +30,6 @@ class VideoCapture: NSObject {
     /// A capture session used to coordinate the flow of data from input devices to capture outputs.
     let captureSession = AVCaptureSession()
 
-    /// The preview layer for displaying the camera feed. **new**
-    var previewLayer: AVCaptureVideoPreviewLayer?
-
     /// A capture output that records video and provides access to video frames. Captured frames are passed to the
     /// delegate via the `captureOutput()` method.
     let videoOutput = AVCaptureVideoDataOutput()
@@ -77,12 +74,6 @@ class VideoCapture: NSObject {
         try setCaptureSessionOutput()
 
         captureSession.commitConfiguration()
-      //**new**
-        if previewLayer == nil {
-            previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-            previewLayer?.videoGravity = .resizeAspectFill // Prevents squishing
-        }
-
     }
 
     private func setCaptureSessionInput() throws {
@@ -219,16 +210,4 @@ extension VideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
             }
         }
     }
-    /// Attaches the preview layer to a given UIView. **new**
-    func addPreviewLayer(to view: UIView) {
-        guard let previewLayer = previewLayer else { return }
-        
-        previewLayer.frame = view.bounds
-        previewLayer.videoGravity = .resizeAspectFill
-        
-        // Insert at the lowest level so it doesn't cover other UI elements
-        view.layer.insertSublayer(previewLayer, at: 0)
-    }
-
-
 }
