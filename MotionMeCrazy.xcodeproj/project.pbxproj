@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		016671C92D5519FF008DF279 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 016671C82D5519F8008DF279 /* .gitignore */; };
+		1993C8303740DBB2C6A1A455 /* Pods_MotionMeCrazyTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5314AA7CF6244C2DC3698437 /* Pods_MotionMeCrazyTests.framework */; };
+		FAC82EA1961A3554DFA18B83 /* Pods_MotionMeCrazy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E19306AB8F7A33EB08B157F /* Pods_MotionMeCrazy.framework */; };
+		FD7BE4DF5E5B0F189275D7A5 /* Pods_MotionMeCrazy_MotionMeCrazyUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8D223AB41F0110751119429 /* Pods_MotionMeCrazy_MotionMeCrazyUITests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,9 +32,18 @@
 
 /* Begin PBXFileReference section */
 		016671C82D5519F8008DF279 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		3E19306AB8F7A33EB08B157F /* Pods_MotionMeCrazy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MotionMeCrazy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5314AA7CF6244C2DC3698437 /* Pods_MotionMeCrazyTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MotionMeCrazyTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7D3A4F556D5062A95071D7A2 /* Pods-MotionMeCrazy-MotionMeCrazyUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotionMeCrazy-MotionMeCrazyUITests.debug.xcconfig"; path = "Target Support Files/Pods-MotionMeCrazy-MotionMeCrazyUITests/Pods-MotionMeCrazy-MotionMeCrazyUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		7F2D62383E52651F056443F5 /* Pods-MotionMeCrazy.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotionMeCrazy.release.xcconfig"; path = "Target Support Files/Pods-MotionMeCrazy/Pods-MotionMeCrazy.release.xcconfig"; sourceTree = "<group>"; };
+		81043CF4A2FD782EAD8966A9 /* Pods-MotionMeCrazy-MotionMeCrazyUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotionMeCrazy-MotionMeCrazyUITests.release.xcconfig"; path = "Target Support Files/Pods-MotionMeCrazy-MotionMeCrazyUITests/Pods-MotionMeCrazy-MotionMeCrazyUITests.release.xcconfig"; sourceTree = "<group>"; };
+		99A98C24CA2A4852513D8ADB /* Pods-MotionMeCrazy.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotionMeCrazy.debug.xcconfig"; path = "Target Support Files/Pods-MotionMeCrazy/Pods-MotionMeCrazy.debug.xcconfig"; sourceTree = "<group>"; };
+		C3BF0FE6412A8FD823CAD6C2 /* Pods-MotionMeCrazyTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotionMeCrazyTests.release.xcconfig"; path = "Target Support Files/Pods-MotionMeCrazyTests/Pods-MotionMeCrazyTests.release.xcconfig"; sourceTree = "<group>"; };
 		CC887C352D551FA1007FD0B2 /* MotionMeCrazy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MotionMeCrazy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC887C362D551FA1007FD0B2 /* MotionMeCrazyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotionMeCrazyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC887C372D551FA1007FD0B2 /* MotionMeCrazyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotionMeCrazyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8D223AB41F0110751119429 /* Pods_MotionMeCrazy_MotionMeCrazyUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MotionMeCrazy_MotionMeCrazyUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB62BBA101B7EC368DF38E0A /* Pods-MotionMeCrazyTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotionMeCrazyTests.debug.xcconfig"; path = "Target Support Files/Pods-MotionMeCrazyTests/Pods-MotionMeCrazyTests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -57,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FAC82EA1961A3554DFA18B83 /* Pods_MotionMeCrazy.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,6 +77,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1993C8303740DBB2C6A1A455 /* Pods_MotionMeCrazyTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +85,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FD7BE4DF5E5B0F189275D7A5 /* Pods_MotionMeCrazy_MotionMeCrazyUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,7 +102,32 @@
 				CC887C352D551FA1007FD0B2 /* MotionMeCrazy.app */,
 				CC887C362D551FA1007FD0B2 /* MotionMeCrazyTests.xctest */,
 				CC887C372D551FA1007FD0B2 /* MotionMeCrazyUITests.xctest */,
+				7304855402A9DD18D94EF0F4 /* Pods */,
+				AF1AA614F74CCCA5208E2D8A /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		7304855402A9DD18D94EF0F4 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				99A98C24CA2A4852513D8ADB /* Pods-MotionMeCrazy.debug.xcconfig */,
+				7F2D62383E52651F056443F5 /* Pods-MotionMeCrazy.release.xcconfig */,
+				7D3A4F556D5062A95071D7A2 /* Pods-MotionMeCrazy-MotionMeCrazyUITests.debug.xcconfig */,
+				81043CF4A2FD782EAD8966A9 /* Pods-MotionMeCrazy-MotionMeCrazyUITests.release.xcconfig */,
+				DB62BBA101B7EC368DF38E0A /* Pods-MotionMeCrazyTests.debug.xcconfig */,
+				C3BF0FE6412A8FD823CAD6C2 /* Pods-MotionMeCrazyTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		AF1AA614F74CCCA5208E2D8A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3E19306AB8F7A33EB08B157F /* Pods_MotionMeCrazy.framework */,
+				D8D223AB41F0110751119429 /* Pods_MotionMeCrazy_MotionMeCrazyUITests.framework */,
+				5314AA7CF6244C2DC3698437 /* Pods_MotionMeCrazyTests.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -97,9 +137,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 016671982D550E2B008DF279 /* Build configuration list for PBXNativeTarget "MotionMeCrazy" */;
 			buildPhases = (
+				2AE8C6CA3D496EC7DB9DDF80 /* [CP] Check Pods Manifest.lock */,
 				016671702D550E2A008DF279 /* Sources */,
 				016671712D550E2A008DF279 /* Frameworks */,
 				016671722D550E2A008DF279 /* Resources */,
+				BB05D35C2DBE9F5585A7D504 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -109,8 +151,6 @@
 				016671762D550E2A008DF279 /* MotionMeCrazy */,
 			);
 			name = MotionMeCrazy;
-			packageProductDependencies = (
-			);
 			productName = MotionMeCrazy;
 			productReference = CC887C352D551FA1007FD0B2 /* MotionMeCrazy.app */;
 			productType = "com.apple.product-type.application";
@@ -119,6 +159,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0166719B2D550E2B008DF279 /* Build configuration list for PBXNativeTarget "MotionMeCrazyTests" */;
 			buildPhases = (
+				B8B3FD75E3713C17B7E72247 /* [CP] Check Pods Manifest.lock */,
 				016671802D550E2B008DF279 /* Sources */,
 				016671812D550E2B008DF279 /* Frameworks */,
 				016671822D550E2B008DF279 /* Resources */,
@@ -132,8 +173,6 @@
 				016671872D550E2B008DF279 /* MotionMeCrazyTests */,
 			);
 			name = MotionMeCrazyTests;
-			packageProductDependencies = (
-			);
 			productName = MotionMeCrazyTests;
 			productReference = CC887C362D551FA1007FD0B2 /* MotionMeCrazyTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -142,9 +181,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0166719E2D550E2B008DF279 /* Build configuration list for PBXNativeTarget "MotionMeCrazyUITests" */;
 			buildPhases = (
+				DD0659395E78B63FEA9AD655 /* [CP] Check Pods Manifest.lock */,
 				0166718A2D550E2B008DF279 /* Sources */,
 				0166718B2D550E2B008DF279 /* Frameworks */,
 				0166718C2D550E2B008DF279 /* Resources */,
+				E575CACE5752EDF02BFF25F4 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -155,8 +196,6 @@
 				016671912D550E2B008DF279 /* MotionMeCrazyUITests */,
 			);
 			name = MotionMeCrazyUITests;
-			packageProductDependencies = (
-			);
 			productName = MotionMeCrazyUITests;
 			productReference = CC887C372D551FA1007FD0B2 /* MotionMeCrazyUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -229,6 +268,109 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		2AE8C6CA3D496EC7DB9DDF80 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MotionMeCrazy-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B8B3FD75E3713C17B7E72247 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MotionMeCrazyTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		BB05D35C2DBE9F5585A7D504 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MotionMeCrazy/Pods-MotionMeCrazy-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MotionMeCrazy/Pods-MotionMeCrazy-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MotionMeCrazy/Pods-MotionMeCrazy-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DD0659395E78B63FEA9AD655 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MotionMeCrazy-MotionMeCrazyUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		E575CACE5752EDF02BFF25F4 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MotionMeCrazy-MotionMeCrazyUITests/Pods-MotionMeCrazy-MotionMeCrazyUITests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MotionMeCrazy-MotionMeCrazyUITests/Pods-MotionMeCrazy-MotionMeCrazyUITests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MotionMeCrazy-MotionMeCrazyUITests/Pods-MotionMeCrazy-MotionMeCrazyUITests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		016671702D550E2A008DF279 /* Sources */ = {
@@ -389,6 +531,7 @@
 		};
 		016671992D550E2B008DF279 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 99A98C24CA2A4852513D8ADB /* Pods-MotionMeCrazy.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -396,6 +539,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MotionMeCrazy/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -417,6 +561,7 @@
 		};
 		0166719A2D550E2B008DF279 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7F2D62383E52651F056443F5 /* Pods-MotionMeCrazy.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -424,6 +569,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MotionMeCrazy/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -445,6 +591,7 @@
 		};
 		0166719C2D550E2B008DF279 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DB62BBA101B7EC368DF38E0A /* Pods-MotionMeCrazyTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -463,6 +610,7 @@
 		};
 		0166719D2D550E2B008DF279 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C3BF0FE6412A8FD823CAD6C2 /* Pods-MotionMeCrazyTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -481,6 +629,7 @@
 		};
 		0166719F2D550E2B008DF279 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7D3A4F556D5062A95071D7A2 /* Pods-MotionMeCrazy-MotionMeCrazyUITests.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -497,6 +646,7 @@
 		};
 		016671A02D550E2B008DF279 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 81043CF4A2FD782EAD8966A9 /* Pods-MotionMeCrazy-MotionMeCrazyUITests.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

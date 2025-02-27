@@ -12,7 +12,7 @@ struct HIWGameLobbyView: View {
 
     var body: some View {
         ZStack {
-            CameraView()
+            ViewControllerView()
                 .edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 50) {
