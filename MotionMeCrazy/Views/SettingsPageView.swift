@@ -1,14 +1,14 @@
 //
 //  SettingsPageView.swift
 //  MotionMeCrazy
-// Tea Lazareto 2/12/2025
+//  Tea Lazareto 2/12/2025
 //
-
 import SwiftUI
 
 struct SettingsPageView: View {
     @State private var audioLevel: Double = 0.5
-    @State private var selectedTab: Int = 0
+    @State private var showThemePopup: Bool = false
+    @State private var showLanguagePopup: Bool = false
     
     var body: some View {
         ZStack {
@@ -17,76 +17,119 @@ struct SettingsPageView: View {
                 .ignoresSafeArea()
             
             VStack {
-//                HStack {
-//                    TabButton(title: "Settings", isSelected: selectedTab == 0) {
-//                        selectedTab = 0
-//                    }
-//                    TabButton(title: "Game Settings", isSelected: selectedTab == 1) {
-//                        selectedTab = 1
-//                    }
-//                }
-//                .padding()
-                
-                // Show settings content when "Settings" tab is selected
-//                if selectedTab == 0 {
                 settingsContent
-//                } else {
-//                    gameSettingsContent
-//                }
             }
             .padding()
+            
+            if showThemePopup {
+                ThemeSelectionPopup(showThemeOpt: $showThemePopup)
+                    .transition(.scale)
+            }
+            if showLanguagePopup {
+                LanguageSelectionPopup(showLangOpt: $showLanguagePopup)
+                    .transition(.scale)
+            }
         }
+        .animation(.easeInOut, value: showThemePopup) //transition for opening
+        .animation(.easeInOut, value: showLanguagePopup) //transition for opening
     }
     
+    //all the content presented on settings (MAIN) view
     var settingsContent: some View {
         VStack(spacing: 20) {
             CustomHeader(config: .init(title: "Settings"))
             
-            // audio
             VStack(alignment: .leading) {
                 CustomText(config: .init(text: "Audio Level"))
                 Slider(value: $audioLevel, in: 0...1)
                     .accentColor(.darkBlue)
-                 
-                    
             }
             .padding()
             
-            CustomButton(config: .init(title: "Change Theme", width: 200, buttonColor: .darkBlue) {})
+            CustomButton(config: .init(title: "Change Theme", width: 200, buttonColor: .darkBlue) {
+                showThemePopup = true
+            })
             
-            CustomButton(config: .init(title: "Change Language", width: 200,buttonColor: .darkBlue) {})
+            CustomButton(config: .init(title: "Change Language", width: 200, buttonColor: .darkBlue) {
+                showLanguagePopup = true
+            })
         }
     }
-    
-//    // idk if necessary
-//    var gameSettingsContent: some View {
-//        VStack(spacing: 20) {
-//            CustomHeader(config: .init(title: "Game Settings"))
-//            
-//            // Placeholder
-//            CustomText(config: .init(text: "Game Settings"))
-//        }
-//        .padding()
-//    }
 }
 
-//struct TabButton: View {
-//    let title: String
-//    let isSelected: Bool
-//    let action: () -> Void
-//    
-//    var body: some View {
-//        Button(action: action) {
-//            Text(title)
-//                .font(.system(size: 18, weight: .bold))
-//                .padding()
-//                .background(isSelected ? Color(.darkBlue) : Color.clear) // Use darkBlue for selected background
-//                .foregroundColor(isSelected ? .white : Color(.darkBlue)) // White text for selected, darkBlue for unselected
-//                .border(isSelected ? Color.clear : Color(.darkBlue), width: 2) // darkBlue border for unselected
-//                .cornerRadius(10)
-//        }
-//    }
-//}
+// pop up for theme selection (may just remove this completely later idk)
+struct ThemeSelectionPopup: View {
+    @Binding var showThemeOpt: Bool
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            HStack {
+                Spacer()
+                //exit
+                Button(action: { showThemeOpt = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                        .font(.title)
+                }
+            }
+            
+            CustomText(config: .init(text: "Theme Options:"))
+            
+            VStack(spacing: 5) {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.gray, lineWidth: 1)
+                    .background(
+                        Image("background")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 120, height: 50)
+                            .clipped()
+                    )
+                    .frame(width: 120, height: 50)
+                    .cornerRadius(10)
+                
+                CustomButton(config: .init(title: "Default", width: 150, buttonColor: .darkBlue) {})
+            }
+            .padding()
+            .background(Color.white.opacity(0.9))
+            .cornerRadius(10)
+            .shadow(radius: 5)
+        }
+        .padding()
+        .frame(width: 250)
+        .background(Color.white.opacity(0.95))
+        .cornerRadius(15)
+        .shadow(radius: 10)
+    }
+}
+
+//popup for language selection (also might remove this later, we will see)
+struct LanguageSelectionPopup: View {
+    @Binding var showLangOpt: Bool
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            HStack {
+                Spacer()
+                //exit
+                Button(action: { showLangOpt = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                        .font(.title)
+                }
+            }
+            
+            CustomText(config: .init(text: "Language Options:"))
+            
+            CustomButton(config: .init(title: "English", width: 100, buttonColor: .darkBlue) {})
+        }
+        .padding()
+        .frame(width: 250)
+        .background(Color.white.opacity(0.95))
+        .cornerRadius(15)
+        .shadow(radius: 10)
+    }
+}
 
 #Preview {
     SettingsPageView()
