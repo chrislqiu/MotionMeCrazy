@@ -21,15 +21,14 @@ struct MainPageView: View {
                 .tabItem { Image("friends") }
             LeaguePageView(userViewModel: userViewModel)
                 .tabItem { Image("leaderboard") }
-            StatisticsPageView(userViewModel: userViewModel)
-                .tabItem {
-                    Image("badge")
-                    Text("Statistics")
-                }
+//            StatisticsPageView(userViewModel: userViewModel)
+//                .tabItem {
+//                    Image("badge")
+//                    Text("Statistics")
+//                }
             SettingsPageView()
                 .tabItem {
                     Image("setting")
-                    Text("Settings")
                 }
 
         }

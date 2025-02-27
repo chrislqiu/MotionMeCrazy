@@ -1,3 +1,9 @@
+//
+//  HIWGamePageView.swift
+//  MotionMeCrazy
+//
+//  Created by Tea Lazareto on 2/13/25.
+//
 import SwiftUI
 
 struct HIWGameLobbyView: View {
@@ -8,6 +14,7 @@ struct HIWGameLobbyView: View {
     @State private var showQuitConfirmation = false // shows quit confirmation pop up
     @State private var showTutorial = false // show tutorial view
     @State private var isPlaying = false  // checks if game is active
+    @State private var openedFromPauseMenu = false //checks where the settings was opened from
     @State private var selectedDifficulty: SettingsView.Difficulty = .normal  // Store difficulty here
 
     var body: some View {
@@ -61,6 +68,7 @@ struct HIWGameLobbyView: View {
                         // the main settings button before you get into an active game
                         //only want this button when game not active
                         Button(action: {
+                            openedFromPauseMenu = false
                             showSettings = true
                         }) {
                             Image(systemName: "gearshape.fill")
@@ -113,7 +121,7 @@ struct HIWGameLobbyView: View {
                         showSettings = false
                     }
 
-                SettingsView(showSettings: $showSettings, selectedDifficulty: $selectedDifficulty)
+                SettingsView(showSettings: $showSettings, selectedDifficulty: $selectedDifficulty, showPauseMenu: $showPauseMenu, openedFromPauseMenu: $openedFromPauseMenu)
                     .frame(width: 300, height: 350)
                     .background(Color.white)
                     .cornerRadius(20)
@@ -136,7 +144,7 @@ struct HIWGameLobbyView: View {
 
                 PauseMenuView(
                     isPlaying: $isPlaying, showPauseMenu: $showPauseMenu,
-                    showSettings: $showSettings, showQuitConfirmation: $showQuitConfirmation
+                    showSettings: $showSettings, showQuitConfirmation: $showQuitConfirmation, openedFromPauseMenu: $openedFromPauseMenu
                 )
                 .frame(width: 300, height: 300)
                 .background(Color.white)
@@ -152,7 +160,9 @@ struct HIWGameLobbyView: View {
 // the actual pop up stuff for settings
 struct SettingsView: View {
     @Binding var showSettings: Bool
-    @Binding var selectedDifficulty: Difficulty  // Corrected binding
+    @Binding var selectedDifficulty: Difficulty
+    @Binding var showPauseMenu: Bool  
+    @Binding var openedFromPauseMenu: Bool
 
     enum Difficulty: String, CaseIterable, Identifiable {
         case easy = "Easy"
@@ -165,8 +175,6 @@ struct SettingsView: View {
     var body: some View {
         VStack(spacing: 15) {
             CustomHeader(config: .init(title: "Game Settings"))
-            //idk what to put here still
-            // Difficulty Dropdown
                 .accessibilityLabel("modeSelectionTitle")
 
             VStack {
@@ -179,7 +187,7 @@ struct SettingsView: View {
                         Text(difficulty.rawValue).tag(difficulty)
                     }
                 }
-                .pickerStyle(MenuPickerStyle())  // Makes it a dropdown menu
+                .pickerStyle(MenuPickerStyle())
                 .frame(width: 150)
                 .background(Color.lightBlue)
                 .cornerRadius(8)
@@ -197,6 +205,9 @@ struct SettingsView: View {
                     title: "Close", width: 150, buttonColor: .darkBlue,
                     action: {
                         showSettings = false
+                        if openedFromPauseMenu {
+                            showPauseMenu = true  // only reopen pause menu if settings were opened from it
+                        }  // Reopen pause menu
                     }))
                 .accessibilityIdentifier("closeButton")
 
@@ -206,6 +217,7 @@ struct SettingsView: View {
     }
 }
 
+
 // pause menu
 struct PauseMenuView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -213,6 +225,7 @@ struct PauseMenuView: View {
     @Binding var showPauseMenu: Bool  // shows pause
     @Binding var showSettings: Bool  // shows settings
     @Binding var showQuitConfirmation: Bool // shows quit confirmation
+    @Binding var openedFromPauseMenu: Bool //checks where settings was closed from
 
 
     var body: some View {
@@ -233,6 +246,7 @@ struct PauseMenuView: View {
                 config: CustomButtonConfig(
                     title: "Game Settings", width: 175, buttonColor: .lightBlue,
                     action: {
+                        openedFromPauseMenu = true
                         showSettings = true
                         showPauseMenu = false
                     }))
