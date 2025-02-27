@@ -13,7 +13,11 @@ struct PendingPageView: View {
     // TODO: fetch userId
     @State private var userId = 194
     @State private var errorMessage: String?  // For displaying errors
-    @State private var requests: [UserViewModel] = []
+    @State private var requests: [FriendRequest] = []
+    
+    @ObservedObject var userViewModel: UserViewModel
+    
+    @State private var navigateToFriendsPage = false
     
     var body: some View {
         NavigationStack {
@@ -29,7 +33,7 @@ struct PendingPageView: View {
                             title: "All",
                             width: 75,
                             buttonColor: .darkBlue,
-                            destination: AnyView(FriendsPageView())
+                            destination: AnyView(FriendsPageView(userViewModel: userViewModel))
                         ))
                         
                         CustomSelectedButton(config:
@@ -43,7 +47,7 @@ struct PendingPageView: View {
                     ScrollView {
                         LazyVStack(spacing: 10) {
                             ForEach(requests, id: \.userid) { user in
-                                UserRowView(user: user, requests: $requests)
+                                UserRowView(user: user, navigateToFriendsPage: $navigateToFriendsPage)
                                     .padding()
                                     .background(Color.clear)
                                     .cornerRadius(10)
@@ -54,128 +58,83 @@ struct PendingPageView: View {
                     }
                 }
             }
+            NavigationLink(
+                destination: FriendsPageView(userViewModel: userViewModel),
+                isActive: $navigateToFriendsPage
+            ) {
+                EmptyView()
+            }
         }.onAppear() {
-            getRequestIds()
-        }
-    }
-    
-    // Get request ids
-    func getRequestIds() {
-        var requestIds: [Int] = []
-        guard let url = URL(string: "http://localhost:3000/friend/requests/pending?userid=\(userId)") else {
-            print("Invalid URL")
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                if error != nil {
-                    self.errorMessage = "Network error, please try again"
-                    return
-                }
-                
-                if let httpResponse = response as? HTTPURLResponse {
-                    if httpResponse.statusCode == 200 {
-                        if let data = data {
-                            if let jsonString = String(data: data, encoding: .utf8) {
-                                    print("Raw response: \(jsonString)")
-                                }
-                                do {
-                                    friendRequests = try JSONDecoder().decode([FriendRequest].self, from: data)
-                                        print(friendRequests)
-                                        requestIds = friendRequests.map { $0.userid }
-                                        self.getFriends(friendIds: requestIds)
-                                        self.errorMessage = nil
-                                } catch {
-                                    self.errorMessage = "Failed to parse response"
-                                    print(error)
-                                }
-                        }
-                        print("Successfully retrieved pending request id!")
-                        self.errorMessage = nil
-                    } else {
-                        self.errorMessage =
-                        "Error retrieving pending request id, please try again"
-                    }
-                }
-            }
-        }.resume()
-    }
-    
-    // get friends from friend ids
-    func getFriends(friendIds: Array<Int>) {
-        for friendId in friendIds {
-            guard let url = URL(string: "http://localhost:3000/user?userId=\(friendId)") else {
-                print("Invalid URL")
-                return
-            }
-            
-            var request = URLRequest(url: url)
-            request.httpMethod = "GET"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                DispatchQueue.main.async {
-                    if error != nil {
-                        self.errorMessage = "Network error, please try again"
-                        return
-                    }
-                    
-                    if let httpResponse = response as? HTTPURLResponse {
-                        if httpResponse.statusCode == 200 {
-                            if let data = data {
-                                do {
-                                    let userViewModel = UserViewModel()
-                                    let userResponse = try JSONDecoder().decode(UserResponse.self, from: data)
-                                    userViewModel.userid = userResponse.userid
-                                    userViewModel.username = userResponse.username
-                                    userViewModel.profilePicId = userResponse.profilepicid
-                                    requests.append(userViewModel)
-                                    self.errorMessage = nil
-                                } catch {
-                                    self.errorMessage = "Failed to parse response"
-                                    print(error)
-                                }
-                            }
-                            print("Successfully retrieved pending request information!")
-                            self.errorMessage = nil
-                        } else {
-                            self.errorMessage =
-                            "Error retrieving pending request information, please try again"
-                        }
-                    }
-                }
-            }.resume()
+            getFriends(userId: userViewModel.userid, requests: $requests)
         }
     }
 }
+
+func getFriends(userId: Int, requests: Binding<[FriendRequest]>) {
+    requests.wrappedValue.removeAll()
+    
+    guard let url = URL(string: "http://localhost:3000/friend/requests/pending?userid=\(userId)") else {
+        print("Invalid URL")
+        return
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        DispatchQueue.main.async {
+            if error != nil {
+                print("Network error, please try again")
+                return
+            }
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    if let data = data {
+                        do {
+                            let userResponses = try JSONDecoder().decode([FriendRequest].self, from: data)
+                            
+                            for userResponse in userResponses {
+                                let userViewModel = FriendRequest(request_id: userResponse.request_id, userid: userResponse.userid, username: userResponse.username, profilepicid: userResponse.profilepicid)
+                                requests.wrappedValue.append(userViewModel)
+                            }
+                            
+                            print("Successfully retrieved pending request information!")
+                        } catch {
+                            print("Error decoding response:", error)
+                        }
+                    }
+                } else {
+                    print("Error retrieving pending request information, please try again")
+                }
+            }
+        }
+    }.resume()
+}
+
 
 struct FriendRequest: Codable {
     let request_id: Int
     let userid: Int
-    let friendid: Int
-    let ispending: Bool
-    let created_at: String
+    let username: String
+    let profilepicid: String
 }
 
 private struct UserRowView: View {
     @State private var errorMessage: String?  // For displaying errors
-    let user: UserViewModel
-    @Binding var requests: [UserViewModel]
-                            
+    let user: FriendRequest
+    @Binding var navigateToFriendsPage: Bool
+    
     var body: some View {
         HStack {
-            Image(user.profilePicId)
+            Image(user.profilepicid)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 75, height: 75)
                 .clipShape(Circle())
                 .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
-
+            
             VStack(alignment: .leading) {
                 CustomText(config: CustomTextConfig(text: user.username))
                 CustomText(config: CustomTextConfig(text: "ID: \(user.userid)"))
@@ -186,7 +145,7 @@ private struct UserRowView: View {
                         title: "Accept", width: 100,
                         buttonColor: .darkBlue
                     ) {
-                        acceptRequest(userid: user.userid)
+                        acceptRequest()
                     })
                 
                 CustomButton(
@@ -194,104 +153,88 @@ private struct UserRowView: View {
                         title: "Decline", width: 100,
                         buttonColor: .lightBlue
                     ) {
-                        declineRequest(userid: user.userid)
+                        declineRequest()
                     })
                 
             }
             Spacer()
         }.contentShape(Rectangle())
-        .padding(.vertical, 5)
+            .padding(.vertical, 5)
     }
     
     // Accepts friend request
-    func acceptRequest(userid: Int) {
-        if let friendRequest = friendRequests.first(where: { $0.userid == userid }) {
-            print(friendRequest)
-            
-            guard let url = URL(string: "http://localhost:3000/friend/accept") else {
-                print("Invalid URL")
-                return
-            }
-            
-            let body = [
-                "request_id": friendRequest.request_id,
-                "user_id": friendRequest.userid,
-                "friend_id": friendRequest.friendid
-            ]
-
-            guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
-            else {
-                print("Failed to encode JSON")
-                return
-            }
-            
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = jsonData
-
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                DispatchQueue.main.async {
-                    if error != nil {
-                        self.errorMessage = "Network error, please try again"
-                        return
-                    }
-                    if let httpResponse = response as? HTTPURLResponse {
-                        if httpResponse.statusCode == 200 {
-                            print("Friend request accepted!")
-                            requests.removeAll{$0.userid == userid}
-                            self.errorMessage = nil
-                        } else {
-                            self.errorMessage =
-                            "Error accepting friend requeest, please try again"
-                        }
+    func acceptRequest() {
+        guard let url = URL(string: "http://localhost:3000/friend/accept") else {
+            print("Invalid URL")
+            return
+        }
+        
+        let body = [
+            "request_id": user.request_id,
+        ]
+        
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
+        else {
+            print("Failed to encode JSON")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if error != nil {
+                    self.errorMessage = "Network error, please try again"
+                    return
+                }
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode == 200 {
+                        print("Friend request accepted!")
+                        self.navigateToFriendsPage = true
+                    } else {
+                        self.errorMessage =
+                        "Error accepting friend request, please try again"
                     }
                 }
-            }.resume()
-        } else {
-            print("No friend request found for userid \(userid)")
-        }
+            }
+        }.resume()
     }
     
     // Decline friend request
-    func declineRequest(userid: Int) {
-        if let friendRequest = friendRequests.first(where: { $0.userid == userid }) {
-            print(friendRequest.request_id)
-            guard let url = URL(string: "http://localhost:3000/friend/request/?request_id=\(friendRequest.request_id)") else {
-                print("Invalid URL")
-                return
-            }
-            
-            var request = URLRequest(url: url)
-            request.httpMethod = "DELETE"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                DispatchQueue.main.async {
-                    if error != nil {
-                        self.errorMessage = "Network error, please try again"
-                        return
-                    }
-                    if let httpResponse = response as? HTTPURLResponse {
-                        if httpResponse.statusCode == 200 {
-                            print("Friend request deleted!")
-                            requests.removeAll{$0.userid == userid}
-                            self.errorMessage = nil
-                        } else {
-                            self.errorMessage =
-                            "Error deleting friend request, please try again"
-                        }
+    func declineRequest() {
+        guard let url = URL(string: "http://localhost:3000/friend/request/?request_id=\(user.request_id)") else {
+            print("Invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if error != nil {
+                    self.errorMessage = "Network error, please try again"
+                    return
+                }
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode == 200 {
+                        print("Friend request deleted!")
+                        self.navigateToFriendsPage = true
+                    } else {
+                        self.errorMessage =
+                        "Error deleting friend request, please try again"
                     }
                 }
-            }.resume()
-            
-        } else {
-            print("No friend request found for userid \(userid)")
-        }
-
+            }
+        }.resume()
+        
     }
 }
 
 #Preview {
-    PendingPageView()
+    //    PendingPageView()
 }

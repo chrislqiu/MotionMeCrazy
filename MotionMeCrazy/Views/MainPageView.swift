@@ -17,11 +17,11 @@ struct MainPageView: View {
                 .tabItem { Image("home") }
             ProfilePageView(userViewModel: userViewModel)
                 .tabItem { Image("profile") }
-            FriendsPageView()
+            FriendsPageView(userViewModel: userViewModel)
                 .tabItem { Image("friends") }
-            LeaguePageView(user: "test")
+            LeaguePageView(userViewModel: userViewModel)
                 .tabItem { Image("leaderboard") }
-            StatisticsPageView(user: "test")
+            StatisticsPageView(userViewModel: userViewModel)
                 .tabItem {
                     Image("badge")
                     Text("Statistics")
@@ -43,7 +43,11 @@ struct MainPageView: View {
 }
 
 #Preview {
+    let testUserViewModel = UserViewModel(userid: 123, username: "TestUser", profilePicId: "profilePicTestId")
+    
     NavigationStack {
-        MainPageView().environmentObject(UserViewModel())
+        MainPageView()
+            .environmentObject(testUserViewModel)
     }
 }
+

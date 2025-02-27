@@ -8,7 +8,13 @@
 import SwiftUI
 
 class UserViewModel: ObservableObject, Identifiable {
-    @Published var userid: Int = 0
-    @Published var username: String = ""
-    @Published var profilePicId: String = ""
+    @Published var userid: Int
+    @Published var username: String
+    @Published var profilePicId: String
+
+    init(userid: Int, username: String, profilePicId: String) {
+        self.userid = userid
+        self.username = username
+        self.profilePicId = profilePicId
+    }
 }

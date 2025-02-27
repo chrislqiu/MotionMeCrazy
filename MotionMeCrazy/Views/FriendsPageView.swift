@@ -14,6 +14,8 @@ struct FriendsPageView: View {
     @State private var errorMessage: String?  // For displaying errors
     @State private var friends: [UserViewModel] = []
     
+    @ObservedObject var userViewModel: UserViewModel
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -26,20 +28,20 @@ struct FriendsPageView: View {
                     
                     HStack(alignment: .top, spacing: 10) {
                         CustomSelectedButton(config:
-                            CustomSelectedButtonConfig(title: "All", width: 75) {})
+                                                CustomSelectedButtonConfig(title: "All", width: 75) {})
                         
                         CustomButton(config: CustomButtonConfig(
                             title: "Pending",
                             width: 100,
                             buttonColor: .darkBlue,
-                            destination: AnyView(PendingPageView())
+                            destination: AnyView(PendingPageView(userViewModel: userViewModel))
                         ))
                         
                         CustomButton(config:
-                            CustomButtonConfig(title: "Sent", width: 75, buttonColor: .darkBlue) {})
+                                        CustomButtonConfig(title: "Sent", width: 75, buttonColor: .darkBlue) {})
                     }
                     .padding(.top, 10)
-
+                    
                     VStack(alignment: .center, spacing: 10) {
                         SearchBar(searchText: $searchText)
                             .padding()
@@ -60,30 +62,32 @@ struct FriendsPageView: View {
                     }
                     
                     /*List(friends) { user in
-                        UserRowView(user: user)
-                            .listRowBackground(Color.clear)
-                    }
-                    .scrollContentBackground(.hidden)
-                    .background(Color.clear)*/
+                     UserRowView(user: user)
+                     .listRowBackground(Color.clear)
+                     }
+                     .scrollContentBackground(.hidden)
+                     .background(Color.clear)*/
                 }
                 .padding(.horizontal, 20)
             }
         }.onAppear() {
-            getFriendsId()
+            getFriends()
         }
     }
     
-    func getFriendsId() {
-        var friendIds: [Int] = []
-        guard let url = URL(string: "http://localhost:3000/friend?userId=\(userId)") else {
-            print("Invalid URL")
+    
+    func getFriends() {
+        friends.removeAll()
+        
+        guard let url = URL(string: "http://localhost:3000/friend?userId=\(userViewModel.userid)") else {
+            print("Invalid URL for user \(userViewModel.userid)")
             return
         }
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
+        
         URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 if error != nil {
@@ -91,83 +95,34 @@ struct FriendsPageView: View {
                     return
                 }
                 
-                if let httpResponse = response as? HTTPURLResponse {
-                    if httpResponse.statusCode == 200 {
-                        if let data = data {
-                            do {
-                                friendIds = try JSONDecoder().decode(Array<Int>.self, from: data)
-                                print(friendIds)
-                                self.getFriends(friendIds: friendIds)
-                                self.errorMessage = nil
-                            } catch {
-                                self.errorMessage = "Failed to parse response"
-                                print(error)
+                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                    if let data = data {
+                        do {
+                            let users = try JSONDecoder().decode([UserResponse].self, from: data)
+                            self.friends = users.map { user in
+                                UserViewModel(userid: user.userid,
+                                              username: user.username,
+                                              profilePicId: user.profilepicid)
                             }
+                            self.errorMessage = nil
+                        } catch {
+                            self.errorMessage = "Failed to parse user data"
                         }
-                        print("Successfully retrieved friend ids!")
-                        self.errorMessage = nil
-                    } else {
-                        self.errorMessage =
-                        "Username already exists, please try again"
                     }
+                } else {
+                    self.errorMessage = "Failed to fetch user data"
                 }
             }
         }.resume()
-        
-        
-    }
-    
-    func getFriends(friendIds: Array<Int>) {
-        for friendId in friendIds {
-            guard let url = URL(string: "http://localhost:3000/user?userId=\(friendId)") else {
-                print("Invalid URL")
-                return
-            }
-            
-            var request = URLRequest(url: url)
-            request.httpMethod = "GET"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                DispatchQueue.main.async {
-                    if error != nil {
-                        self.errorMessage = "Network error, please try again"
-                        return
-                    }
-                    
-                    if let httpResponse = response as? HTTPURLResponse {
-                        if httpResponse.statusCode == 200 {
-                            if let data = data {
-                                do {
-                                    let userViewModel = UserViewModel()
-                                    let userResponse = try JSONDecoder().decode(UserResponse.self, from: data)
-                                    print(userResponse)
-                                    userViewModel.userid = userResponse.userid
-                                    userViewModel.username = userResponse.username
-                                    userViewModel.profilePicId = userResponse.profilepicid
-                                    friends.append(userViewModel)
-                                    self.errorMessage = nil
-                                } catch {
-                                    self.errorMessage = "Failed to parse response"
-                                    print(error)
-                                }
-                            }
-                            print("Successfully retrieved friend information!")
-                            self.errorMessage = nil
-                        } else {
-                            self.errorMessage =
-                            "Username already exists, please try again"
-                        }
-                    }
-                }
-            }.resume()
-        }
     }
 }
 
+
+
+
 struct SearchBar: View {
     @Binding var searchText: String
-
+    
     var body: some View {
         HStack {
             Image(systemName: "magnifyingglass")
@@ -175,7 +130,7 @@ struct SearchBar: View {
                 .font(.system(size: 24, weight: .bold))
             
             CustomTextField(config: CustomTextFieldConfig(text: $searchText, placeholder: "Search..."))
-                            
+            
             if !searchText.isEmpty {
                 Button(action: { searchText = "" }) {
                     Image(systemName: "xmark.circle.fill")
@@ -200,7 +155,7 @@ private struct UserRowView: View {
                 .frame(width: 75, height: 75)
                 .clipShape(Circle())
                 .overlay(Circle().stroke(Color.darkBlue, lineWidth: 3))
-
+            
             VStack(alignment: .leading) {
                 CustomText(config: CustomTextConfig(text: user.username))
                 CustomText(config: CustomTextConfig(text: "ID: \(user.userid)"))
@@ -208,7 +163,7 @@ private struct UserRowView: View {
                 CustomButton(config:
                                 CustomButtonConfig(title: "Remove", width: 100, buttonColor: .lightBlue) {})
             }
-
+            
             Spacer()
         }
         .padding(.vertical, 5).accessibilityIdentifier("userRow")
@@ -216,5 +171,5 @@ private struct UserRowView: View {
 }
 
 #Preview {
-    FriendsPageView()
+    //    FriendsPageView()
 }

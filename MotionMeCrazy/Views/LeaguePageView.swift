@@ -35,9 +35,9 @@ struct LeaguePageView: View {
     @State private var otherLeagues: [League] = []
     @State private var isCreatingLeague: Bool = false
     @State private var leagueName: String = ""
-    @State private var userId: Int?
+    
+    @ObservedObject var userViewModel: UserViewModel
 
-    let user: String
 
     var body: some View {
         ZStack {
@@ -87,27 +87,20 @@ struct LeaguePageView: View {
                 })
                 .padding()
                 .sheet(isPresented: $isCreatingLeague) {
-                    LeaguePopupView(isCreatingLeague: $isCreatingLeague, leagueName: $leagueName, userId: $userId, onCreateLeague: fetchLeagues)
+                    LeaguePopupView(isCreatingLeague: $isCreatingLeague, leagueName: $leagueName, userId: $userViewModel.userid, onCreateLeague: fetchLeagues)
                 }
 
             }
         }
         .onAppear {
-            getID(username: user) { userId in
-                if let id = userId {
-                    self.userId = id
                     fetchLeagues()
                     fetchOtherLeagues()
-                } else {
-                    print("Failed to retrieve User ID")
-                }
             }
-        }
+        
     }
 
     private func fetchLeagues() {
-        guard let userId = userId,
-              let url = URL(string: "http://localhost:3000/leagues?userId=\(userId)") else {
+        guard let url = URL(string: "http://localhost:3000/leagues?userId=\(userViewModel.userid)") else {
             print("Invalid URL or user ID not available")
             return
         }
@@ -139,8 +132,7 @@ struct LeaguePageView: View {
     }
 
     private func fetchOtherLeagues() {
-        guard let userId = userId,
-              let url = URL(string: "http://localhost:3000/leagues/not-joined?userId=\(userId)") else {
+        guard let url = URL(string: "http://localhost:3000/leagues/not-joined?userId=\(userViewModel.userid)") else {
             print("Invalid URL or user ID not available")
             return
         }
@@ -230,7 +222,7 @@ struct LeaguePageView: View {
 struct LeaguePopupView: View {
     @Binding var isCreatingLeague: Bool
     @Binding var leagueName: String
-    @Binding var userId: Int?
+    @Binding var userId: Int
     var onCreateLeague: () -> Void
 
     var body: some View {
@@ -260,11 +252,6 @@ struct LeaguePopupView: View {
     }
 
     private func createLeague() {
-        guard let userId = userId else {
-            print("User ID is missing")
-            return
-        }
-
         guard let url = URL(string: "http://localhost:3000/league") else {
             print("Invalid URL")
             return
