@@ -13,6 +13,7 @@ struct HIWGamePageView:View {
     @State private var showPauseMenu = false  // shows pause menu pop up
     @State private var showQuitConfirmation = false // shows quit
     @State private var isPlaying = true  // checks if game is active
+    @State private var openedFromPauseMenu = false // to show where the game settings was closed from (pause or lobby) - tea
     
     // game stats
     @State private var score: Int = 1000
@@ -23,17 +24,14 @@ struct HIWGamePageView:View {
     // tutorial
     @Binding var sectionFrames: [Int: CGRect]?
     init(sectionFrames: Binding<[Int: CGRect]?> = .constant(nil)) {
-            _sectionFrames = sectionFrames
+        _sectionFrames = sectionFrames
     }
-    
     
     var body: some View {
         ZStack{
             Image("background")
                 .resizable()
                 .ignoresSafeArea()
-            
-            
             
             VStack(alignment: .leading, spacing: 10) {
                 VStack() {
@@ -56,11 +54,8 @@ struct HIWGamePageView:View {
                     .background(GeometryReader { proxy in
                         Color.clear.preference(key: SectionFrameKey.self, value: [3: proxy.frame(in: .global)])
                     })
-                    
-                    
                 }
                 VStack() {
-                    
                     // Score Section
                     HStack {
                         CustomText(config: CustomTextConfig(text: "Score", titleColor: .darkBlue, fontSize: 20))
@@ -69,12 +64,10 @@ struct HIWGamePageView:View {
                         Spacer()
                         CustomText(config: CustomTextConfig(text:"\(score)", titleColor: .darkBlue, fontSize: 18))
                             .font(.body)
-                        
                     }
                     .background(GeometryReader { proxy in
                         Color.clear.preference(key: SectionFrameKey.self, value: [0: proxy.frame(in: .global)])
                     })
-                    
                     
                     // Health Section
                     HStack {
@@ -110,7 +103,7 @@ struct HIWGamePageView:View {
                 }
                 .padding()
                 .background(Color(UIColor.systemGray6))
-                .cornerRadius(10)  
+                .cornerRadius(10)
                 .padding(.horizontal)
                 .onPreferenceChange(SectionFrameKey.self) { newValues in
                     if var frames = sectionFrames {
@@ -119,7 +112,6 @@ struct HIWGamePageView:View {
                     }
                 }
                 Spacer()
-                
             }
             
             // pause menu for game
@@ -129,10 +121,13 @@ struct HIWGamePageView:View {
                     .onTapGesture {
                         showPauseMenu = false
                     }
-
+                
                 PauseMenuView(
-                    isPlaying: $isPlaying, showPauseMenu: $showPauseMenu,
-                    showSettings: $showSettings, showQuitConfirmation: $showQuitConfirmation
+                    isPlaying: $isPlaying,
+                    showPauseMenu: $showPauseMenu,
+                    showSettings: $showSettings,
+                    showQuitConfirmation: $showQuitConfirmation,
+                    openedFromPauseMenu: $openedFromPauseMenu // tea change
                 )
                 .frame(width: 300, height: 300)
                 .background(Color.white)
@@ -140,11 +135,8 @@ struct HIWGamePageView:View {
                 .shadow(radius: 20)
                 .accessibilityIdentifier("pauseMenuView")
             }
-            
         }
-        
     }
-    
 }
 
 // Preference Key to track section positions
@@ -154,7 +146,6 @@ struct SectionFrameKey: PreferenceKey {
         value.merge(nextValue(), uniquingKeysWith: { $1 })
     }
 }
-
 
 #Preview {
     HIWGamePageView()
