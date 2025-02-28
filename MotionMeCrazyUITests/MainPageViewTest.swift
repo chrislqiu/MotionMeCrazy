@@ -18,6 +18,8 @@ final class MainPageUITests: XCTestCase {
     func testViewGames() {
         navigateToMainPage()
         
+        sleep(1)
+        
         let holeInWall = app.buttons["Hole in the Wall"]
         XCTAssertTrue(holeInWall.exists, "Hole in the Wall button should exist")
         
@@ -33,6 +35,8 @@ final class MainPageUITests: XCTestCase {
     
     func testAllButtonsVisibleAndWork() {
         navigateToMainPage()
+        
+        sleep(1)
 
         let homeButton = app.buttons["home"]
         XCTAssertTrue(homeButton.exists, "Home button should exist")
