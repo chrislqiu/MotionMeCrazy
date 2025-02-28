@@ -1,10 +1,11 @@
 import SwiftUI
 
 struct GameCenterPageView: View {
-    @State private var selectedGame = 0
+    @State private var selectedGame: Int = 0
+    @ObservedObject var userViewModel: UserViewModel
     
     private let games: [(name: String, icon: String, buttonColor: Color, destination: AnyView)] = [
-        ("Hole in the Wall", "figure.run", .darkBlue, AnyView(HIWGameLobbyView())),
+        ("Hole in the Wall", "figure.run", .darkBlue, AnyView(HIWGameLobbyView(userId: userViewModel.userid, gameId: 0))),
         ("Game 2", "gamecontroller.fill", .darkBlue, AnyView(Text("Coming Soon!")))
     ]
     

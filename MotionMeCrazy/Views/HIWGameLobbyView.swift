@@ -16,6 +16,8 @@ struct HIWGameLobbyView: View {
     @State private var isPlaying = false  // checks if game is active
     @State private var openedFromPauseMenu = false //checks where the settings was opened from
     @State private var selectedDifficulty: SettingsView.Difficulty = .normal  // Store difficulty here
+    @ObservedObject var userId: Int
+    @ObservedObject var gameId: Int
 
     var body: some View {
         ZStack {
@@ -121,7 +123,7 @@ struct HIWGameLobbyView: View {
                         showSettings = false
                     }
 
-                SettingsView(showSettings: $showSettings, selectedDifficulty: $selectedDifficulty, showPauseMenu: $showPauseMenu, openedFromPauseMenu: $openedFromPauseMenu)
+                SettingsView(showSettings: $showSettings, userId: $userId, gameID: $gameId, selectedDifficulty: $selectedDifficulty, showPauseMenu: $showPauseMenu, openedFromPauseMenu: $openedFromPauseMenu)
                     .frame(width: 300, height: 350)
                     .background(Color.white)
                     .cornerRadius(20)
@@ -160,6 +162,8 @@ struct HIWGameLobbyView: View {
 // the actual pop up stuff for settings
 struct SettingsView: View {
     @Binding var showSettings: Bool
+    @ObservedObject var userId: Int
+    @ObservedObject var gameId: Int
     @Binding var selectedDifficulty: Difficulty
     @Binding var showPauseMenu: Bool  
     @Binding var openedFromPauseMenu: Bool
@@ -192,11 +196,14 @@ struct SettingsView: View {
                 .background(Color.lightBlue)
                 .cornerRadius(8)
                 .accessibilityIdentifier("difficultyPicker")
+                .onChange(of: selectedDifficulty) { newDifficulty in
+                    updateGameSettings(dif: newDifficulty)
+                }
             }
 
             CustomButton(
                 config: CustomButtonConfig(
-                    title: "Setting 2", width: 150, buttonColor: .lightBlue
+                    title: "Setting 2", width: 150, buttonColor: .lightBlue, action: {updateGameSettings(dif: $selectedDifficulty)}
                 ) {})
                 .accessibilityIdentifier("setting2Button")
 
@@ -214,6 +221,88 @@ struct SettingsView: View {
             Spacer()
         }
         .padding()
+        .onAppear{
+            fetchGameSettings(userId: $userId, gameId: $gameId)
+        }
+    }
+    
+    func fetchGameSettings(userId: Int, gameId: Int) {
+        guard let url = URL(string: "http://localhost:3000/settings/gameSettings?userId=\(userId)&gameId=\(gameId)") else {
+            print("Invalid URL")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    print("Invalid response from server")
+                    return
+                }
+                
+                if httpResponse.statusCode == 200, let data = data {
+                    do {
+                        let settings = try JSONDecoder().decode(GameSettings.self, from: data)
+                        guard let self.selectedDifficulty = settings.difficulty else {
+                            self.selectedDifficulty = .normal
+                            print("\(settings.difficulty) is not a valid value of the Difficulty enum")
+                        }
+                    } catch {
+                        print("Failed to decode JSON: \(error.localizedDescription)")
+                    }
+                } else {
+                    print("Failed to fetch game \($gameId) settings. Status code: \(httpResponse.statusCode)")
+                }
+            }
+        }.resume()
+    }
+
+    func updateGameSettings(dif: Difficulty) {
+        guard let url = URL(string: "http://localhost:3000/settings/gameSettings") else {
+            print("Invalid URL")
+            return
+        }
+
+        let body: [String: Any] = [
+            "userId": $userId,
+            "gameId": $gameId,
+            "difficulty": dif,
+        ]
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
+            print("Failed to encode JSON")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    print("Invalid response from server")
+                    print("Failed to update game \($gameId) settings. Status code: \(httpResponse.statusCode)")
+                    return
+                }
+
+                print("Game \($gameId) settings updated successfully!")
+            }
+        }.resume()
     }
 }
 
@@ -272,6 +361,12 @@ struct PauseMenuView: View {
         }
         .padding()
     }
+}
+
+struct GameSettings: Codable {
+    let userId: Int
+    let gameId: Int
+    let difficulty: Difficulty
 }
 
 #Preview {
