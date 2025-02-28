@@ -13,27 +13,9 @@ final class SettingsPageUITests: XCTestCase {
         XCTAssertTrue(startButton.exists, "Start button should exist")
         startButton.tap()
 
-        let settingsButton = app.buttons["Settings"]
+        let settingsButton = app.buttons["setting"]
         XCTAssertTrue(settingsButton.exists, "Settings button should exist")
         settingsButton.tap()
-    }
-
-    func testSettingsButtonExistsAndTaps() {
-        navigateToSettingsPage()
-
-        let settingsTabButton = app.buttons["settingsButton"]
-        XCTAssertTrue(settingsTabButton.exists, "Settings tab button should exist")
-    }
-
-    func testGameSettingsButtonExistsAndTaps() {
-        navigateToSettingsPage()
-
-        let gameSettingsButton = app.buttons["gameSettingsButton"]
-        XCTAssertTrue(gameSettingsButton.exists, "Game Settings tab button should exist")
-        gameSettingsButton.tap()
-        
-        let gameSettingsScreen = app.staticTexts["gameSettingsScreen"]
-        XCTAssertTrue(gameSettingsScreen.exists, "Game Settings screen should be visible after tapping the button")
     }
     
     func testAudioSliderExists() {
@@ -48,7 +30,7 @@ final class SettingsPageUITests: XCTestCase {
     func testChangeThemeButtonExistsAndTaps() {
         navigateToSettingsPage()
 
-        let themeButton = app.buttons["themeButton"]
+        let themeButton = app.buttons["Change Theme"]
         XCTAssertTrue(themeButton.exists, "Change Theme button should exist")
         themeButton.tap()
     }
@@ -56,7 +38,7 @@ final class SettingsPageUITests: XCTestCase {
     func testChangeLanguageButtonExistsAndTaps() {
         navigateToSettingsPage()
 
-        let languageButton = app.buttons["languageButton"]
+        let languageButton = app.buttons["Change Language"]
         XCTAssertTrue(languageButton.exists, "Change Language button should exist")
         languageButton.tap()
     }

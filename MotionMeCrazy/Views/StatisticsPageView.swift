@@ -119,8 +119,9 @@ struct StatisticsPageView: View {
                         let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
                         if let bestScore = json?["best_score"] as? Int,
                            let totalTimePlayed = json?["total_time_played"] as? String {
+                            
                             self.highScore = bestScore
-                            self.timePlayed = totalTimePlayed
+                            self.timePlayed = formatTimePlayed(totalTimePlayed)
                         } else {
                             print("Invalid response format: \(String(data: data, encoding: .utf8) ?? "N/A")")
                             self.errorMessage = "Invalid response format"
@@ -142,6 +143,17 @@ struct StatisticsPageView: View {
             }
         }.resume()
     }
+    
+    func formatTimePlayed(_ time: String) -> String {
+        let components = time.split(separator: ":").compactMap { Int($0) }
+        guard components.count == 3 else { return "0h 0m" }
+        
+        let hours = components[0]
+        let minutes = components[1]
+        
+        return "\(hours)h \(minutes)m"
+    }
+    
     func clearStats(userId: Int) {
         guard let url = URL(string: "http://localhost:3000/stats/userGameSessions?userId=\(userId)")
         else {

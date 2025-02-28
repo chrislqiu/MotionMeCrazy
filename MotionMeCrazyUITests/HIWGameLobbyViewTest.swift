@@ -9,6 +9,11 @@ final class HIWGameLobbyUITests: XCTestCase {
     }
     
     func navigateToGamePage() {
+        let startButton = app.buttons["Start"]
+        XCTAssertTrue(startButton.exists, "Start button should exist")
+        
+        startButton.tap()
+        
         let holeInWallButton = app.buttons["Hole in the Wall"]
         XCTAssertTrue(holeInWallButton.exists, "Hole in the Wall button should exist")
         holeInWallButton.tap()

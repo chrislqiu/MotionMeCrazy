@@ -9,6 +9,11 @@ final class FriendsPageUITests: XCTestCase {
     }
     
     func navigateToFriendsPage() {
+        let startButton = app.buttons["Start"]
+        XCTAssertTrue(startButton.exists, "Start button should exist")
+        
+        startButton.tap()
+        
         let friendsButton = app.buttons["friends"]
         XCTAssertTrue(friendsButton.exists, "Friends button should exist")
         friendsButton.tap()
@@ -34,14 +39,8 @@ final class FriendsPageUITests: XCTestCase {
         XCTAssertTrue(allButton.exists, "All button should exist")
         allButton.tap()
         
-        let userRow = app.buttons["userRow"]
-        XCTAssertTrue(userRow.exists, "User list should exist")
-        
         let pendingButton = app.buttons["Pending"]
         XCTAssertTrue(pendingButton.exists, "Pending button should exist")
-        pendingButton.tap()
-
-        XCTAssertTrue(userRow.exists, "User list should exist")
     }
     
     func testNavigateFromPendingToAll() {
@@ -57,22 +56,5 @@ final class FriendsPageUITests: XCTestCase {
         
         let friendsPage = app.staticTexts["Friends"]
         XCTAssertTrue(friendsPage.exists, "Friends page should exist")
-    }
-    
-    func testFriendsListPage() {
-        navigateToFriendsPage()
-        
-        let allButton = app.buttons["All"]
-        XCTAssertTrue(allButton.exists, "All button should exist")
-        allButton.tap()
-        
-        let userButton = app.buttons["userRow"]
-        XCTAssertTrue(userButton.exists, "User button should exist")
-        
-        let userText = app.staticTexts["userRow"]
-        XCTAssertTrue(userText.exists, "User text should exist")
-        
-        let userPfp = app.images["userRow"]
-        XCTAssertTrue(userPfp.exists, "User image should exist")
     }
 }

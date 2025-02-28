@@ -49,7 +49,7 @@ struct LeaguePageView: View {
                 CustomHeader(config: CustomHeaderConfig(title: "My Leagues"))
 
                 if myLeagues.isEmpty {
-                    Text("No leagues available")
+                    Text("You are not in any leagues")
                         .foregroundColor(.black)
                         .padding()
                 } else {
@@ -62,10 +62,8 @@ struct LeaguePageView: View {
                     }
                 }
 
-                Text("Other Leagues")
-                    .font(.title2)
-                    .bold()
-                    .padding(.bottom, 5)
+                CustomHeader(config: CustomHeaderConfig(title: "Other Leagues"))
+
 
                 if otherLeagues.isEmpty {
                     Text("No other leagues available")

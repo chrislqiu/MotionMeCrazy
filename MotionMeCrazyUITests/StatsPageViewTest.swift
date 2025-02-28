@@ -9,25 +9,32 @@ final class StatsPageUITests: XCTestCase {
     }
     
     func navigateToStatsPage(){
-        let moreButton = app.buttons["More"]
-        XCTAssertTrue(moreButton.exists, "More button should exist")
-        moreButton.tap()
+        let startButton = app.buttons["Start"]
+        XCTAssertTrue(startButton.exists, "Start button should exist")
+        startButton.tap()
         
-        let statsButton = app.staticTexts["Statistics"]
-        XCTAssertTrue(statsButton.exists, "Stats button should exist")
-        statsButton.tap()
+        let profileButton = app.buttons["profile"]
+        XCTAssertTrue(profileButton.exists, "Profile button should exist")
+        profileButton.tap()
+        
+        let stats = app.buttons["Stats"]
+        XCTAssertTrue(stats.exists, "Stats should exist")
+        stats.tap()
     }
     
     func testViewGames() {
         navigateToStatsPage()
-        
-        let stats = app.staticTexts["Statistics"]
-        XCTAssertTrue(stats.exists, "Stats should exist")
         
         let highScore = app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'High Score:'")).firstMatch
         XCTAssertTrue(highScore.exists, "High score should exist")
 
         let timePlayed = app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'Time Played:'")).firstMatch
         XCTAssertTrue(timePlayed.exists, "Time played should exist")
+        
+        let shareButton = app.buttons["Share"]
+        XCTAssertTrue(shareButton.exists, "Share button should exist")
+
+        let clearButton = app.buttons["Clear"]
+        XCTAssertTrue(clearButton.exists, "Clear button should exist")
     }
 }

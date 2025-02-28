@@ -36,7 +36,7 @@ struct ProfilePageView: View {
                         CustomText(config: CustomTextConfig(text: userViewModel.username))
                             .accessibilityIdentifier("username")
                         CustomText(
-                            config: CustomTextConfig(text: String(userViewModel.userid))
+                            config: CustomTextConfig(text: "User ID: \(userViewModel.userid)")
                         ).accessibilityIdentifier("userid")
                         
                         CustomButton(

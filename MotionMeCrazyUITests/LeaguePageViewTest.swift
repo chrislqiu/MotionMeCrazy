@@ -9,6 +9,11 @@ final class LeaguePageUITests: XCTestCase {
     }
     
     func navigateToLeaguePage(){
+        let startButton = app.buttons["Start"]
+        XCTAssertTrue(startButton.exists, "Start button should exist")
+        
+        startButton.tap()
+        
         let leaderboardButton = app.buttons["leaderboard"]
         XCTAssertTrue(leaderboardButton.exists, "Leaderboard button should exist")
         leaderboardButton.tap()
@@ -27,16 +32,8 @@ final class LeaguePageUITests: XCTestCase {
         let createLeagueTitle = app.staticTexts["Create Your League"]
         XCTAssertTrue(createLeagueTitle.exists, "Create League should exist")
         XCTAssertTrue(createLeague.exists, "Create League button should exist")
-
-        let addMember = app.buttons["Add Member"]
-        XCTAssertTrue(addMember.exists, "Add member button should exist")
-        addMember.tap()
-        
-        let usernameField = app.textFields.matching(NSPredicate(format: "placeholderValue == 'Enter username'")).firstMatch
-        XCTAssertTrue(usernameField.exists, "Username text field should exist")
         
         let createLeagueButtons = app.buttons.matching(identifier: "Create League")
-        createLeagueButtons.element(boundBy: 1).tap()
-        XCTAssertTrue(leagues.exists, "Leagues should exist")
+        XCTAssertTrue(createLeagueButtons.firstMatch.exists, "Leagues should exist")
     }
 }

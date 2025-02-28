@@ -8,7 +8,16 @@ final class MainPageUITests: XCTestCase {
         app.launch()
     }
     
+    func navigateToMainPage() {
+        let startButton = app.buttons["Start"]
+        XCTAssertTrue(startButton.exists, "Start button should exist")
+        
+        startButton.tap()
+    }
+    
     func testViewGames() {
+        navigateToMainPage()
+        
         let holeInWall = app.buttons["Hole in the Wall"]
         XCTAssertTrue(holeInWall.exists, "Hole in the Wall button should exist")
         
@@ -23,6 +32,8 @@ final class MainPageUITests: XCTestCase {
     }
     
     func testAllButtonsVisibleAndWork() {
+        navigateToMainPage()
+
         let homeButton = app.buttons["home"]
         XCTAssertTrue(homeButton.exists, "Home button should exist")
         
@@ -48,29 +59,11 @@ final class MainPageUITests: XCTestCase {
         XCTAssertTrue(leagues.exists, "Leagues should exist")
         homeButton.tap()
         
-        let moreButton = app.buttons["More"]
-        XCTAssertTrue(moreButton.exists, "More button should exist")
-        moreButton.tap()
-        
-        let statsButton = app.staticTexts["Statistics"]
-        XCTAssertTrue(statsButton.exists, "Stats button should exist")
-        statsButton.tap()
-        
-        let stats = app.staticTexts["Statistics"]
-        XCTAssertTrue(stats.exists, "Stats should exist")
-        
-        moreButton.firstMatch.tap()
-        
-        let settingsButton = app.staticTexts["Settings"]
+        let settingsButton = app.buttons["setting"]
         XCTAssertTrue(settingsButton.exists, "Settings button should exist")
         settingsButton.tap()
         
         let settings = app.staticTexts["Settings"]
         XCTAssertTrue(settings.exists, "Settings should exist")
-        
-        homeButton.tap()
-        
-        let home = app.staticTexts["Game Center"]
-        XCTAssertTrue(home.exists, "Home should exist")
     }
 }

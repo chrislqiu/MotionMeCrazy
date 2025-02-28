@@ -146,7 +146,6 @@ struct LandingPageView: View {
                     ) {
                         Button(action: {
                             createUser()
-                            navigateToMainPage = true
                         }) {
                             Text("Start")
                                 .font(.title2)
@@ -260,6 +259,7 @@ struct LandingPageView: View {
                         }
                         print("User successfully created!")
                         self.errorMessage = nil
+                        navigateToMainPage = true
                     } else {
                         self.errorMessage =
                             "Username already exists, please try again"

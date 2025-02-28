@@ -9,6 +9,11 @@ final class GameCenterUITests: XCTestCase {
     }
     
     func navigateToGamePage() {
+        let startButton = app.buttons["Start"]
+        XCTAssertTrue(startButton.exists, "Start button should exist")
+        
+        startButton.tap()
+        
         let holeInWallButton = app.buttons["Hole in the Wall"]
         XCTAssertTrue(holeInWallButton.exists, "Hole in the Wall button should exist")
         holeInWallButton.tap()
@@ -44,7 +49,13 @@ final class GameCenterUITests: XCTestCase {
         pauseButton.tap()
         quitButton.tap()
         
-        let gameLobby = app.staticTexts["Hole in the Wall"]
+        let yesButton = app.buttons["Yes"]
+        XCTAssertTrue(quitButton.exists)
+        yesButton.tap()
+        
+        sleep(1)
+        
+        let gameLobby = app.staticTexts["Game Center"]
         XCTAssertTrue(gameLobby.exists, "User should be at lobby")
     }
 }
