@@ -115,21 +115,21 @@ struct HIWTutorialPageView: View {
     }
     
     @ViewBuilder
-    func highlightSection(rect: CGRect) -> some View {
-        GeometryReader { _ in
-            Color.black.opacity(0.7)
-                .mask(
-                    Rectangle()
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .frame(width: rect.width + 18, height: rect.height + 10)
-                                .position(x: rect.midX, y: rect.midY)
-                                .blendMode(.destinationOut)
-                        )
-                )
-                .edgesIgnoringSafeArea(.all)
+        func highlightSection(rect: CGRect) -> some View {
+            GeometryReader { _ in
+                Color.black.opacity(0.7)
+                    .mask(
+                        Rectangle()
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .frame(width: rect.width + 18, height: rect.height + 10)
+                                    .position(x: rect.midX + 10, y: rect.midY - 70)
+                                    .blendMode(.destinationOut)
+                            )
+                    )
+                    .edgesIgnoringSafeArea(.all)
+            }
         }
-    }
     
     // adds a highlight effect for pause step
     @ViewBuilder
