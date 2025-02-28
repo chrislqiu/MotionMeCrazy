@@ -144,7 +144,7 @@ struct HIWTutorialPageView: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
                                 .frame(width: highlightRect.width, height: highlightRect.height)
-                                .position(x: highlightRect.midX, y: highlightRect.midY)
+                                .position(x: highlightRect.midX - 2, y: highlightRect.midY - 98)
                                 .blendMode(.destinationOut)
                         )
                 )
