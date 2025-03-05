@@ -13,7 +13,7 @@ struct MainPageView: View {
     var body: some View {
         //TODO hide tab view when game is active
         TabView {
-            GameCenterPageView()
+            GameCenterPageView(userViewModel: userViewModel)
                 .tabItem { Image("home") }
             ProfilePageView(userViewModel: userViewModel)
                 .tabItem { Image("profile") }

@@ -16,6 +16,9 @@ struct HIWGameLobbyView: View {
     @State private var isPlaying = false  // checks if game is active
     @State private var openedFromPauseMenu = false //checks where the settings was opened from
     @State private var selectedDifficulty: SettingsView.Difficulty = .normal  // Store difficulty here
+    @State private var fetchingError: Bool = false
+    var userId: Int
+    var gameId: Int
 
     var body: some View {
         ZStack {
@@ -121,7 +124,7 @@ struct HIWGameLobbyView: View {
                         showSettings = false
                     }
 
-                SettingsView(showSettings: $showSettings, selectedDifficulty: $selectedDifficulty, showPauseMenu: $showPauseMenu, openedFromPauseMenu: $openedFromPauseMenu)
+                SettingsView(showSettings: $showSettings, userId: userId, gameId: gameId, selectedDifficulty: $selectedDifficulty, showPauseMenu: $showPauseMenu, openedFromPauseMenu: $openedFromPauseMenu)
                     .frame(width: 300, height: 350)
                     .background(Color.white)
                     .cornerRadius(20)
@@ -154,12 +157,107 @@ struct HIWGameLobbyView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear {
+            fetchGameSettings(userId: userId, gameId: gameId)
+        }
+        .onChange(of: fetchingError) { newValue in
+            print("Updating game settings to default...")
+            updateGameSettings(userId: userId, gameId: gameId, diff: selectedDifficulty.rawValue)
+        }
     }
+    
+    func fetchGameSettings(userId: Int, gameId: Int) {
+        guard let url = URL(string: "http://localhost:3000/gameSettings?userId=\(userId)&gameId=\(gameId)") else {
+            print("Invalid URL")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    print("Invalid response from server")
+                    return
+                }
+                
+                if httpResponse.statusCode == 200, let data = data {
+                    do {
+                        let settings = try JSONDecoder().decode(GameSettings.self, from: data)
+                        if let difficulty = SettingsView.Difficulty(rawValue: settings.difficulty) {
+                            self.selectedDifficulty = difficulty
+                        } else {
+                            self.selectedDifficulty = .normal
+                            print("Invalid difficulty stored in server")
+                        }
+                    } catch {
+                        print("Failed to decode JSON: \(error.localizedDescription)")
+                    }
+                } else {
+                    self.fetchingError = true
+                    print("Failed to fetch game settings. Status code: \(httpResponse.statusCode)")
+                }
+            }
+        }.resume()
+    }
+}
+
+func updateGameSettings(userId: Int, gameId: Int, diff: String) {
+    guard let url = URL(string: "http://localhost:3000/gameSettings") else {
+        print("Invalid URL")
+        return
+    }
+
+    let body: [String: Any] = [
+        "userId": String(userId),
+        "gameId": String(gameId),
+        "difficulty": diff,
+    ]
+
+    guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
+        print("Failed to encode JSON")
+        return
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = jsonData
+
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        DispatchQueue.main.async {
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid response from server")
+                return
+            }
+            
+            guard httpResponse.statusCode == 200 else {
+                print("Failed to update game \(gameId) settings. Status code: \(httpResponse.statusCode)")
+                return
+            }
+
+            print("Game \(gameId) settings updated successfully!")
+        }
+    }.resume()
 }
 
 // the actual pop up stuff for settings
 struct SettingsView: View {
     @Binding var showSettings: Bool
+    var userId: Int
+    var gameId: Int
     @Binding var selectedDifficulty: Difficulty
     @Binding var showPauseMenu: Bool  
     @Binding var openedFromPauseMenu: Bool
@@ -192,6 +290,9 @@ struct SettingsView: View {
                 .background(Color.lightBlue)
                 .cornerRadius(8)
                 .accessibilityIdentifier("difficultyPicker")
+                .onChange(of: selectedDifficulty) { newValue in
+                    updateGameSettings(userId: userId, gameId: gameId, diff: newValue.rawValue)
+                }
             }
 
             CustomButton(
@@ -274,6 +375,12 @@ struct PauseMenuView: View {
     }
 }
 
+struct GameSettings: Codable {
+    let user_id: Int
+    let game_id: Int
+    let difficulty: String
+}
+
 #Preview {
-    HIWGameLobbyView()
+    HIWGameLobbyView(userId: 421, gameId: 0)
 }

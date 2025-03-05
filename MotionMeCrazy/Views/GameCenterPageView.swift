@@ -1,14 +1,15 @@
 import SwiftUI
 
 struct GameCenterPageView: View {
-    @State private var selectedGame = 0
+    @State private var selectedGame: Int = 0
+    @ObservedObject var userViewModel: UserViewModel
     
-    private let games: [(name: String, icon: String, buttonColor: Color, destination: AnyView)] = [
-        ("Hole in the Wall", "figure.run", .darkBlue, AnyView(HIWGameLobbyView())),
-        ("Game 2", "gamecontroller.fill", .darkBlue, AnyView(Text("Coming Soon!")))
-    ]
+    private var games: [(name: String, icon: String, buttonColor: Color, destination: AnyView)] = []
     
-    init() {
+    init(userViewModel: UserViewModel) {
+        self.userViewModel = userViewModel
+        self.games = [("Hole in the Wall", "figure.run", .darkBlue, AnyView(HIWGameLobbyView(userId: userViewModel.userid, gameId: selectedGame))),
+                      ("Game 2", "gamecontroller.fill", .darkBlue, AnyView(Text("Coming Soon!")))]
         UIPageControl.appearance().currentPageIndicatorTintColor = UIColor.systemBlue
         UIPageControl.appearance().pageIndicatorTintColor = UIColor.systemBlue.withAlphaComponent(0.5)
     }
@@ -59,5 +60,5 @@ struct SelectGame: View {
 }
 
 #Preview {
-    GameCenterPageView()
+    GameCenterPageView(userViewModel: UserViewModel(userid: 421, username: "JazzyLegend633", profilePicId: "pfp2"))
 }
