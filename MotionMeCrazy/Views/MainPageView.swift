@@ -26,13 +26,14 @@ struct MainPageView: View {
 //                    Image("badge")
 //                    Text("Statistics")
 //                }
-            SettingsPageView()
+            SettingsPageView(userViewModel: userViewModel)
                 .tabItem {
                     Image("setting")
                 }
 
         }
         .onAppear {
+            // TODO: we need to fetch app setting from database HERE (to show we saved settings from last log in)
             UITabBar.appearance().backgroundColor = .white  // Tab background color
             UITabBar.appearance().barTintColor = .darkBlue  // Tab item color
             UITabBar.appearance().tintColor = .white  // color for selected icon
