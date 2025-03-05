@@ -1,10 +1,23 @@
+//
+//  GameCenterPageView.swift
+//  MotionMeCrazy
+//
+//  Created by Tea Lazareto 2/13/25.
+//
+
+
 import SwiftUI
 
 struct GameCenterPageView: View {
     @State private var selectedGame: Int = 0
+    @State private var sortOption: SortOption = .default // Enum to track sorting options
     @ObservedObject var userViewModel: UserViewModel
     
     private var games: [(name: String, icon: String, buttonColor: Color, destination: AnyView)] = []
+    
+    enum SortOption {
+        case `default`, leastPopular, mostPopular
+    }
     
     init(userViewModel: UserViewModel) {
         self.userViewModel = userViewModel
@@ -21,11 +34,43 @@ struct GameCenterPageView: View {
                     .resizable()
                     .ignoresSafeArea()
                 
-                VStack(spacing: 175) {
-                    CustomHeader(config: .init(title: "Game Center"))
+                VStack {
+                    // header and sort button
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Menu {
+                                Button("Most Popular") {
+                                    sortOption = .mostPopular
+                                    // TODO:  sort the games by most popular
+                                }
+                                Button("Least Popular") {
+                                    sortOption = .leastPopular
+                                    // TODO: sort the games by least popular
+                                }
+                                Button("Revert to Default") {
+                                    sortOption = .default
+                                    // TODO: go back to default
+                                }
+                            } label: {
+                                Image(systemName: "arrow.up.arrow.down.circle.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(.white)
+                            }
+                            .padding(.trailing, 20)
+                        }
+                        
+                        CustomHeader(config: .init(title: "Game Center"))
+                            .padding(.top, 10)
+                    }
                     
+                    Spacer()
+                    
+                    // game selection
                     TabView(selection: $selectedGame) {
-                        ForEach(Array(games.indices), id: \..self) { index in
+                        ForEach(Array(games.indices), id: \.self) { index in
                             SelectGame(game: games[index])
                                 .scaleEffect(selectedGame == index ? 1.2 : 1.0)
                                 .tag(index)
@@ -40,6 +85,8 @@ struct GameCenterPageView: View {
         }
     }
 }
+
+
 
 struct SelectGame: View {
     let game: (name: String, icon: String, buttonColor: Color, destination: AnyView)

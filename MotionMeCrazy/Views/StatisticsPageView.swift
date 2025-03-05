@@ -12,6 +12,7 @@ struct StatisticsPageView: View {
     @State private var timePlayed: String = "0h 0m"
     @State private var errorMessage: String?
     @ObservedObject var userViewModel: UserViewModel
+    @State private var selectedTimePeriod: String = "Past Day"
     var body: some View {
         ZStack {
             // Background
@@ -37,6 +38,35 @@ struct StatisticsPageView: View {
                 .background(Color("DarkBlue"))
                 
                 Spacer()
+                
+                // Time Period Dropdown Menu
+                Menu {
+                        Button("Past Day") {
+                            selectedTimePeriod = "Past Day"
+                            // TODO: update stats for past day
+                        }
+                        Button("Past Week") {
+                            selectedTimePeriod = "Past Week"
+                            // TODO: update stats for past week
+                        }
+                        Button("Past Month") {
+                            selectedTimePeriod = "Past Month"
+                            // TODO: update stats for past month
+                        }
+                    } label: {
+                        HStack {
+                            Text("High Scores From The: \(selectedTimePeriod)")
+                                .foregroundColor(.white)
+                                .fontWeight(.bold)
+                            
+                            Image(systemName: "arrowtriangle.down.fill")
+                                .foregroundColor(.white)
+                        }
+                        .padding()
+                        .background(Color("DarkBlue"))
+                        .cornerRadius(10)
+                    }
+                    .padding(.bottom, 20)
                 
                 // Actual stats
                 VStack {
