@@ -13,7 +13,7 @@ struct APIHelper {
         #if targetEnvironment(simulator)
         return "http://localhost:3000"
         #else
-        //replace with your Macbook's/laptop's private ip address
+        //replace with your Macbook's private ip address
         //run 'ipconfig getifaddr en0' in terminal and paste below
         return "http://192.168.1.11:3000"
         #endif
