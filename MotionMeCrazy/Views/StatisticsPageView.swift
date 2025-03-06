@@ -41,32 +41,35 @@ struct StatisticsPageView: View {
                 
                 // Time Period Dropdown Menu
                 Menu {
-                        Button("Past Day") {
-                            selectedTimePeriod = "Past Day"
-                            // TODO: update stats for past day
-                        }
-                        Button("Past Week") {
-                            selectedTimePeriod = "Past Week"
-                            // TODO: update stats for past week
-                        }
-                        Button("Past Month") {
-                            selectedTimePeriod = "Past Month"
-                            // TODO: update stats for past month
-                        }
-                    } label: {
-                        HStack {
-                            Text("High Scores From The: \(selectedTimePeriod)")
-                                .foregroundColor(.white)
-                                .fontWeight(.bold)
-                            
-                            Image(systemName: "arrowtriangle.down.fill")
-                                .foregroundColor(.white)
-                        }
-                        .padding()
-                        .background(Color("DarkBlue"))
-                        .cornerRadius(10)
+                    Button("Past Day") {
+                        selectedTimePeriod = "Past Day"
+                        fetchUserStatistics(userId: userViewModel.userid, days: 1)
+                        // TODO: update stats for past day
                     }
-                    .padding(.bottom, 20)
+                    Button("Past Week") {
+                        selectedTimePeriod = "Past Week"
+                        fetchUserStatistics(userId: userViewModel.userid, days: 7)
+                        // TODO: update stats for past week
+                    }
+                    Button("Past Month") {
+                        selectedTimePeriod = "Past Month"
+                        fetchUserStatistics(userId: userViewModel.userid, days: 30)
+                        // TODO: update stats for past month
+                    }
+                } label: {
+                    HStack {
+                        Text("High Scores From The: \(selectedTimePeriod)")
+                            .foregroundColor(.white)
+                            .fontWeight(.bold)
+                        
+                        Image(systemName: "arrowtriangle.down.fill")
+                            .foregroundColor(.white)
+                    }
+                    .padding()
+                    .background(Color("DarkBlue"))
+                    .cornerRadius(10)
+                }
+                .padding(.bottom, 20)
                 
                 // Actual stats
                 VStack {
@@ -114,13 +117,12 @@ struct StatisticsPageView: View {
             }
         }
         .onAppear {
-
-            fetchUserStatistics(userId: userViewModel.userid)
+            fetchUserStatistics(userId: userViewModel.userid, days: 1)
         }
     }
     
-    func fetchUserStatistics(userId: Int) {
-        guard let url = URL(string: APIHelper.getBaseURL() + "/stats/userStatistics?userId=\(userId)") else {
+    func fetchUserStatistics(userId: Int, days: Int) {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/stats/userStatistics?userId=\(userId)&days=\(days)") else {
             print("Invalid URL")
             self.errorMessage = "Invalid URL"
             return
@@ -146,15 +148,18 @@ struct StatisticsPageView: View {
                 
                 if httpResponse.statusCode == 200 {
                     do {
-                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                        if let bestScore = json?["best_score"] as? Int,
-                           let totalTimePlayed = json?["total_time_played"] as? String {
-                            
-                            self.highScore = bestScore
-                            self.timePlayed = formatTimePlayed(totalTimePlayed)
-                        } else {
-                            print("Invalid response format: \(String(data: data, encoding: .utf8) ?? "N/A")")
-                            self.errorMessage = "Invalid response format"
+                        if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                            if let timePlayed = json["time_played"] as? String {
+                                //todo
+                            }
+                            if let scores = json["scores"] as? [[String: Any]] {
+                                for scoreEntry in scores {
+                                    if let score = scoreEntry["score"] as? Int,
+                                       let date = scoreEntry["date"] as? String {
+                                        //todo
+                                    }
+                                }
+                            }
                         }
                     } catch {
                         print("Failed to decode JSON: \(error.localizedDescription)")
@@ -205,7 +210,8 @@ struct StatisticsPageView: View {
                 if let httpResponse = response as? HTTPURLResponse {
                     if httpResponse.statusCode == 200 {
                         print("User Stats Deleted!")
-                        fetchUserStatistics(userId: userViewModel.userid)
+                        selectedTimePeriod = "Past Day"
+                        fetchUserStatistics(userId: userViewModel.userid, days: 1)
                         self.errorMessage = nil
                     } else {
                         self.errorMessage = "Failed to delete stats. Status code: \(httpResponse.statusCode)"
@@ -272,5 +278,5 @@ struct StatisticsPageView: View {
 }
 
 #Preview {
-//    StatisticsPageView(user: "test")
+    //    StatisticsPageView(user: "test")
 }
