@@ -1,13 +1,15 @@
 import SwiftUI
 
 struct ProfilePageView: View {
+    @EnvironmentObject var appState: AppState
+    
     @ObservedObject var userViewModel: UserViewModel
-
+    
     @State private var newUsername: String = ""
     @State private var isEditing: Bool = false
     @State private var showSelector = false  // Controls modal visibility
     @State private var errorMessage: String?  // For displaying errors
-
+    
     let images = ["pfp1", "pfp2", "pfp3", "pfp4", "pfp5", "pfp6"]
     var body: some View {
         NavigationStack {
@@ -16,60 +18,71 @@ struct ProfilePageView: View {
                     .resizable()
                     .ignoresSafeArea()
                 
-                VStack(alignment: .center) {
+                VStack(alignment: .center, spacing: 10) {
                     CustomHeader(config: CustomHeaderConfig(title: "Profile"))
                         .frame(maxWidth: .infinity, alignment: .center)
                     
                     Spacer()
                     
-                    VStack(alignment: .center, spacing: 10) {
-                        Image(userViewModel.profilePicId)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 120, height: 120)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
-                            .onTapGesture {
-                                showSelector.toggle()
-                            }.accessibilityIdentifier("profilePicture")
+                    if !appState.offlineMode {
                         
-                        CustomText(config: CustomTextConfig(text: userViewModel.username))
-                            .accessibilityIdentifier("username")
-                        CustomText(
-                            config: CustomTextConfig(text: "User ID: \(userViewModel.userid)")
-                        ).accessibilityIdentifier("userid")
-                        
-                        CustomButton(
-                            config: CustomButtonConfig(
-                                title: "Edit", width: 100,
-                                buttonColor: .darkBlue
-                            ) {
-                                isEditing.toggle()
+                        VStack(alignment: .center, spacing: 10) {
+                            Image(userViewModel.profilePicId)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 120, height: 120)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
+                                .onTapGesture {
+                                    showSelector.toggle()
+                                }.accessibilityIdentifier("profilePicture")
+                            
+                            CustomText(config: CustomTextConfig(text: userViewModel.username))
+                                .accessibilityIdentifier("username")
+                            CustomText(
+                                config: CustomTextConfig(text: "User ID: \(userViewModel.userid)")
+                            ).accessibilityIdentifier("userid")
+                            
+                            CustomButton(
+                                config: CustomButtonConfig(
+                                    title: "Edit", width: 100,
+                                    buttonColor: .darkBlue
+                                ) {
+                                    isEditing.toggle()
+                                }
+                            )
+                            .accessibilityIdentifier("Edit")
+                            .alert("Edit Username", isPresented: $isEditing) {
+                                TextField(
+                                    "Enter a new username", text: $newUsername
+                                )
+                                .accessibilityIdentifier("editUsernameField")
+                                Button("Cancel", action: { isEditing.toggle() })
+                                Button("Submit", action: submit)
+                                    .accessibilityIdentifier("submitUsernameButton")
+                            } message: {
+                                Text("Please enter a new username")
                             }
-                        )
-                        .accessibilityIdentifier("Edit")
-                        .alert("Edit Username", isPresented: $isEditing) {
-                            TextField(
-                                "Enter a new username", text: $newUsername
-                            )
-                            .accessibilityIdentifier("editUsernameField")
-                            Button("Cancel", action: { isEditing.toggle() })
-                            Button("Submit", action: submit)
-                                .accessibilityIdentifier("submitUsernameButton")
-                        } message: {
-                            Text("Please enter a new username")
+                            CustomButton(
+                                config: CustomButtonConfig(
+                                    title: "Stats",
+                                    width: 100,
+                                    buttonColor: .darkBlue,
+                                    destination: AnyView(StatisticsPageView(userViewModel: userViewModel))  // Ensure type erasure with AnyView
+                                )
+                            ).accessibilityIdentifier("statsButton")
+                            
                         }
-                        CustomButton(
-                            config: CustomButtonConfig(
-                                title: "Stats",
-                                width: 100,
-                                buttonColor: .darkBlue,
-                                destination: AnyView(StatisticsPageView(userViewModel: userViewModel))  // Ensure type erasure with AnyView
-                            )
-                        ).accessibilityIdentifier("statsButton")
-                        
+                    } else {
+                        Text("This page is not available in offline mode")
+                            .font(.title2)
+                            .foregroundColor(.black)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                            .accessibilityIdentifier("offlineMessage")
                     }
                     Spacer()
+                    
                 }
                 .frame(
                     maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -110,6 +123,7 @@ struct ProfilePageView: View {
                     }
                     Spacer()
                 }
+                
             }
         }
     }
@@ -123,23 +137,23 @@ struct ProfilePageView: View {
             print("Invalid URL")
             return
         }
-
+        
         let body: [String: Any] = [
             "newUsername": userViewModel.username,
             "newProfilePicId": userViewModel.profilePicId,
         ]
-
+        
         guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
         else {
             print("Failed to encode JSON")
             return
         }
-
+        
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
-
+        
         URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 if error != nil {
@@ -163,6 +177,6 @@ struct ProfilePageView: View {
 
 #Preview {
     
-   // ProfilePageView(username: "user", userid: 69, profilePicId: "pfp2")
+    // ProfilePageView(username: "user", userid: 69, profilePicId: "pfp2")
     
 }

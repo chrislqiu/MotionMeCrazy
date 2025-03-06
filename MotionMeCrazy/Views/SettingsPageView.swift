@@ -28,6 +28,7 @@ struct SettingsPageView: View {
     @State private var showThemePopup: Bool = false
     @State private var showLanguagePopup: Bool = false
     @ObservedObject var userViewModel: UserViewModel
+    @EnvironmentObject var appState: AppState
     
     var body: some View {
         ZStack {
@@ -50,7 +51,9 @@ struct SettingsPageView: View {
             }
         }
         .onAppear() {
-            fetchAppSettings(userId: userViewModel.userid)
+            if !appState.offlineMode{
+                fetchAppSettings(userId: userViewModel.userid)
+            }
         }
         .animation(.easeInOut, value: showThemePopup) //transition for opening
         .animation(.easeInOut, value: showLanguagePopup) //transition for opening
@@ -68,7 +71,7 @@ struct SettingsPageView: View {
                     in: 0...100,
                     step: 1,
                     onEditingChanged: { editing in
-                        if !editing {
+                        if !editing  && !appState.offlineMode {
                             updateAppSettings(userId: userViewModel.userid, audio: selectedAudioLevel, lan: selectedLanguage.rawValue, theme: selectedTheme.rawValue)
                         }
                     },
@@ -193,6 +196,7 @@ struct ThemeSelectionPopup: View {
     var audioLevel: Double
     @Binding var theme: Theme
     var language: Language
+    @EnvironmentObject var appState: AppState
     
     var body: some View {
         VStack(spacing: 20) {
@@ -223,7 +227,9 @@ struct ThemeSelectionPopup: View {
                 
                 CustomButton(config: .init(title: "Default", width: 150, buttonColor: .darkBlue) {
                     theme = .light
-                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue)
+                    if !appState.offlineMode {
+                        updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue)
+                    }
                 })
             }
             .padding()
@@ -246,6 +252,7 @@ struct LanguageSelectionPopup: View {
     var audioLevel: Double
     var theme: Theme
     @Binding var language: Language
+    @EnvironmentObject var appState: AppState
     
     var body: some View {
         VStack(spacing: 20) {
@@ -263,7 +270,9 @@ struct LanguageSelectionPopup: View {
             
             CustomButton(config: .init(title: "English", width: 100, buttonColor: .darkBlue) {
                 language = .en
-                updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue)
+                if !appState.offlineMode{
+                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue)
+                }
             })
         }
         .padding()

@@ -16,6 +16,8 @@ struct FriendsPageView: View {
     
     @ObservedObject var userViewModel: UserViewModel
     
+    @EnvironmentObject var appState: AppState
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -26,52 +28,68 @@ struct FriendsPageView: View {
                 VStack(alignment: .center, spacing: 10) {
                     CustomHeader(config: CustomHeaderConfig(title: "Friends"))
                     
-                    HStack(alignment: .top, spacing: 10) {
-                        CustomSelectedButton(config:
-                                                CustomSelectedButtonConfig(title: "All", width: 75) {})
+                    if !appState.offlineMode {
                         
-                        CustomButton(config: CustomButtonConfig(
-                            title: "Pending",
-                            width: 100,
-                            buttonColor: .darkBlue,
-                            destination: AnyView(PendingPageView(userViewModel: userViewModel))
-                        ))
-                        
-                        CustomButton(config:
-                                        CustomButtonConfig(title: "Sent", width: 75, buttonColor: .darkBlue) {})
-                    }
-                    .padding(.top, 10)
-                    
-                    VStack(alignment: .center, spacing: 10) {
-                        SearchBar(searchText: $searchText)
-                            .padding()
-                        CustomText(config: CustomTextConfig(text: "You are searching for: \(searchText)"))
-                    }
-                    
-                    ScrollView {
-                        LazyVStack(spacing: 10) {
-                            ForEach(friends, id: \.userid) { user in
-                                UserRowView(user: user)
-                                    .padding()
-                                    .background(Color.clear)
-                                    .cornerRadius(10)
-                                    .shadow(radius: 2)
-                            }
+                        HStack(alignment: .top, spacing: 10) {
+                            CustomSelectedButton(config:
+                                                    CustomSelectedButtonConfig(title: "All", width: 75) {})
+                            
+                            CustomButton(config: CustomButtonConfig(
+                                title: "Pending",
+                                width: 100,
+                                buttonColor: .darkBlue,
+                                destination: AnyView(PendingPageView(userViewModel: userViewModel))
+                            ))
+                            
+                            CustomButton(config:
+                                            CustomButtonConfig(title: "Sent", width: 75, buttonColor: .darkBlue) {})
                         }
-                        .padding(.horizontal)
+                        .padding(.top, 10)
+                        
+                        VStack(alignment: .center, spacing: 10) {
+                            SearchBar(searchText: $searchText)
+                                .padding()
+                            CustomText(config: CustomTextConfig(text: "You are searching for: \(searchText)"))
+                        }
+                        
+                        ScrollView {
+                            LazyVStack(spacing: 10) {
+                                ForEach(friends, id: \.userid) { user in
+                                    UserRowView(user: user)
+                                        .padding()
+                                        .background(Color.clear)
+                                        .cornerRadius(10)
+                                        .shadow(radius: 2)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                        
+                        /*List(friends) { user in
+                         UserRowView(user: user)
+                         .listRowBackground(Color.clear)
+                         }
+                         .scrollContentBackground(.hidden)
+                         .background(Color.clear)*/
+                    } else {
+                        Spacer()
+                        
+                        Text("This page is not available in offline mode")
+                            .font(.title2)
+                            .foregroundColor(.black)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                            .accessibilityIdentifier("offlineMessage")
+                        
+                        Spacer()
                     }
-                    
-                    /*List(friends) { user in
-                     UserRowView(user: user)
-                     .listRowBackground(Color.clear)
-                     }
-                     .scrollContentBackground(.hidden)
-                     .background(Color.clear)*/
                 }
                 .padding(.horizontal, 20)
             }
-        }.onAppear() {
-            getFriends()
+        }.onAppear {
+            if !appState.offlineMode {
+                getFriends()
+            }
         }
     }
     

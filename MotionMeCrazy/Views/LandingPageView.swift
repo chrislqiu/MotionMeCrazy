@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct LandingPageView: View {
+    @EnvironmentObject var appState: AppState
+    
     @StateObject private var userViewModel = UserViewModel(userid: 0, username: "", profilePicId: "")
     
     @State private var selectedImage: String = "pfp1"  // Initial profile image
@@ -53,113 +55,140 @@ struct LandingPageView: View {
                     .resizable()
                     .ignoresSafeArea()
                 //Vertically stack the text
-                VStack {
-                    Text("Motion Me\nCrazy")
-                        .font(.system(size: 48, weight: .heavy))
-                        .foregroundColor(Color("DarkBlue"))
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 35)
-                        .accessibilityIdentifier("appTitle")
-                    
-                    // Profile Image Display (Now Opens Selector When Tapped)
-                    Image(selectedImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 120, height: 120)
-                        .clipShape(Circle())
-                        .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
-                        .onTapGesture {
-                            showSelector.toggle()  // Open selector when tapped
-                        }
-                        .accessibilityIdentifier("profilePicture")
-                    
-                    HStack {
-                        TextField("Enter your username", text: $username)
-                            .font(.title2)
-                            .padding()
-                            .frame(width: 250)
-                            .background(Color.white.opacity(0.2))
-                            .cornerRadius(10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10).stroke(
-                                    Color.gray, lineWidth: 1)
-                            )
+                if !appState.loading {
+                    VStack {
+                        Text("Motion Me\nCrazy")
+                            .font(.system(size: 48, weight: .heavy))
+                            .foregroundColor(Color("DarkBlue"))
                             .multilineTextAlignment(.center)
-                            .onAppear {
-                                username = generateRandomUsername()
-                            }
-                            .accessibilityLabel("usernameField")
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 35)
+                            .accessibilityIdentifier("appTitle")
                         
-                        // Copy to Clipboard Button
-                        Button(action: {
-                            UIPasteboard.general.string = username
-                            showCopiedMessage = true
+                        if appState.offlineMode {
+                            NavigationLink(
+                                destination: MainPageView()
+                                    .environmentObject(userViewModel)
+                                    .navigationBarBackButtonHidden(true),
+                                isActive: $navigateToMainPage
+                            ) {
+                                Button(action: {
+                                    navigateToMainPage = true
+                                }) {
+                                    Text("Play Offline")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.white)
+                                        .frame(width: 180, height: 50)
+                                        .background(Color.blue)
+                                        .cornerRadius(25)
+                                        .shadow(radius: 5)
+                                }
+                                .padding(.top, 20)
+                                .accessibilityIdentifier("playOfflineButton")
+                            }
+                        } else {
                             
-                            // Hide message after 2 seconds
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                showCopiedMessage = false
+                            // Profile Image Display (Now Opens Selector When Tapped)
+                            Image(selectedImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 120, height: 120)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
+                                .onTapGesture {
+                                    showSelector.toggle()  // Open selector when tapped
+                                }
+                                .accessibilityIdentifier("profilePicture")
+                            
+                            HStack {
+                                TextField("Enter your username", text: $username)
+                                    .font(.title2)
+                                    .padding()
+                                    .frame(width: 250)
+                                    .background(Color.white.opacity(0.2))
+                                    .cornerRadius(10)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10).stroke(
+                                            Color.gray, lineWidth: 1)
+                                    )
+                                    .multilineTextAlignment(.center)
+                                    .onAppear {
+                                        username = generateRandomUsername()
+                                    }
+                                    .accessibilityLabel("usernameField")
+                                
+                                // Copy to Clipboard Button
+                                Button(action: {
+                                    UIPasteboard.general.string = username
+                                    showCopiedMessage = true
+                                    
+                                    // Hide message after 2 seconds
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        showCopiedMessage = false
+                                    }
+                                }) {
+                                    Image(systemName: "doc.on.doc")  // Clipboard icon
+                                        .font(.title)
+                                        .foregroundColor(.black)
+                                }
+                                .padding(.leading, 5)
+                                .accessibilityIdentifier("copyButton")
+                                
+                                // Refresh Button
+                                Button(action: {
+                                    username = generateRandomUsername()
+                                }) {
+                                    Image(systemName: "arrow.clockwise")  // Refresh icon
+                                        .font(.title2.bold())
+                                        .foregroundColor(.black)
+                                }
                             }
-                        }) {
-                            Image(systemName: "doc.on.doc")  // Clipboard icon
-                                .font(.title)
-                                .foregroundColor(.black)
+                            .padding(.top, 10)
+                            .accessibilityIdentifier("generateUsernameButton")
+                            
+                            // Show confirmation message
+                            if showCopiedMessage {
+                                Text("Copied to clipboard!")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                                    .padding(.top, 5)
+                                    .accessibilityIdentifier("copyMessage")
+                            }
+                            
+                            if let errorMessage = errorMessage {
+                                Text(errorMessage)
+                                    .font(.title3)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.orange)
+                                    .padding(.top, 5)
+                                    .accessibilityIdentifier("errorMessage")
+                            }
+                            
+                            NavigationLink(
+                                destination: MainPageView()
+                                    .environmentObject(userViewModel)
+                                    .navigationBarBackButtonHidden(true),
+                                isActive: $navigateToMainPage
+                            ) {
+                                Button(action: {
+                                    createUser()
+                                }) {
+                                    Text("Start")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.white)
+                                        .frame(width: 180, height: 50)
+                                        .background(Color.blue)
+                                        .cornerRadius(25)
+                                        .shadow(radius: 5)
+                                }
+                                .padding(.top, 20)
+                                .accessibilityIdentifier("startButton")
+                            }
+                            Spacer()
                         }
-                        .padding(.leading, 5)
-                        .accessibilityIdentifier("copyButton")
-                        
-                        // Refresh Button
-                        Button(action: {
-                            username = generateRandomUsername()
-                        }) {
-                            Image(systemName: "arrow.clockwise")  // Refresh icon
-                                .font(.title2.bold())
-                                .foregroundColor(.black)
-                        }
                     }
-                    .padding(.top, 10)
-                    .accessibilityIdentifier("generateUsernameButton")
-                    
-                    // Show confirmation message
-                    if showCopiedMessage {
-                        Text("Copied to clipboard!")
-                            .font(.caption)
-                            .foregroundColor(.green)
-                            .padding(.top, 5)
-                            .accessibilityIdentifier("copyMessage")
-                    }
-                    
-                    if let errorMessage = errorMessage {
-                        Text(errorMessage)
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(.orange)
-                            .padding(.top, 5)
-                            .accessibilityIdentifier("errorMessage")
-                    }
-                    
-                    NavigationLink(
-                        destination: MainPageView()
-                            .environmentObject(userViewModel)
-                            .navigationBarBackButtonHidden(true),
-                        isActive: $navigateToMainPage
-                    ) {
-                        Button(action: {
-                            createUser()
-                        }) {
-                            Text("Start")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                                .frame(width: 180, height: 50)
-                                .background(Color.blue)
-                                .cornerRadius(25)
-                                .shadow(radius: 5)
-                        }
-                        .padding(.top, 20)
-                        .accessibilityIdentifier("startButton")
-                    }
-                    Spacer()
                 }
             }
             .sheet(isPresented: $showSelector) {
