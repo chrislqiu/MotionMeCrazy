@@ -73,7 +73,7 @@ struct PendingPageView: View {
 func getFriends(userId: Int, requests: Binding<[FriendRequest]>) {
     requests.wrappedValue.removeAll()
     
-    guard let url = URL(string: "http://localhost:3000/friend/requests/pending?userid=\(userId)") else {
+    guard let url = URL(string: APIHelper.getBaseURL() + "/friend/requests/pending?userid=\(userId)") else {
         print("Invalid URL")
         return
     }
@@ -164,7 +164,7 @@ private struct UserRowView: View {
     
     // Accepts friend request
     func acceptRequest() {
-        guard let url = URL(string: "http://localhost:3000/friend/accept") else {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/friend/accept") else {
             print("Invalid URL")
             return
         }
@@ -205,7 +205,7 @@ private struct UserRowView: View {
     
     // Decline friend request
     func declineRequest() {
-        guard let url = URL(string: "http://localhost:3000/friend/request/?request_id=\(user.request_id)") else {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/friend/request/?request_id=\(user.request_id)") else {
             print("Invalid URL")
             return
         }

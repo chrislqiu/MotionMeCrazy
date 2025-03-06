@@ -244,7 +244,7 @@ struct LandingPageView: View {
     }
     
     func createUser() {
-        guard let url = URL(string: "http://localhost:3000/user") else {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/user") else {
             print("Invalid URL")
             return
         }

@@ -98,7 +98,7 @@ struct SettingsPageView: View {
     }
     
     func fetchAppSettings(userId: Int) {
-        guard let url = URL(string: "http://localhost:3000/appSettings?userId=\(userId)") else {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/appSettings?userId=\(userId)") else {
             print("Invalid URL")
             return
         }
@@ -145,7 +145,7 @@ struct SettingsPageView: View {
 }
 
 func updateAppSettings(userId: Int, audio: Double, lan: String, theme: String) {
-    guard let url = URL(string: "http://localhost:3000/appSettings") else {
+    guard let url = URL(string: APIHelper.getBaseURL() + "/appSettings") else {
         print("Invalid URL")
         return
     }

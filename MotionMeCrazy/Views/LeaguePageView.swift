@@ -117,7 +117,7 @@ struct LeaguePageView: View {
     
     
     private func fetchLeagues() {
-        guard let url = URL(string: "http://localhost:3000/leagues?userId=\(userViewModel.userid)") else {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/leagues?userId=\(userViewModel.userid)") else {
             print("Invalid URL or user ID not available")
             return
         }
@@ -149,7 +149,7 @@ struct LeaguePageView: View {
     }
     
     private func fetchOtherLeagues() {
-        guard let url = URL(string: "http://localhost:3000/leagues/not-joined?userId=\(userViewModel.userid)") else {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/leagues/not-joined?userId=\(userViewModel.userid)") else {
             print("Invalid URL or user ID not available")
             return
         }
@@ -183,7 +183,7 @@ struct LeaguePageView: View {
     private func getID(username: String, completion: @escaping (Int?) -> Void) {
         guard
             let url = URL(
-                string: "http://localhost:3000/userId?username=\(username)")
+                string: APIHelper.getBaseURL() + "/userId?username=\(username)")
         else {
             print("Invalid URL")
             completion(nil)
@@ -269,7 +269,7 @@ struct LeaguePopupView: View {
     }
     
     private func createLeague() {
-        guard let url = URL(string: "http://localhost:3000/league") else {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/league") else {
             print("Invalid URL")
             return
         }

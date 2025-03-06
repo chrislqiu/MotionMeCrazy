@@ -133,7 +133,7 @@ struct ProfilePageView: View {
     }
     
     func updateUser() {
-        guard let url = URL(string: "http://localhost:3000/user?userId=\(userViewModel.userid)") else {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/user?userId=\(userViewModel.userid)") else {
             print("Invalid URL")
             return
         }

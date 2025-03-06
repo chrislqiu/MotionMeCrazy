@@ -167,7 +167,7 @@ struct HIWGameLobbyView: View {
     }
     
     func fetchGameSettings(userId: Int, gameId: Int) {
-        guard let url = URL(string: "http://localhost:3000/gameSettings?userId=\(userId)&gameId=\(gameId)") else {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/gameSettings?userId=\(userId)&gameId=\(gameId)") else {
             print("Invalid URL")
             return
         }
@@ -210,7 +210,7 @@ struct HIWGameLobbyView: View {
 }
 
 func updateGameSettings(userId: Int, gameId: Int, diff: String) {
-    guard let url = URL(string: "http://localhost:3000/gameSettings") else {
+    guard let url = URL(string: APIHelper.getBaseURL() + "/gameSettings") else {
         print("Invalid URL")
         return
     }

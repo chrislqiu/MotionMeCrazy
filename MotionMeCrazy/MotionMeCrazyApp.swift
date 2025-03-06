@@ -22,7 +22,7 @@ struct MotionMeCrazyApp: App {
     }
     
     private func checkServerStatus() {
-        guard let url = URL(string: "http://localhost:3000/status") else { return }
+        guard let url = URL(string: APIHelper.getBaseURL() + "/status") else { return }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
             DispatchQueue.main.async {

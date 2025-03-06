@@ -97,7 +97,7 @@ struct FriendsPageView: View {
     func getFriends() {
         friends.removeAll()
         
-        guard let url = URL(string: "http://localhost:3000/friend?userId=\(userViewModel.userid)") else {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/friend?userId=\(userViewModel.userid)") else {
             print("Invalid URL for user \(userViewModel.userid)")
             return
         }
