@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct FriendsPageView: View {
-    // TODO: fetch userId
-    @State private var userId = 194
     @State private var searchText = ""
     @State private var errorMessage: String?  // For displaying errors
     @State private var friends: [UserViewModel] = []
@@ -47,9 +45,8 @@ struct FriendsPageView: View {
                         .padding(.top, 10)
                         
                         VStack(alignment: .center, spacing: 10) {
-                            SearchBar(searchText: $searchText)
+                            SearchBar(searchText: $searchText, userViewModel: userViewModel)
                                 .padding()
-                            CustomText(config: CustomTextConfig(text: "You are searching for: \(searchText)"))
                         }
                         
                         ScrollView {
@@ -122,6 +119,8 @@ struct FriendsPageView: View {
                                               username: user.username,
                                               profilePicId: user.profilepicid)
                             }
+                            print(self.friends)
+                            print("HI")
                             self.errorMessage = nil
                         } catch {
                             self.errorMessage = "Failed to parse user data"
@@ -140,24 +139,152 @@ struct FriendsPageView: View {
 
 struct SearchBar: View {
     @Binding var searchText: String
+    @ObservedObject var userViewModel: UserViewModel
+    @State private var errorMessage: String?
+    @State private var result: UserViewModel?
+    @State private var hasSearched = false
+    @State private var hasSentRequest = false
     
     var body: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.darkBlue)
-                .font(.system(size: 24, weight: .bold))
-            
-            CustomTextField(config: CustomTextFieldConfig(text: $searchText, placeholder: "Search..."))
-            
-            if !searchText.isEmpty {
-                Button(action: { searchText = "" }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.darkBlue)
-                        .font(.system(size: 24, weight: .bold))
+        VStack {
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.darkBlue)
+                    .font(.system(size: 24, weight: .bold))
+                
+                CustomTextField(config: CustomTextFieldConfig(text: $searchText, placeholder: "Search..."))
+                
+                CustomButton(config: CustomButtonConfig(title: "Search", width: 100, buttonColor: .darkBlue) {findUser()})
+                
+                if !searchText.isEmpty {
+                    Button(action: { searchText = "" }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.darkBlue)
+                            .font(.system(size: 24, weight: .bold))
+                    }
                 }
             }
+            .padding(.horizontal, 10)
+            
+            if let userResult = result {
+                VStack(){
+                    UserRowView(user: userResult)
+                        .padding()
+                        .background(Color.clear)
+                        .cornerRadius(10)
+                        .shadow(radius: 2)
+                    CustomButton(
+                        config: CustomButtonConfig(
+                            title: "Add", width: 80,
+                            buttonColor: .darkBlue
+                        ) {
+                            addRequest()
+                        })
+                }
+                
+            } else if hasSearched {
+                CustomText(config: CustomTextConfig(text: "No users found", titleColor: .darkBlue, fontSize: 20))
+                
+            }
+        }.alert("Friend request has been sent", isPresented: $hasSentRequest) {
+            Button("OK", role: .cancel) { hasSentRequest = false; hasSearched = false; searchText = ""; result = nil }
         }
-        .padding(.horizontal, 10)
+        
+    }
+    
+    func findUser() {
+        hasSearched = true
+        guard let url = URL(string: APIHelper.getBaseURL() + "/user?userId=\(searchText)") else {
+            self.result = nil
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if error != nil {
+                    self.errorMessage = "Network error, please try again"
+                    self.result = nil
+                    return
+                }
+                
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode == 200 {
+                        if let data = data {
+                            do {
+                                let user = try JSONDecoder().decode(UserResponse.self, from: data)
+                                self.result = UserViewModel(userid: user.userid, username: user.username, profilePicId: user.profilepicid)
+                                if let userResult = self.result {
+                                    print(userResult.userid)
+                                } else {
+                                    self.result = nil
+                                    print("No user found")
+                                }
+                                
+                            } catch {
+                                self.result = nil
+                                self.errorMessage = "Failed to parse user data"
+                            }
+                        }
+                    } else {
+                        self.result = nil
+                        self.errorMessage = "Failed to fetch user data"
+                    }
+                }
+            }
+        }.resume()
+    }
+    
+    func addRequest() {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/friend/send") else {
+            print("Invalid URL")
+            return
+        }
+        
+        guard let userResult = result else {
+            errorMessage = "Error retrieving friend id"
+            return
+        }
+        
+        let body = [
+            "userid": userViewModel.userid,
+            "friendid": userResult.userid
+        ]
+        
+        print(body)
+        
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
+        else {
+            print("Failed to encode JSON")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if error != nil {
+                    self.errorMessage = "Network error, please try again"
+                    return
+                }
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode == 200 {
+                        print("Friend request sent!")
+                        hasSentRequest = true
+                    } else {
+                        self.errorMessage =
+                        "Error accepting friend request, please try again"
+                    }
+                }
+            }
+        }.resume()
+        
     }
     
 }
@@ -177,15 +304,13 @@ private struct UserRowView: View {
             VStack(alignment: .leading) {
                 CustomText(config: CustomTextConfig(text: user.username))
                 CustomText(config: CustomTextConfig(text: "ID: \(user.userid)"))
-                
-                CustomButton(config:
-                                CustomButtonConfig(title: "Remove", width: 100, buttonColor: .lightBlue) {})
             }
             
             Spacer()
         }
         .padding(.vertical, 5).accessibilityIdentifier("userRow")
     }
+    
 }
 
 #Preview {
