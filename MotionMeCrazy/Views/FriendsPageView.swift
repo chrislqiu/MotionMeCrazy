@@ -29,8 +29,10 @@ struct FriendsPageView: View {
                     if !appState.offlineMode {
                         
                         HStack(alignment: .top, spacing: 10) {
-                            CustomSelectedButton(config:
-                                                    CustomSelectedButtonConfig(title: "All", width: 75) {})
+                            CustomSelectedButton(config: CustomSelectedButtonConfig(
+                                title: "All",
+                                width: 75) {}
+                            )
                             
                             CustomButton(config: CustomButtonConfig(
                                 title: "Pending",
@@ -39,8 +41,12 @@ struct FriendsPageView: View {
                                 destination: AnyView(PendingPageView(userViewModel: userViewModel))
                             ))
                             
-                            CustomButton(config:
-                                            CustomButtonConfig(title: "Sent", width: 75, buttonColor: .darkBlue) {})
+                            CustomButton(config: CustomButtonConfig(
+                                title: "Sent",
+                                width: 75,
+                                buttonColor: .darkBlue,
+                                destination: AnyView(SentPageView(userViewModel: userViewModel))
+                            ))
                         }
                         .padding(.top, 10)
                         
@@ -119,8 +125,6 @@ struct FriendsPageView: View {
                                               username: user.username,
                                               profilePicId: user.profilepicid)
                             }
-                            print(self.friends)
-                            print("HI")
                             self.errorMessage = nil
                         } catch {
                             self.errorMessage = "Failed to parse user data"
@@ -144,6 +148,7 @@ struct SearchBar: View {
     @State private var result: UserViewModel?
     @State private var hasSearched = false
     @State private var hasSentRequest = false
+    @State private var hasAlreadySent = false
     
     var body: some View {
         VStack {
@@ -188,6 +193,17 @@ struct SearchBar: View {
             }
         }.alert("Friend request has been sent", isPresented: $hasSentRequest) {
             Button("OK", role: .cancel) { hasSentRequest = false; hasSearched = false; searchText = ""; result = nil }
+        }.alert("Friend request already exists and is pending", isPresented: $hasAlreadySent) {
+            Button("OK", role: .cancel) { hasAlreadySent = false; hasSearched = false; searchText = ""; result = nil }
+        }
+        
+        if let errorMessage = errorMessage {
+            Text(errorMessage)
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(.orange)
+                .padding(.top, 5)
+                .accessibilityIdentifier("errorMessage")
         }
         
     }
@@ -211,6 +227,7 @@ struct SearchBar: View {
                     return
                 }
                 
+                                
                 if let httpResponse = response as? HTTPURLResponse {
                     if httpResponse.statusCode == 200 {
                         if let data = data {
@@ -230,6 +247,8 @@ struct SearchBar: View {
                             }
                         }
                     } else {
+                        print(httpResponse.statusCode)
+
                         self.result = nil
                         self.errorMessage = "Failed to fetch user data"
                     }
@@ -253,9 +272,7 @@ struct SearchBar: View {
             "userid": userViewModel.userid,
             "friendid": userResult.userid
         ]
-        
-        print(body)
-        
+                
         guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
         else {
             print("Failed to encode JSON")
@@ -279,7 +296,7 @@ struct SearchBar: View {
                         hasSentRequest = true
                     } else {
                         self.errorMessage =
-                        "Error accepting friend request, please try again"
+                        "Error, please try again"
                     }
                 }
             }

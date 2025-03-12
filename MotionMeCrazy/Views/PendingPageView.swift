@@ -10,13 +10,10 @@ import SwiftUI
 private var friendRequests: [FriendRequest] = []
 
 struct PendingPageView: View {
-    // TODO: fetch userId
-    @State private var userId = 194
-    @State private var errorMessage: String?  // For displaying errors
-    @State private var requests: [FriendRequest] = []
-    
     @ObservedObject var userViewModel: UserViewModel
     
+    @State private var errorMessage: String?
+    @State private var requests: [FriendRequest] = []
     @State private var navigateToFriendsPage = false
     
     var body: some View {
@@ -36,11 +33,17 @@ struct PendingPageView: View {
                             destination: AnyView(FriendsPageView(userViewModel: userViewModel))
                         ))
                         
-                        CustomSelectedButton(config:
-                                                CustomSelectedButtonConfig(title: "Pending", width: 100) {})
+                        CustomSelectedButton(config: CustomSelectedButtonConfig(
+                            title: "Pending",
+                            width: 100) {}
+                        )
                         
-                        CustomButton(config:
-                                        CustomButtonConfig(title: "Sent", width: 75, buttonColor: .darkBlue) {})
+                        CustomButton(config: CustomButtonConfig(
+                            title: "Sent",
+                            width: 75,
+                            buttonColor: .darkBlue,
+                            destination: AnyView(SentPageView(userViewModel: userViewModel))
+                        ))
                     }
                     .padding(.top, 10)
                     
@@ -94,12 +97,10 @@ func getFriends(userId: Int, requests: Binding<[FriendRequest]>) {
                     if let data = data {
                         do {
                             let userResponses = try JSONDecoder().decode([FriendRequest].self, from: data)
-                            
                             for userResponse in userResponses {
                                 let userViewModel = FriendRequest(request_id: userResponse.request_id, userid: userResponse.userid, username: userResponse.username, profilepicid: userResponse.profilepicid)
                                 requests.wrappedValue.append(userViewModel)
                             }
-                            
                             print("Successfully retrieved pending request information!")
                         } catch {
                             print("Error decoding response:", error)
