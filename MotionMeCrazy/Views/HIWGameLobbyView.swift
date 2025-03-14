@@ -1,9 +1,3 @@
-//
-//  HIWGamePageView.swift
-//  MotionMeCrazy
-//
-//  Created by Tea Lazareto on 2/13/25.
-//
 import SwiftUI
 
 struct HIWGameLobbyView: View {
@@ -17,6 +11,11 @@ struct HIWGameLobbyView: View {
     @State private var openedFromPauseMenu = false //checks where the settings was opened from
     @State private var selectedDifficulty: SettingsView.Difficulty = .normal  // Store difficulty here
     @State private var fetchingError: Bool = false
+    @State private var obstacleIndex = 0
+    @State private var timer: Timer? = nil // Timer for cycling obstacles
+    @State private var shuffledObstacles: [String] = [] // Shuffled obstacles array
+    private let obstacles = ["wall1", "wall2", "wall3", "wall4"] // Add images to Assets.xcassets
+    
     var userId: Int
     var gameId: Int
 
@@ -35,6 +34,7 @@ struct HIWGameLobbyView: View {
                     if !isPlaying {
                         Button(action: {
                             isPlaying = true
+                            startObstacleCycle()
                         }) {
                             Image(systemName: "play.circle.fill")
                                 .resizable()
@@ -51,7 +51,6 @@ struct HIWGameLobbyView: View {
                 HStack {
                     Spacer()
 
-                    
                     if !isPlaying {
                         Button(action: {
                             showTutorial = true
@@ -62,14 +61,11 @@ struct HIWGameLobbyView: View {
                                 .frame(width: 40, height: 40)
                                 .foregroundColor(.darkBlue)
                                 .padding(.trailing, 10)
-                            
                         }
                         .sheet(isPresented: $showTutorial) {
                             HIWTutorialPageView()
                         }
                         
-                        // the main settings button before you get into an active game
-                        //only want this button when game not active
                         Button(action: {
                             openedFromPauseMenu = false
                             showSettings = true
@@ -85,9 +81,9 @@ struct HIWGameLobbyView: View {
                     }
 
                     if isPlaying {
-                        // pause button during gameplay
                         Button(action: {
                             showPauseMenu = true
+                            stopObstacleCycle() // Pause the obstacle cycling
                         }) {
                             Image(systemName: "pause.circle.fill")
                               .resizable()
@@ -98,9 +94,8 @@ struct HIWGameLobbyView: View {
                         }
                         .accessibilityIdentifier("pauseButton")
                     } else {
-                        // exit button thats present when ur on the game landing page thing
                         Button(action: {
-                            presentationMode.wrappedValue.dismiss()  //basically gets rid of this game view and returns to home
+                            presentationMode.wrappedValue.dismiss()
                         }) {
                             Image(systemName: "x.circle.fill")
                                 .resizable()
@@ -112,11 +107,10 @@ struct HIWGameLobbyView: View {
                         .accessibilityIdentifier("exitButton")
                     }
                 }
-
+                //.padding(.horizontal, 20)
                 Spacer()
             }
 
-            // the actual game settings
             if showSettings {
                 Color.black.opacity(0.4)
                     .edgesIgnoringSafeArea(.all)
@@ -132,12 +126,10 @@ struct HIWGameLobbyView: View {
                     .accessibilityIdentifier("settingsView")
             }
             
-            // HIW game tutorial
             if showTutorial {
                 //HIWTutorialPageView()
             }
 
-            // pause menu for game
             if showPauseMenu {
                 Color.black.opacity(0.4)
                     .edgesIgnoringSafeArea(.all)
@@ -154,6 +146,17 @@ struct HIWGameLobbyView: View {
                 .cornerRadius(20)
                 .shadow(radius: 20)
                 .accessibilityIdentifier("pauseMenuView")
+                .onDisappear {
+                    if isPlaying {
+                        startObstacleCycle() // Resume the obstacle cycling
+                    }
+                }
+            }
+
+            if isPlaying {
+                HIWObstacleView(imageName: shuffledObstacles[obstacleIndex])
+                    .animation(.linear(duration: 0), value: obstacleIndex)
+                    .opacity(0.5) // Lower opacity
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -164,6 +167,22 @@ struct HIWGameLobbyView: View {
             print("Updating game settings to default...")
             updateGameSettings(userId: userId, gameId: gameId, diff: selectedDifficulty.rawValue)
         }
+    }
+    
+    private func startObstacleCycle() {
+        // Shuffle the obstacles array for random cycling
+        shuffledObstacles = obstacles.shuffled()
+        // Start with a random obstacle
+        obstacleIndex = Int.random(in: 0..<shuffledObstacles.count)
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+                obstacleIndex = (obstacleIndex + 1) % shuffledObstacles.count
+        }
+    }
+    
+    private func stopObstacleCycle() {
+        timer?.invalidate()
+        timer = nil
     }
     
     func fetchGameSettings(userId: Int, gameId: Int) {
@@ -259,7 +278,7 @@ struct SettingsView: View {
     var userId: Int
     var gameId: Int
     @Binding var selectedDifficulty: Difficulty
-    @Binding var showPauseMenu: Bool  
+    @Binding var showPauseMenu: Bool
     @Binding var openedFromPauseMenu: Bool
 
     enum Difficulty: String, CaseIterable, Identifiable {
@@ -318,7 +337,6 @@ struct SettingsView: View {
     }
 }
 
-
 // pause menu
 struct PauseMenuView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -327,7 +345,6 @@ struct PauseMenuView: View {
     @Binding var showSettings: Bool  // shows settings
     @Binding var showQuitConfirmation: Bool // shows quit confirmation
     @Binding var openedFromPauseMenu: Bool //checks where settings was closed from
-
 
     var body: some View {
         VStack(spacing: 15) {
@@ -383,4 +400,21 @@ struct GameSettings: Codable {
 
 #Preview {
     HIWGameLobbyView(userId: 421, gameId: 0)
+}
+
+struct HIWObstacleView: View {
+    let imageName: String
+    
+    var body: some View {
+        Image(imageName)
+            .resizable()
+            .aspectRatio(contentMode: .fit) // Maintain aspect ratio and fit within the screen
+            .frame(maxWidth: .infinity, maxHeight: .infinity) // Take up all available space
+            .clipped() // Ensure the image doesn't overflow outside its bounds
+            .opacity(0.5) // Lower opacity
+    }
+}
+
+#Preview {
+    HIWObstacleView(imageName: "wall1")
 }
