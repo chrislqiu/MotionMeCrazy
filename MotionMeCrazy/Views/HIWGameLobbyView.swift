@@ -1,20 +1,23 @@
 import SwiftUI
 
 struct HIWGameLobbyView: View {
-    
     @Environment(\.presentationMode) var presentationMode
-    @State private var showSettings = false  // shows settings pop up
-    @State private var showPauseMenu = false  // shows pause menu pop up
-    @State private var showQuitConfirmation = false // shows quit confirmation pop up
-    @State private var showTutorial = false // show tutorial view
-    @State private var isPlaying = false  // checks if game is active
-    @State private var openedFromPauseMenu = false //checks where the settings was opened from
-    @State private var selectedDifficulty: SettingsView.Difficulty = .normal  // Store difficulty here
+    @State private var showSettings = false
+    @State private var showPauseMenu = false
+    @State private var showQuitConfirmation = false
+    @State private var showTutorial = false
+    @State private var isPlaying = false
+    @State private var openedFromPauseMenu = false
+    @State private var selectedDifficulty: SettingsView.Difficulty = .normal
     @State private var fetchingError: Bool = false
     @State private var obstacleIndex = 0
-    @State private var timer: Timer? = nil // Timer for cycling obstacles
-    @State private var shuffledObstacles: [String] = [] // Shuffled obstacles array
-    private let obstacles = ["wall1", "wall2", "wall3", "wall4"] // Add images to Assets.xcassets
+    @State private var timer: Timer? = nil
+    @State private var showCompletionScreen = false
+    @State private var currentLevel = 1
+    @State private var obstacles: [String] = []
+    @State private var levelImageMap: [Int: [String]] = [:]
+    
+    private let wallsPerLevel = 4 // Number of walls per level
     
     var userId: Int
     var gameId: Int
@@ -107,7 +110,6 @@ struct HIWGameLobbyView: View {
                         .accessibilityIdentifier("exitButton")
                     }
                 }
-                //.padding(.horizontal, 20)
                 Spacer()
             }
 
@@ -154,37 +156,77 @@ struct HIWGameLobbyView: View {
             }
 
             if isPlaying {
-                HIWObstacleView(imageName: shuffledObstacles[obstacleIndex])
+                HIWObstacleView(imageName: obstacles[obstacleIndex])
                     .animation(.linear(duration: 0), value: obstacleIndex)
                     .opacity(0.5) // Lower opacity
+            }
+
+            if showCompletionScreen {
+                CompletionScreenView(
+                    levelNumber: currentLevel,
+                    score: 100, // TODO: Replace with actual score logic
+                    health: 100, // TODO: Replace with actual health logic
+                    onNextLevel: {
+                        // Increment the level and reset the game state
+                        currentLevel += 1
+                        showCompletionScreen = false
+                        isPlaying = false
+                        stopObstacleCycle() // Ensure the timer is stopped
+                        startObstacleCycle() // Restart the obstacle cycle for the next level
+                    },
+                    onQuitGame: {
+                        // Logic for quitting the game
+                        stopObstacleCycle() // Ensure the timer is stopped
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                )
             }
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
+            loadLevelImageMap()
+            obstacles = levelImageMap[currentLevel] ?? []
             fetchGameSettings(userId: userId, gameId: gameId)
         }
-        .onChange(of: fetchingError) { newValue in
-            print("Updating game settings to default...")
-            updateGameSettings(userId: userId, gameId: gameId, diff: selectedDifficulty.rawValue)
+        .onChange(of: currentLevel) { newLevel in
+            // Update obstacles when the level changes
+            obstacles = levelImageMap[newLevel] ?? []
+            stopObstacleCycle() // Stop any existing timer
+            startObstacleCycle() // Start the timer for the new level
         }
     }
-    
+
+    // load images from folder
+    private func loadLevelImageMap() {
+        for level in 1...5 {
+            var imageNames: [String] = []
+            for wall in 1...wallsPerLevel {
+                //"level\(level)_wall\(wall)"
+                let imageName = "wall\(wall)_level\(level)"
+                imageNames.append(imageName)
+            }
+            levelImageMap[level] = imageNames
+        }
+    }
+
     private func startObstacleCycle() {
-        // Shuffle the obstacles array for random cycling
-        shuffledObstacles = obstacles.shuffled()
-        // Start with a random obstacle
-        obstacleIndex = Int.random(in: 0..<shuffledObstacles.count)
-        
+        stopObstacleCycle() // Ensure no previous timer is running
+        obstacleIndex = 0
         timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
-                obstacleIndex = (obstacleIndex + 1) % shuffledObstacles.count
+            obstacleIndex = (obstacleIndex + 1) % obstacles.count
+            if obstacleIndex == 0 {
+                // All obstacles have been cycled through
+                stopObstacleCycle()
+                showCompletionScreen = true
+            }
         }
     }
-    
+
     private func stopObstacleCycle() {
         timer?.invalidate()
         timer = nil
     }
-    
+
     func fetchGameSettings(userId: Int, gameId: Int) {
         guard let url = URL(string: APIHelper.getBaseURL() + "/gameSettings?userId=\(userId)&gameId=\(gameId)") else {
             print("Invalid URL")
