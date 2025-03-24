@@ -1,22 +1,24 @@
-//
-//  HIWGamePageView.swift
-//  MotionMeCrazy
-//
-//  Created by Tea Lazareto on 2/13/25.
-//
 import SwiftUI
 
 struct HIWGameLobbyView: View {
-    
     @Environment(\.presentationMode) var presentationMode
-    @State private var showSettings = false  // shows settings pop up
-    @State private var showPauseMenu = false  // shows pause menu pop up
-    @State private var showQuitConfirmation = false // shows quit confirmation pop up
-    @State private var showTutorial = false // show tutorial view
-    @State private var isPlaying = false  // checks if game is active
-    @State private var openedFromPauseMenu = false //checks where the settings was opened from
-    @State private var selectedDifficulty: SettingsView.Difficulty = .normal  // Store difficulty here
+    @State private var showSettings = false
+    @State private var showPauseMenu = false
+    @State private var showQuitConfirmation = false
+    @State private var showTutorial = false
+    @State private var isPlaying = false
+    @State private var openedFromPauseMenu = false
+    @State private var selectedDifficulty: SettingsView.Difficulty = .normal
     @State private var fetchingError: Bool = false
+    @State private var obstacleIndex = 0
+    @State private var timer: Timer? = nil
+    @State private var showCompletionScreen = false
+    @State private var currentLevel = 1
+    @State private var obstacles: [String] = []
+    @State private var levelImageMap: [Int: [String]] = [:]
+    
+    private let wallsPerLevel = 4 // Number of walls per level
+    
     var userId: Int
     var gameId: Int
 
@@ -35,6 +37,7 @@ struct HIWGameLobbyView: View {
                     if !isPlaying {
                         Button(action: {
                             isPlaying = true
+                            startObstacleCycle()
                         }) {
                             Image(systemName: "play.circle.fill")
                                 .resizable()
@@ -51,7 +54,6 @@ struct HIWGameLobbyView: View {
                 HStack {
                     Spacer()
 
-                    
                     if !isPlaying {
                         Button(action: {
                             showTutorial = true
@@ -62,14 +64,11 @@ struct HIWGameLobbyView: View {
                                 .frame(width: 40, height: 40)
                                 .foregroundColor(.darkBlue)
                                 .padding(.trailing, 10)
-                            
                         }
                         .sheet(isPresented: $showTutorial) {
                             HIWTutorialPageView()
                         }
                         
-                        // the main settings button before you get into an active game
-                        //only want this button when game not active
                         Button(action: {
                             openedFromPauseMenu = false
                             showSettings = true
@@ -85,9 +84,9 @@ struct HIWGameLobbyView: View {
                     }
 
                     if isPlaying {
-                        // pause button during gameplay
                         Button(action: {
                             showPauseMenu = true
+                            stopObstacleCycle() // Pause the obstacle cycling
                         }) {
                             Image(systemName: "pause.circle.fill")
                               .resizable()
@@ -98,9 +97,8 @@ struct HIWGameLobbyView: View {
                         }
                         .accessibilityIdentifier("pauseButton")
                     } else {
-                        // exit button thats present when ur on the game landing page thing
                         Button(action: {
-                            presentationMode.wrappedValue.dismiss()  //basically gets rid of this game view and returns to home
+                            presentationMode.wrappedValue.dismiss()
                         }) {
                             Image(systemName: "x.circle.fill")
                                 .resizable()
@@ -112,11 +110,9 @@ struct HIWGameLobbyView: View {
                         .accessibilityIdentifier("exitButton")
                     }
                 }
-
                 Spacer()
             }
 
-            // the actual game settings
             if showSettings {
                 Color.black.opacity(0.4)
                     .edgesIgnoringSafeArea(.all)
@@ -132,12 +128,10 @@ struct HIWGameLobbyView: View {
                     .accessibilityIdentifier("settingsView")
             }
             
-            // HIW game tutorial
             if showTutorial {
                 //HIWTutorialPageView()
             }
 
-            // pause menu for game
             if showPauseMenu {
                 Color.black.opacity(0.4)
                     .edgesIgnoringSafeArea(.all)
@@ -154,18 +148,84 @@ struct HIWGameLobbyView: View {
                 .cornerRadius(20)
                 .shadow(radius: 20)
                 .accessibilityIdentifier("pauseMenuView")
+                .onDisappear {
+                    if isPlaying {
+                        startObstacleCycle() // Resume the obstacle cycling
+                    }
+                }
+            }
+
+            if isPlaying {
+                HIWObstacleView(imageName: obstacles[obstacleIndex])
+                    .animation(.linear(duration: 0), value: obstacleIndex)
+                    .opacity(0.5) // Lower opacity
+            }
+
+            if showCompletionScreen {
+                CompletionScreenView(
+                    levelNumber: currentLevel,
+                    score: 100, // TODO: Replace with actual score logic
+                    health: 100, // TODO: Replace with actual health logic
+                    onNextLevel: {
+                        // Increment the level and reset the game state
+                        currentLevel += 1
+                        showCompletionScreen = false
+                        isPlaying = false
+                        stopObstacleCycle() // Ensure the timer is stopped
+                        startObstacleCycle() // Restart the obstacle cycle for the next level
+                    },
+                    onQuitGame: {
+                        // Logic for quitting the game
+                        stopObstacleCycle() // Ensure the timer is stopped
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                )
             }
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
+            loadLevelImageMap()
+            obstacles = levelImageMap[currentLevel] ?? []
             fetchGameSettings(userId: userId, gameId: gameId)
         }
-        .onChange(of: fetchingError) { newValue in
-            print("Updating game settings to default...")
-            updateGameSettings(userId: userId, gameId: gameId, diff: selectedDifficulty.rawValue)
+        .onChange(of: currentLevel) { newLevel in
+            // Update obstacles when the level changes
+            obstacles = levelImageMap[newLevel] ?? []
+            stopObstacleCycle() // Stop any existing timer
+            startObstacleCycle() // Start the timer for the new level
         }
     }
-    
+
+    // load images from folder
+    private func loadLevelImageMap() {
+        for level in 1...5 {
+            var imageNames: [String] = []
+            for wall in 1...wallsPerLevel {
+                let imageName = "level\(level)_wall\(wall)"
+                imageNames.append(imageName)
+            }
+            levelImageMap[level] = imageNames
+        }
+    }
+
+    private func startObstacleCycle() {
+        stopObstacleCycle() // Ensure no previous timer is running
+        obstacleIndex = 0
+        timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+            obstacleIndex = (obstacleIndex + 1) % obstacles.count
+            if obstacleIndex == 0 {
+                // All obstacles have been cycled through
+                stopObstacleCycle()
+                showCompletionScreen = true
+            }
+        }
+    }
+
+    private func stopObstacleCycle() {
+        timer?.invalidate()
+        timer = nil
+    }
+
     func fetchGameSettings(userId: Int, gameId: Int) {
         guard let url = URL(string: APIHelper.getBaseURL() + "/gameSettings?userId=\(userId)&gameId=\(gameId)") else {
             print("Invalid URL")
@@ -259,7 +319,7 @@ struct SettingsView: View {
     var userId: Int
     var gameId: Int
     @Binding var selectedDifficulty: Difficulty
-    @Binding var showPauseMenu: Bool  
+    @Binding var showPauseMenu: Bool
     @Binding var openedFromPauseMenu: Bool
 
     enum Difficulty: String, CaseIterable, Identifiable {
@@ -318,7 +378,6 @@ struct SettingsView: View {
     }
 }
 
-
 // pause menu
 struct PauseMenuView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -327,7 +386,6 @@ struct PauseMenuView: View {
     @Binding var showSettings: Bool  // shows settings
     @Binding var showQuitConfirmation: Bool // shows quit confirmation
     @Binding var openedFromPauseMenu: Bool //checks where settings was closed from
-
 
     var body: some View {
         VStack(spacing: 15) {
@@ -383,4 +441,21 @@ struct GameSettings: Codable {
 
 #Preview {
     HIWGameLobbyView(userId: 421, gameId: 0)
+}
+
+struct HIWObstacleView: View {
+    let imageName: String
+    
+    var body: some View {
+        Image(imageName)
+            .resizable()
+            .aspectRatio(contentMode: .fit) // Maintain aspect ratio and fit within the screen
+            .frame(maxWidth: .infinity, maxHeight: .infinity) // Take up all available space
+            .clipped() // Ensure the image doesn't overflow outside its bounds
+            .opacity(0.5) // Lower opacity
+    }
+}
+
+#Preview {
+    HIWObstacleView(imageName: "wall1")
 }
