@@ -13,6 +13,8 @@ struct StatisticsPageView: View {
     @State private var errorMessage: String?
     @ObservedObject var userViewModel: UserViewModel
     @State private var selectedTimePeriod: String = "Past Day"
+    @State private var selectedGameId: Int? = nil
+
     var body: some View {
         ZStack {
             // Background
@@ -43,17 +45,17 @@ struct StatisticsPageView: View {
                 Menu {
                     Button("Past Day") {
                         selectedTimePeriod = "Past Day"
-                        fetchUserStatistics(userId: userViewModel.userid, days: 1)
+                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
                         // TODO: update stats for past day
                     }
                     Button("Past Week") {
                         selectedTimePeriod = "Past Week"
-                        fetchUserStatistics(userId: userViewModel.userid, days: 7)
+                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 7)
                         // TODO: update stats for past week
                     }
                     Button("Past Month") {
                         selectedTimePeriod = "Past Month"
-                        fetchUserStatistics(userId: userViewModel.userid, days: 30)
+                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 30)
                         // TODO: update stats for past month
                     }
                 } label: {
@@ -117,12 +119,16 @@ struct StatisticsPageView: View {
             }
         }
         .onAppear {
-            fetchUserStatistics(userId: userViewModel.userid, days: 1)
+            fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
         }
     }
     
-    func fetchUserStatistics(userId: Int, days: Int) {
-        guard let url = URL(string: APIHelper.getBaseURL() + "/stats/userStatistics?userId=\(userId)&days=\(days)") else {
+    func fetchUserStatistics(userId: Int, gameId: Int?, days: Int) {
+        var urlString = APIHelper.getBaseURL() + "/stats/userStatistics?userId=\(userId)&days=\(days)"
+        if let gameId = gameId {
+            urlString += "&gameId=\(gameId)"
+        }
+        guard let url = URL(string: urlString) else {
             print("Invalid URL")
             self.errorMessage = "Invalid URL"
             return
@@ -211,7 +217,7 @@ struct StatisticsPageView: View {
                     if httpResponse.statusCode == 200 {
                         print("User Stats Deleted!")
                         selectedTimePeriod = "Past Day"
-                        fetchUserStatistics(userId: userViewModel.userid, days: 1)
+                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
                         self.errorMessage = nil
                     } else {
                         self.errorMessage = "Failed to delete stats. Status code: \(httpResponse.statusCode)"
