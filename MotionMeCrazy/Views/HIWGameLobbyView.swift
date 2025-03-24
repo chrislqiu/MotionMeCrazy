@@ -201,8 +201,7 @@ struct HIWGameLobbyView: View {
         for level in 1...5 {
             var imageNames: [String] = []
             for wall in 1...wallsPerLevel {
-                //"level\(level)_wall\(wall)"
-                let imageName = "wall\(wall)_level\(level)"
+                let imageName = "level\(level)_wall\(wall)"
                 imageNames.append(imageName)
             }
             levelImageMap[level] = imageNames
