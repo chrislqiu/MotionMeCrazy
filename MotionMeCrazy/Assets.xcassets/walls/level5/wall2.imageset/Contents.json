@@ -1,7 +1,11 @@
 {
   "images" : [
     {
-      "filename" : "wall3.png",
+<<<<<<< HEAD:MotionMeCrazy/Assets.xcassets/walls/level3/wall3_level3.imageset/Contents.json
+      "filename" : "wall18_level3.png",
+=======
+      "filename" : "wall2.png",
+>>>>>>> main:MotionMeCrazy/Assets.xcassets/walls/level5/wall2.imageset/Contents.json
       "idiom" : "universal",
       "scale" : "1x"
     },
