@@ -117,14 +117,18 @@ struct StatisticsPageView: View {
     func fetchUserStatistics(userId: Int, gameId: Int?, timePeriod: String) {
         let calendar = Calendar.current
         let now = Date()
+        var duration = 0
         var startDate: Date?
 
         switch timePeriod {
         case "Past Day":
+            duration = 1
             startDate = calendar.date(byAdding: .day, value: -1, to: now)
         case "Past Week":
+            duration = 7
             startDate = calendar.date(byAdding: .day, value: -7, to: now)
         case "Past Month":
+            duration = 30
             startDate = calendar.date(byAdding: .month, value: -1, to: now)
         default:
             startDate = nil
@@ -139,6 +143,7 @@ struct StatisticsPageView: View {
         }
         if !startDateString.isEmpty {
             urlString += "&startDate=\(startDateString)"
+            urlString += "&days=\(duration)"
         }
 
         guard let url = URL(string: urlString) else {
