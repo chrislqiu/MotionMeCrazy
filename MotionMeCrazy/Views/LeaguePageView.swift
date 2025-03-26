@@ -35,11 +35,11 @@ struct LeaguePageView: View {
     @State private var otherLeagues: [League] = []
     @State private var isCreatingLeague: Bool = false
     @State private var leagueName: String = ""
+    @State private var leagueCodeToJoin: String = "" // Added for league code input
+    @State private var isJoiningLeague: Bool = false // Added for tracking league join state
     
     @ObservedObject var userViewModel: UserViewModel
-    
     @EnvironmentObject var appState: AppState
-    
     
     var body: some View {
         NavigationStack{
@@ -79,6 +79,9 @@ struct LeaguePageView: View {
                                 VStack {
                                     ForEach(otherLeagues, id: \.id) { league in
                                         CustomText(config: .init(text: "\(league.name)"))
+                                            .onTapGesture {
+                                                joinLeague(leagueCode: league.code) // Handle join league action
+                                            }
                                     }
                                 }
                             }
@@ -114,7 +117,6 @@ struct LeaguePageView: View {
             }
         }
     }
-    
     
     private func fetchLeagues() {
         guard let url = URL(string: APIHelper.getBaseURL() + "/leagues?userId=\(userViewModel.userid)") else {
@@ -180,57 +182,42 @@ struct LeaguePageView: View {
         }.resume()
     }
     
-    private func getID(username: String, completion: @escaping (Int?) -> Void) {
-        guard
-            let url = URL(
-                string: APIHelper.getBaseURL() + "/userId?username=\(username)")
-        else {
+    //TODO: UI for joining league with code
+    private func joinLeague(leagueCode: String) {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/joinLeague") else {
             print("Invalid URL")
-            completion(nil)
             return
         }
         
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: Any] = [
+            "leagueCode": leagueCode,
+            "userId": userViewModel.userid
+        ]
+        
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         
         URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    print("Network error: \(error.localizedDescription)")
-                    completion(nil)
-                    return
+            if let error = error {
+                print("Network error while joining league: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid response")
+                return
+            }
+            
+            if httpResponse.statusCode == 200 {
+                DispatchQueue.main.async {
+                    fetchLeagues()
+                    fetchOtherLeagues()
                 }
-                
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    print("Invalid response")
-                    completion(nil)
-                    return
-                }
-                
-                if httpResponse.statusCode == 200, let data = data {
-                    do {
-                        let json =
-                        try JSONSerialization.jsonObject(
-                            with: data, options: []) as? [String: Any]
-                        if let userId = json?["userId"] as? Int {
-                            completion(userId)
-                        } else {
-                            print("Invalid response format")
-                            completion(nil)
-                        }
-                    } catch {
-                        print(
-                            "Failed to decode JSON: \(error.localizedDescription)"
-                        )
-                        completion(nil)
-                    }
-                } else {
-                    print(
-                        "Username not found (status: \(httpResponse.statusCode))"
-                    )
-                    completion(nil)
-                }
+            } else {
+                print("Failed to join league. Status code: \(httpResponse.statusCode)")
             }
         }.resume()
     }
