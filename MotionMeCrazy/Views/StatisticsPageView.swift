@@ -25,16 +25,12 @@ struct StatisticsPageView: View {
             VStack {
                 // Navigation Bar
                 HStack {
-                    
-                    Spacer()  // Pushes the title to the center
-                    
-                    // Page Title
+                    Spacer()
                     Text("Statistics")
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
-                    
-                    Spacer()  // Ensures the title is centered
+                    Spacer()
                 }
                 .padding()
                 .background(Color("DarkBlue"))
@@ -45,25 +41,21 @@ struct StatisticsPageView: View {
                 Menu {
                     Button("Past Day") {
                         selectedTimePeriod = "Past Day"
-                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
-                        // TODO: update stats for past day
+                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, timePeriod: "Past Day")
                     }
                     Button("Past Week") {
                         selectedTimePeriod = "Past Week"
-                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 7)
-                        // TODO: update stats for past week
+                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, timePeriod: "Past Week")
                     }
                     Button("Past Month") {
                         selectedTimePeriod = "Past Month"
-                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 30)
-                        // TODO: update stats for past month
+                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, timePeriod: "Past Month")
                     }
                 } label: {
                     HStack {
                         Text("High Scores From The: \(selectedTimePeriod)")
                             .foregroundColor(.white)
                             .fontWeight(.bold)
-                        
                         Image(systemName: "arrowtriangle.down.fill")
                             .foregroundColor(.white)
                     }
@@ -73,7 +65,7 @@ struct StatisticsPageView: View {
                 }
                 .padding(.bottom, 20)
                 
-                // Actual stats
+                // Statistics Display
                 VStack {
                     Text("High Score: \(highScore)")
                         .font(.title2)
@@ -93,11 +85,10 @@ struct StatisticsPageView: View {
                                 width: 100,
                                 buttonColor: .darkBlue,
                                 action: {
-                                    //TODO: add share func
+                                    // TODO: Add share function
                                 }
                             )
                         )
-                        
                         CustomButton(
                             config: CustomButtonConfig(
                                 title: "Clear",
@@ -119,25 +110,52 @@ struct StatisticsPageView: View {
             }
         }
         .onAppear {
-            fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
+            fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, timePeriod: "Past Day")
         }
     }
     
-    func fetchUserStatistics(userId: Int, gameId: Int?, days: Int) {
-        var urlString = APIHelper.getBaseURL() + "/stats/userStatistics?userId=\(userId)&days=\(days)"
+    func fetchUserStatistics(userId: Int, gameId: Int?, timePeriod: String) {
+        let calendar = Calendar.current
+        let now = Date()
+        var duration = 0
+        var startDate: Date?
+
+        switch timePeriod {
+        case "Past Day":
+            duration = 1
+            startDate = calendar.date(byAdding: .day, value: -1, to: now)
+        case "Past Week":
+            duration = 7
+            startDate = calendar.date(byAdding: .day, value: -7, to: now)
+        case "Past Month":
+            duration = 30
+            startDate = calendar.date(byAdding: .month, value: -1, to: now)
+        default:
+            startDate = nil
+        }
+
+        let dateFormatter = ISO8601DateFormatter()
+        let startDateString = startDate != nil ? dateFormatter.string(from: startDate!) : ""
+
+        var urlString = APIHelper.getBaseURL() + "/stats/userStatistics?userId=\(userId)"
         if let gameId = gameId {
             urlString += "&gameId=\(gameId)"
         }
+        if !startDateString.isEmpty {
+            urlString += "&startDate=\(startDateString)"
+            urlString += "&days=\(duration)"
+        }
+
         guard let url = URL(string: urlString) else {
             print("Invalid URL")
             self.errorMessage = "Invalid URL"
             return
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
@@ -145,38 +163,28 @@ struct StatisticsPageView: View {
                     self.errorMessage = "Network error: \(error.localizedDescription)"
                     return
                 }
-                
+
                 guard let httpResponse = response as? HTTPURLResponse, let data = data else {
                     print("Invalid response from server")
                     self.errorMessage = "Invalid response from server"
                     return
                 }
-                
+
                 if httpResponse.statusCode == 200 {
                     do {
                         if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                            if let timePlayed = json["time_played"] as? String {
-                                //todo
+                            if let timePlayedStr = json["time_played"] as? String {
+                                self.timePlayed = formatTimePlayed(timePlayedStr)
                             }
                             if let scores = json["scores"] as? [[String: Any]] {
-                                for scoreEntry in scores {
-                                    if let score = scoreEntry["score"] as? Int,
-                                       let date = scoreEntry["date"] as? String {
-                                        //todo
-                                    }
-                                }
+                                let highestScore = scores.compactMap { $0["score"] as? Int }.max() ?? 0
+                                self.highScore = highestScore
                             }
                         }
                     } catch {
                         print("Failed to decode JSON: \(error.localizedDescription)")
                         self.errorMessage = "Failed to decode JSON: \(error.localizedDescription)"
                     }
-                } else if httpResponse.statusCode == 404 {
-                    print("User statistics not found (404)")
-                    self.errorMessage = "User statistics not found"
-                    self.highScore = 0
-                    self.timePlayed = "0h 0m"
-                    self.errorMessage = "User statistics not found"
                 } else {
                     print("Failed to fetch stats. Status code: \(httpResponse.statusCode)")
                     self.errorMessage = "Failed to fetch stats. Status code: \(httpResponse.statusCode)"
@@ -184,7 +192,7 @@ struct StatisticsPageView: View {
             }
         }.resume()
     }
-    
+
     func formatTimePlayed(_ time: String) -> String {
         let components = time.split(separator: ":").compactMap { Int($0) }
         guard components.count == 3 else { return "0h 0m" }
@@ -217,7 +225,7 @@ struct StatisticsPageView: View {
                     if httpResponse.statusCode == 200 {
                         print("User Stats Deleted!")
                         selectedTimePeriod = "Past Day"
-                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
+                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, timePeriod: "Past Day")
                         self.errorMessage = nil
                     } else {
                         self.errorMessage = "Failed to delete stats. Status code: \(httpResponse.statusCode)"
@@ -226,63 +234,8 @@ struct StatisticsPageView: View {
             }
         }.resume()
     }
-    
-    func getID(username: String, completion: @escaping (Int?) -> Void) {
-        guard
-            let url = URL(
-                string: APIHelper.getBaseURL() + "/userId?username=\(username)")
-        else {
-            print("Invalid URL")
-            completion(nil)
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    print("Network error: \(error.localizedDescription)")
-                    completion(nil)
-                    return
-                }
-                
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    print("Invalid response")
-                    completion(nil)
-                    return
-                }
-                
-                if httpResponse.statusCode == 200, let data = data {
-                    do {
-                        let json =
-                        try JSONSerialization.jsonObject(
-                            with: data, options: []) as? [String: Any]
-                        if let userId = json?["userId"] as? Int {
-                            completion(userId)  // Return userId
-                        } else {
-                            print("Invalid response format")
-                            completion(nil)
-                        }
-                    } catch {
-                        print(
-                            "Failed to decode JSON: \(error.localizedDescription)"
-                        )
-                        completion(nil)
-                    }
-                } else {
-                    print(
-                        "Username not found (status: \(httpResponse.statusCode))"
-                    )
-                    completion(nil)
-                }
-            }
-        }.resume()
-    }
 }
 
 #Preview {
-    //    StatisticsPageView(user: "test")
+    // StatisticsPageView(user: "test")
 }
