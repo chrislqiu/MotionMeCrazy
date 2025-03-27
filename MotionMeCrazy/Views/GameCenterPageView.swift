@@ -68,7 +68,7 @@ struct GameCenterPageView: View {
                             .padding(.trailing, 20)
                             
                             Menu {
-                                Button("Me") {
+                                Button("Personal") {
                                     playCountType = .me
                                     fetchGameData()
                                 }
@@ -95,7 +95,7 @@ struct GameCenterPageView: View {
                     // Game selection
                     TabView(selection: $selectedGame) {
                         ForEach(Array(games.indices), id: \.self) { index in
-                            SelectGame(game: games[index])
+                            SelectGame(game: games[index], playCountType: playCountType)
                                 .scaleEffect(selectedGame == index ? 1.2 : 1.0)
                                 .tag(index)
                         }
@@ -176,6 +176,7 @@ struct GameCenterPageView: View {
 struct SelectGame: View {
     @EnvironmentObject var appState: AppState
     let game: (gameId: Int, name: String, icon: String, buttonColor: Color, sessionCount: Int, destination: AnyView)
+    let playCountType: PlayCountType
     
     var body: some View {
         VStack {
@@ -187,13 +188,33 @@ struct SelectGame: View {
                 .padding(.bottom, 10)
             
             if !appState.offlineMode {
-                Text("Played \(game.sessionCount) times")
-                    .font(.headline)
-            }
+                        HStack {
+                            if playCountType == .everyone {
+                                Image(systemName: "person.3.fill") // Icon for everyone
+                                    .foregroundColor(.darkBlue)
+                            }
+                            else {
+                                Image(systemName: "person.fill") // Icon for everyone
+                                    .foregroundColor(.darkBlue)
+                            }
+                            Text(playCountText)
+                                .font(.headline)
+                        }
+                    }
             
             CustomButton(config: .init(title: game.name, width: 250, buttonColor: game.buttonColor, destination: game.destination))
+            
         }
         .frame(width: 250, height: 150)
+    }
+    
+    private var playCountText: String {
+        switch playCountType {
+        case .everyone:
+            return "Played \(game.sessionCount) times"
+        case .me:
+            return "You played this \(game.sessionCount) times"
+        }
     }
 }
 
