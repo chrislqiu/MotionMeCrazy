@@ -14,27 +14,12 @@ struct StatisticsPageView: View {
     @State private var selectedTimePeriod: String = "Past Day"
     @State private var selectedGameId: Int? = nil
 
-    // place holder for temporary games
-    @State private var gameStats:
-        [(
-            session_id: Int, gameName: String, icon: String, score: Int,
-            hours: Int
-        )] = [
-            (
-                session_id: 1, gameName: "Hole In Wall", icon: "figure.run",
-                score: 1000, hours: 6
-            ),
-            (
-                session_id: 2, gameName: "Game 2", icon: "gamecontroller.fill",
-                score: 0, hours: 0
-            ),
-            (
-                session_id: 3, gameName: "Hole In Wall", icon: "figure.run",
-                score: 10, hours: 1
-            ),
-        ]
+    //game stats
+    @State private var gameStats: [
+        (session_id: Int, gameName: String, icon: String, score: Int, hours: Int)
+    ] = []
 
-    // filter
+    // Filter
     @State private var filterType: String = "viewAll"
 
     var body: some View {
@@ -59,52 +44,68 @@ struct StatisticsPageView: View {
 
                 Spacer()
 
-                // Time Filter Menu
-                Menu {
-                    Button("Past Day") {
-                        selectedTimePeriod = "Past Day"
-                        fetchUserStatistics(
-                            userId: userViewModel.userid,
-                            gameId: selectedGameId, timePeriod: "Past Day")
-                    }
-                    Button("Past Week") {
-                        selectedTimePeriod = "Past Week"
-                        fetchUserStatistics(
-                            userId: userViewModel.userid,
-                            gameId: selectedGameId, timePeriod: "Past Week")
-                    }
-                    Button("Past Month") {
-                        selectedTimePeriod = "Past Month"
-                        fetchUserStatistics(
-                            userId: userViewModel.userid,
-                            gameId: selectedGameId, timePeriod: "Past Month")
-                    }
-                } label: {
-                    HStack {
-                        Text("High Scores From The: \(selectedTimePeriod)")
-                            .foregroundColor(.white)
-                            .fontWeight(.bold)
-                        Image(systemName: "arrowtriangle.down.fill")
-                            .foregroundColor(.white)
-                    }
-                    .padding()
-                    .background(Color("DarkBlue"))
-                    .cornerRadius(10)
-                }
-                .padding(.bottom, 20)
+                // to filter by time period
+//                Menu {
+//                    Button("Past Day") {
+//                        selectedTimePeriod = "Past Day"
+//                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
+//                    }
+//                    Button("Past Week") {
+//                        selectedTimePeriod = "Past Week"
+//                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 7)
+//                    }
+//                    Button("Past Month") {
+//                        selectedTimePeriod = "Past Month"
+//                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 30)
+//                    }
+//                } label: {
+//                    HStack {
+//                        Text("High Scores From The: \(selectedTimePeriod)")
+//                            .foregroundColor(.white)
+//                            .fontWeight(.bold)
+//                        Image(systemName: "arrowtriangle.down.fill")
+//                            .foregroundColor(.white)
+//                    }
+//                    .padding()
+//                    .background(Color("DarkBlue"))
+//                    .cornerRadius(10)
+//                }
+//                .padding(.bottom, 20)
 
-                // highscore based on time period
+                // Highscore and Time Played Display
                 VStack {
-                    Text("High Score: \(highScore)")
+                    Text("Total Time Played: \(timePlayed)")
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(Color("DarkBlue"))
-                        .padding(.bottom, 10)
-                    Text("Time Played: \(timePlayed)")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color("DarkBlue"))
-                    // filter
+                    Menu {
+                        Button("Past Day") {
+                            selectedTimePeriod = "Past Day"
+                            fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
+                        }
+                        Button("Past Week") {
+                            selectedTimePeriod = "Past Week"
+                            fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 7)
+                        }
+                        Button("Past Month") {
+                            selectedTimePeriod = "Past Month"
+                            fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 30)
+                        }
+                    } label: {
+                        HStack {
+                            Text("High Scores From The: \(selectedTimePeriod)")
+                                .foregroundColor(.white)
+                                .fontWeight(.bold)
+                            Image(systemName: "arrowtriangle.down.fill")
+                                .foregroundColor(.white)
+                        }
+                        .padding()
+                        .background(Color("DarkBlue"))
+                        .cornerRadius(10)
+                    }
+                    .padding(.bottom, 20)
+
+                    // filter menu for personal game stats
                     HStack {
                         Spacer()
                         Menu {
@@ -118,20 +119,17 @@ struct StatisticsPageView: View {
                                 filterType = "viewAll"
                             }
                         } label: {
-                            Image(
-                                systemName: "line.3.horizontal.decrease.circle"
-                            )
-                            .foregroundColor(.darkBlue)
-                            .padding()
+                            Image(systemName: "line.3.horizontal.decrease.circle")
+                                .foregroundColor(.darkBlue)
+                                .padding()
                         }
                         .padding(.trailing, 5)
                     }
 
-                    // scroll view for personal game sessions
+                    // Scroll View for Personal Game Sessions
                     ScrollView {
                         VStack(spacing: 10) {
-                            ForEach(filteredGameStats, id: \.session_id) {
-                                game in
+                            ForEach(filteredGameStats, id: \.session_id) { game in
                                 HStack {
                                     Image(systemName: game.icon)
                                         .resizable()
@@ -162,7 +160,7 @@ struct StatisticsPageView: View {
                         .padding()
                     }
 
-                    // clear and share
+                    // Clear and Share Buttons
                     HStack {
                         Spacer()
                         CustomButton(
@@ -196,72 +194,52 @@ struct StatisticsPageView: View {
             }
         }
         .onAppear {
-            fetchUserStatistics(
-                userId: userViewModel.userid, gameId: selectedGameId,
-                timePeriod: "Past Day")
+            fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
         }
     }
 
-    // filter the game stats scroll view
-    // TODO: need to fetch the actual statistics from db
-    var filteredGameStats:
-        [(
-            session_id: Int, gameName: String, icon: String, score: Int,
-            hours: Int
-        )]
-    {
-        if filterType == "viewAll" {
-            return gameStats
-        }
+    // filtered game stats for scroll view
+    var filteredGameStats: [(session_id: Int, gameName: String, icon: String, score: Int, hours: Int)] {
+        var sortedStats: [(session_id: Int, gameName: String, icon: String, score: Int, hours: Int)]
 
-        // filter based on scores or time
-        let grouped = Dictionary(grouping: gameStats, by: { $0.gameName })
-        return grouped.flatMap { (gameName, games) in
-            let filteredGame = games.max { (game1, game2) in
-                if filterType == "highScore" {
-                    return game1.score < game2.score
-                } else {
-                    return game1.hours < game2.hours
+        if filterType == "viewAll" || filterType == "longestSession" {
+            // sorted alphabetically by game name if its a non score related filter
+            sortedStats = gameStats
+            sortedStats = sortedStats.sorted { $0.gameName < $1.gameName } // sort alphabetically
+
+            if filterType == "longestSession" {
+                var uniqueGameNames: [String] = [] // look for unique games
+                var longestSessions: [(session_id: Int, gameName: String, icon: String, score: Int, hours: Int)] = []
+
+                // go through highest scoring game stats
+                for game in gameStats {
+                    if !uniqueGameNames.contains(game.gameName) {
+                        uniqueGameNames.append(game.gameName)
+
+                        // find longest game session for the game
+                        let longestSession = gameStats.filter { $0.gameName == game.gameName }
+                            .max { $0.hours < $1.hours }
+
+                        if let longest = longestSession {
+                            longestSessions.append(longest)
+                        }
+                    }
                 }
+                longestSessions.sort { $0.hours > $1.hours } //sort highest to lowest
+                sortedStats = longestSessions
             }
-            return filteredGame != nil ? [filteredGame!] : [] 
+        } else if filterType == "highScore" {
+            sortedStats = gameStats.sorted { $0.score > $1.score } // Sort by highest score first
+        } else {
+            sortedStats = gameStats // Default to all game stats if no filter
         }
+
+        return sortedStats
     }
 
-    func fetchUserStatistics(userId: Int, gameId: Int?, timePeriod: String) {
-        let calendar = Calendar.current
-        let now = Date()
-        var duration = 0
-        var startDate: Date?
 
-        switch timePeriod {
-        case "Past Day":
-            duration = 1
-            startDate = calendar.date(byAdding: .day, value: -1, to: now)
-        case "Past Week":
-            duration = 7
-            startDate = calendar.date(byAdding: .day, value: -7, to: now)
-        case "Past Month":
-            duration = 30
-            startDate = calendar.date(byAdding: .month, value: -1, to: now)
-        default:
-            startDate = nil
-        }
-
-        let dateFormatter = ISO8601DateFormatter()
-        let startDateString =
-            startDate != nil ? dateFormatter.string(from: startDate!) : ""
-
-        var urlString =
-            APIHelper.getBaseURL() + "/stats/userStatistics?userId=\(userId)"
-        if let gameId = gameId {
-            urlString += "&gameId=\(gameId)"
-        }
-        if !startDateString.isEmpty {
-            urlString += "&startDate=\(startDateString)"
-            urlString += "&days=\(duration)"
-        }
-
+    func fetchUserStatistics(userId: Int, gameId: Int?, days: Int) {
+        var urlString = APIHelper.getBaseURL() + "/stats/userStatistics?userId=\(userId)&days=\(days)"
         guard let url = URL(string: urlString) else {
             print("Invalid URL")
             self.errorMessage = "Invalid URL"
@@ -276,14 +254,11 @@ struct StatisticsPageView: View {
             DispatchQueue.main.async {
                 if let error = error {
                     print("Network error: \(error.localizedDescription)")
-                    self.errorMessage =
-                        "Network error: \(error.localizedDescription)"
+                    self.errorMessage = "Network error: \(error.localizedDescription)"
                     return
                 }
 
-                guard let httpResponse = response as? HTTPURLResponse,
-                    let data = data
-                else {
+                guard let httpResponse = response as? HTTPURLResponse, let data = data else {
                     print("Invalid response from server")
                     self.errorMessage = "Invalid response from server"
                     return
@@ -291,35 +266,39 @@ struct StatisticsPageView: View {
 
                 if httpResponse.statusCode == 200 {
                     do {
-                        if let json = try JSONSerialization.jsonObject(
-                            with: data, options: []) as? [String: Any]
-                        {
-                            if let timePlayedStr = json["time_played"]
-                                as? String
-                            {
-                                self.timePlayed = formatTimePlayed(
-                                    timePlayedStr)
+                        if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                            if let totalTimePlayed = json["total_time_played"] as? String {
+                                self.timePlayed = formatTimePlayed(totalTimePlayed)
                             }
+
                             if let scores = json["scores"] as? [[String: Any]] {
-                                let highestScore =
-                                    scores.compactMap { $0["score"] as? Int }
-                                    .max() ?? 0
-                                self.highScore = highestScore
+                                self.gameStats = scores.compactMap { scoreEntry in
+                                    if let score = scoreEntry["score"] as? Int,
+                                       let gameName = scoreEntry["gameName"] as? String,
+                                       let icon = scoreEntry["icon"] as? String,
+                                       let hours = scoreEntry["hours"] as? Int,
+                                       let sessionId = scoreEntry["sessionId"] as? Int {
+                                        return (session_id: sessionId, gameName: gameName, icon: icon, score: score, hours: hours)
+                                    }
+                                    return nil
+                                }
+
+                                // Update high score
+                                self.highScore = self.gameStats.max { $0.score < $1.score }?.score ?? 0
                             }
                         }
                     } catch {
-                        print(
-                            "Failed to decode JSON: \(error.localizedDescription)"
-                        )
-                        self.errorMessage =
-                            "Failed to decode JSON: \(error.localizedDescription)"
+                        print("Failed to decode JSON: \(error.localizedDescription)")
+                        self.errorMessage = "Failed to decode JSON: \(error.localizedDescription)"
                     }
+                } else if httpResponse.statusCode == 404 {
+                    print("User statistics not found (404)")
+                    self.errorMessage = "User statistics not found"
+                    self.highScore = 0
+                    self.timePlayed = "0h 0m"
                 } else {
-                    print(
-                        "Failed to fetch stats. Status code: \(httpResponse.statusCode)"
-                    )
-                    self.errorMessage =
-                        "Failed to fetch stats. Status code: \(httpResponse.statusCode)"
+                    print("Failed to fetch stats. Status code: \(httpResponse.statusCode)")
+                    self.errorMessage = "Failed to fetch stats. Status code: \(httpResponse.statusCode)"
                 }
             }
         }.resume()
@@ -336,11 +315,7 @@ struct StatisticsPageView: View {
     }
 
     func clearStats(userId: Int) {
-        guard
-            let url = URL(
-                string: APIHelper.getBaseURL()
-                    + "/stats/userGameSessions?userId=\(userId)")
-        else {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/stats/userGameSessions?userId=\(userId)") else {
             print("Invalid URL")
             return
         }
@@ -352,8 +327,7 @@ struct StatisticsPageView: View {
         URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
-                    self.errorMessage =
-                        "Network error: \(error.localizedDescription)"
+                    self.errorMessage = "Network error: \(error.localizedDescription)"
                     return
                 }
 
@@ -361,19 +335,17 @@ struct StatisticsPageView: View {
                     if httpResponse.statusCode == 200 {
                         print("User Stats Deleted!")
                         selectedTimePeriod = "Past Day"
-                        fetchUserStatistics(
-                            userId: userViewModel.userid,
-                            gameId: selectedGameId, timePeriod: "Past Day")
+                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
                         self.errorMessage = nil
                     } else {
-                        self.errorMessage =
-                            "Failed to delete stats. Status code: \(httpResponse.statusCode)"
+                        self.errorMessage = "Failed to delete stats. Status code: \(httpResponse.statusCode)"
                     }
                 }
             }
         }.resume()
     }
 }
+
 
 #Preview {
     // StatisticsPageView(user: "test")
