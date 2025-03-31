@@ -14,7 +14,7 @@ struct StatisticsPageView: View {
     @State private var selectedTimePeriod: String = "Past Day"
     @State private var selectedGameId: Int? = nil
 
-    // Placeholder for game statistics
+    //game stats
     @State private var gameStats: [
         (session_id: Int, gameName: String, icon: String, score: Int, hours: Int)
     ] = []
@@ -44,47 +44,68 @@ struct StatisticsPageView: View {
 
                 Spacer()
 
-                // Time Filter Menu
-                Menu {
-                    Button("Past Day") {
-                        selectedTimePeriod = "Past Day"
-                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
-                    }
-                    Button("Past Week") {
-                        selectedTimePeriod = "Past Week"
-                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 7)
-                    }
-                    Button("Past Month") {
-                        selectedTimePeriod = "Past Month"
-                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 30)
-                    }
-                } label: {
-                    HStack {
-                        Text("High Scores From The: \(selectedTimePeriod)")
-                            .foregroundColor(.white)
-                            .fontWeight(.bold)
-                        Image(systemName: "arrowtriangle.down.fill")
-                            .foregroundColor(.white)
-                    }
-                    .padding()
-                    .background(Color("DarkBlue"))
-                    .cornerRadius(10)
-                }
-                .padding(.bottom, 20)
+                // to filter by time period
+//                Menu {
+//                    Button("Past Day") {
+//                        selectedTimePeriod = "Past Day"
+//                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
+//                    }
+//                    Button("Past Week") {
+//                        selectedTimePeriod = "Past Week"
+//                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 7)
+//                    }
+//                    Button("Past Month") {
+//                        selectedTimePeriod = "Past Month"
+//                        fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 30)
+//                    }
+//                } label: {
+//                    HStack {
+//                        Text("High Scores From The: \(selectedTimePeriod)")
+//                            .foregroundColor(.white)
+//                            .fontWeight(.bold)
+//                        Image(systemName: "arrowtriangle.down.fill")
+//                            .foregroundColor(.white)
+//                    }
+//                    .padding()
+//                    .background(Color("DarkBlue"))
+//                    .cornerRadius(10)
+//                }
+//                .padding(.bottom, 20)
 
                 // Highscore and Time Played Display
                 VStack {
-//                    Text("High Score: \(highScore)")
-//                        .font(.title2)
-//                        .fontWeight(.bold)
-//                        .foregroundColor(Color("DarkBlue"))
-//                        .padding(.bottom, 10)
-                    Text("Time Played: \(timePlayed)")
+                    Text("Total Time Played: \(timePlayed)")
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(Color("DarkBlue"))
+                    Menu {
+                        Button("Past Day") {
+                            selectedTimePeriod = "Past Day"
+                            fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
+                        }
+                        Button("Past Week") {
+                            selectedTimePeriod = "Past Week"
+                            fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 7)
+                        }
+                        Button("Past Month") {
+                            selectedTimePeriod = "Past Month"
+                            fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 30)
+                        }
+                    } label: {
+                        HStack {
+                            Text("High Scores From The: \(selectedTimePeriod)")
+                                .foregroundColor(.white)
+                                .fontWeight(.bold)
+                            Image(systemName: "arrowtriangle.down.fill")
+                                .foregroundColor(.white)
+                        }
+                        .padding()
+                        .background(Color("DarkBlue"))
+                        .cornerRadius(10)
+                    }
+                    .padding(.bottom, 20)
 
-                    // Filter Menu
+                    // filter menu for personal game stats
                     HStack {
                         Spacer()
                         Menu {
@@ -177,27 +198,45 @@ struct StatisticsPageView: View {
         }
     }
 
-    // Filter the game stats scroll view
-    var filteredGameStats: [
-        (session_id: Int, gameName: String, icon: String, score: Int, hours: Int)
-    ] {
-        if filterType == "viewAll" {
-            return gameStats
+    // filtered game stats for scroll view
+    var filteredGameStats: [(session_id: Int, gameName: String, icon: String, score: Int, hours: Int)] {
+        var sortedStats: [(session_id: Int, gameName: String, icon: String, score: Int, hours: Int)]
+
+        if filterType == "viewAll" || filterType == "longestSession" {
+            // sorted alphabetically by game name if its a non score related filter
+            sortedStats = gameStats
+            sortedStats = sortedStats.sorted { $0.gameName < $1.gameName } // sort alphabetically
+
+            if filterType == "longestSession" {
+                var uniqueGameNames: [String] = [] // look for unique games
+                var longestSessions: [(session_id: Int, gameName: String, icon: String, score: Int, hours: Int)] = []
+
+                // go through highest scoring game stats
+                for game in gameStats {
+                    if !uniqueGameNames.contains(game.gameName) {
+                        uniqueGameNames.append(game.gameName)
+
+                        // find longest game session for the game
+                        let longestSession = gameStats.filter { $0.gameName == game.gameName }
+                            .max { $0.hours < $1.hours }
+
+                        if let longest = longestSession {
+                            longestSessions.append(longest)
+                        }
+                    }
+                }
+                longestSessions.sort { $0.hours > $1.hours } //sort highest to lowest
+                sortedStats = longestSessions
+            }
+        } else if filterType == "highScore" {
+            sortedStats = gameStats.sorted { $0.score > $1.score } // Sort by highest score first
+        } else {
+            sortedStats = gameStats // Default to all game stats if no filter
         }
 
-        // Filter based on scores or time
-        let grouped = Dictionary(grouping: gameStats, by: { $0.gameName })
-        return grouped.flatMap { (gameName, games) in
-            let filteredGame = games.max { (game1, game2) in
-                if filterType == "highScore" {
-                    return game1.score < game2.score
-                } else {
-                    return game1.hours < game2.hours
-                }
-            }
-            return filteredGame != nil ? [filteredGame!] : []
-        }
+        return sortedStats
     }
+
 
     func fetchUserStatistics(userId: Int, gameId: Int?, days: Int) {
         var urlString = APIHelper.getBaseURL() + "/stats/userStatistics?userId=\(userId)&days=\(days)"
