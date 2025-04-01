@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 
 struct HIWGameLobbyView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -37,6 +38,7 @@ struct HIWGameLobbyView: View {
                     if !isPlaying {
                         Button(action: {
                             isPlaying = true
+                            AudioManager.shared.playBackgroundMusic(named: "pokemon")
                             startObstacleCycle()
                         }) {
                             Image(systemName: "play.circle.fill")
@@ -86,10 +88,11 @@ struct HIWGameLobbyView: View {
                     if isPlaying {
                         Button(action: {
                             showPauseMenu = true
+                            AudioManager.shared.pauseBackgroundMusic() // Pause background music when menu opens
                             stopObstacleCycle() // Pause the obstacle cycling
                         }) {
                             Image(systemName: "pause.circle.fill")
-                              .resizable()
+                                .resizable()
                                 .scaledToFit()
                                 .frame(width: 40, height: 40)
                                 .foregroundColor(.darkBlue)
@@ -98,6 +101,7 @@ struct HIWGameLobbyView: View {
                         .accessibilityIdentifier("pauseButton")
                     } else {
                         Button(action: {
+                            AudioManager.shared.stopBackgroundMusic() // Stop music when exiting
                             presentationMode.wrappedValue.dismiss()
                         }) {
                             Image(systemName: "x.circle.fill")
@@ -177,6 +181,7 @@ struct HIWGameLobbyView: View {
                     onQuitGame: {
                         // Logic for quitting the game
                         stopObstacleCycle() // Ensure the timer is stopped
+                        AudioManager.shared.stopBackgroundMusic()
                         presentationMode.wrappedValue.dismiss()
                     }
                 )
@@ -193,6 +198,11 @@ struct HIWGameLobbyView: View {
             obstacles = levelImageMap[newLevel] ?? []
             stopObstacleCycle() // Stop any existing timer
             startObstacleCycle() // Start the timer for the new level
+        }
+        .onDisappear {
+            // This will catch any unexpected navigation away from the game
+            AudioManager.shared.stopBackgroundMusic()
+            stopObstacleCycle() // Also stop any game timers
         }
     }
 
@@ -421,6 +431,7 @@ struct PauseMenuView: View {
                 .alert("Are you sure you want to quit?", isPresented: $showQuitConfirmation) {
                             Button("No", role: .cancel) { }
                             Button("Yes", role: .destructive) {
+                                AudioManager.shared.stopBackgroundMusic()
                                 presentationMode.wrappedValue.dismiss()
                                 isPlaying = false
                                 showPauseMenu = false

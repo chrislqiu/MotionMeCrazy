@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 //
 //  CompletionScreenView.swift
 //  MotionMeCrazy
@@ -61,6 +62,8 @@ struct CompletionScreenView: View {
                         .alert("Are you sure you want to quit?", isPresented: $showQuitConfirmation) {
                                     Button("No", role: .cancel) { }
                                     Button("Yes", role: .destructive) {
+                                        AudioManager.shared.stopBackgroundMusic()
+                                        onQuitGame()
                                         presentationMode.wrappedValue.dismiss()
                                         
                                     }

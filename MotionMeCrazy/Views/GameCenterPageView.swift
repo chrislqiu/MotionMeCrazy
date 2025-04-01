@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct GameData: Decodable {
     let game_id: Int
@@ -202,8 +203,25 @@ struct SelectGame: View {
                         }
                     }
             
-            CustomButton(config: .init(title: game.name, width: 250, buttonColor: game.buttonColor, destination: game.destination))
-            
+            // This is our custom NavigationLink that plays sound and then navigates
+            NavigationLink(destination: game.destination) {
+                ZStack {
+                    // Visual appearance matching CustomButton
+                    Text(game.name)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(width: 250, height: 50)
+                        .background(game.buttonColor)
+                        .cornerRadius(10)
+                }
+            }
+            .simultaneousGesture(TapGesture().onEnded {
+                // This code executes when tapped but before navigation happens
+                if game.gameId == 1 {
+                    print("Playing sound for Hole in Wall")
+                    AudioManager.shared.playSound(named: "pokemon")
+                }
+            })
         }
         .frame(width: 250, height: 150)
     }
