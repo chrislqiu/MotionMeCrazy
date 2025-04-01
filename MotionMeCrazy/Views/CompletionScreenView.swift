@@ -85,7 +85,6 @@ struct CompletionScreenView: View {
         }
     
     func updateBadge(levelNumber: Int) {
-        print("updateBadge triggered")
         guard let url = URL(string: APIHelper.getBaseURL() + "/badges?userId=\(userId)") else {
             print("Invalid URL for user \(userId)")
             return
@@ -94,9 +93,7 @@ struct CompletionScreenView: View {
         let body: [String: Any] = [
             "badge": "level" + String(levelNumber)
         ]
-        
-        print(body)
-        
+            
         guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
         else {
             print("Failed to encode JSON")
