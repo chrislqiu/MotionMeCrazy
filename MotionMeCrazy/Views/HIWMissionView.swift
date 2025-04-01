@@ -44,6 +44,7 @@ class MissionViewModel: ObservableObject {
 
 struct DailyMissionsView: View {
     @StateObject private var viewModel = MissionViewModel()
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         ZStack {
@@ -76,14 +77,31 @@ struct DailyMissionsView: View {
                 .scrollContentBackground(.hidden)
                 .background(Color.clear)
             }
-            .onAppear {
-                // simulate daily reset (actual implentation completed in backend)
-                // right now it just displays 3 random missions every 5 seconds
-                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                    viewModel.resetMissions()
+            
+            VStack {
+                HStack {
+                    // X button to dismiss and return to GameCenterPageView
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "x.circle.fill")
+                            .foregroundColor(.darkBlue)
+                            .font(.title)
+                    }
+                    Spacer()
                 }
-                
+                Spacer()
             }
+            
+
+        }
+        .onAppear {
+            // simulate daily reset (actual implentation completed in backend)
+            // right now it just displays 3 random missions every 5 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                viewModel.resetMissions()
+            }
+            
         }
     }
 }
