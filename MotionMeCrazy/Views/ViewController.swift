@@ -30,16 +30,20 @@ struct ViewControllerView: UIViewControllerRepresentable {
 }
 
 class ViewController: UIViewController {
-    @IBOutlet private var previewLayer: AVCaptureVideoPreviewLayer!
+    //@IBOutlet private var previewLayer: AVCaptureVideoPreviewLayer!
     @IBOutlet private var overlayView: OverlayView!
     private var videoCapture: VideoCapture!
-    private var poseNetModel: PoseNetModel!
+    private var model: MoveNet!
     private var currentFrame: CGImage?
+    var isRunning = false
+    
+    let queue = DispatchQueue(label: "serial_queue")
+    let minimumScore: Float32 = 0.3
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupVideoCapture()
-        setupPoseNetModel()
+        setupModel()
     }
 
     private func setupVideoCapture() {
@@ -51,7 +55,7 @@ class ViewController: UIViewController {
                 return
             }
 
-            self.setupPreviewLayer()
+            //self.setupPreviewLayer()
             self.videoCapture.startCapturing()
         }
 
@@ -61,17 +65,23 @@ class ViewController: UIViewController {
         view.addSubview(overlayView)
     }
 
-    private func setupPreviewLayer() {
-        previewLayer = AVCaptureVideoPreviewLayer(session: videoCapture.captureSession)
-        previewLayer.videoGravity = .resizeAspect  // Ensures proper scaling without squishing
-        previewLayer.frame = view.layer.bounds
-        previewLayer.contentsScale = UIScreen.main.scale // Ensures sharp rendering
- 
-        view.layer.insertSublayer(previewLayer, at: 0)
-    }
+//    private func setupPreviewLayer() {
+//        previewLayer = AVCaptureVideoPreviewLayer(session: videoCapture.captureSession)
+//        previewLayer.videoGravity = .resizeAspect  // Ensures proper scaling without squishing
+//        previewLayer.frame = view.layer.bounds
+//        previewLayer.contentsScale = UIScreen.main.scale // Ensures sharp rendering
+// 
+//        view.layer.insertSublayer(previewLayer, at: 0)
+//    }
 
-    private func setupPoseNetModel() {
-        poseNetModel = PoseNetModel()
+    private func setupModel() {
+        queue.async {
+            do {
+                self.model = try MoveNet(threadCount: 4, delegate: .gpu, modelType: .movenetLighting)
+            } catch let error {
+                print(error)
+            }
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -79,78 +89,43 @@ class ViewController: UIViewController {
             super.viewWillDisappear(animated)
         }
     }
-
-    func convertCGImageToPixelBuffer(_ image: CGImage) -> CVPixelBuffer? {
-        let width = image.width
-        let height = image.height
-
-        var pixelBuffer: CVPixelBuffer?
-        let attributes: [CFString: Any] = [
-            kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA,
-            kCVPixelBufferWidthKey: width,
-            kCVPixelBufferHeightKey: height,
-            kCVPixelBufferBytesPerRowAlignmentKey: width * 4,
-            kCVPixelBufferIOSurfacePropertiesKey: [:]
-        ]
-
-        let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height,
-                                        kCVPixelFormatType_32BGRA,
-                                        attributes as CFDictionary,
-                                        &pixelBuffer)
-
-        guard status == kCVReturnSuccess, let buffer = pixelBuffer else {
-            print("Failed to create pixel buffer")
-            return nil
-        }
-
-        CVPixelBufferLockBaseAddress(buffer, [])
-        guard let context = CGContext(
-            data: CVPixelBufferGetBaseAddress(buffer),
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: CVPixelBufferGetBytesPerRow(buffer),
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue
-        ) else {
-            print("Failed to create CGContext")
-            CVPixelBufferUnlockBaseAddress(buffer, [])
-            return nil
-        }
-
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        CVPixelBufferUnlockBaseAddress(buffer, [])
-
-        return buffer
-    }
 }
 
 // MARK: - VideoCaptureDelegate
 extension ViewController: VideoCaptureDelegate {
-    func videoCapture(_ videoCapture: VideoCapture, didCaptureFrame capturedImage: CGImage?) {
-        guard currentFrame == nil else {
-            return
-        }
-        guard let image = capturedImage else {
-            fatalError("Captured image is null")
-        }
+    func videoCapture(_ videoCapture: VideoCapture, didOutput pixelBuffer: CVPixelBuffer) {
+        guard !isRunning else { return }
+        
+        guard let estimator = model else { return }
 
-        currentFrame = image
-        if let pixelBuffer = convertCGImageToPixelBuffer(image) {
-            poseNetModel.estimatePose(from: pixelBuffer) { result in
+        // Run inference on a serial queue to avoid race condition.
+        queue.async {
+            self.isRunning = true
+            defer { self.isRunning = false }
+
+            // Run pose estimation
+            do {
+                let result = try estimator.estimateSinglePose(on: pixelBuffer)
+
+                // Return to main thread to show detection results on the app UI.
                 DispatchQueue.main.async {
-                    let uiImage = UIImage(cgImage: image)
-                    print(result)
-                    if let firstPerson = result.first {
-                        self.overlayView.draw(at: uiImage, person: firstPerson)
-                    } else {
-                        print("No person detected in the frame.")
+                    print(result.score)
+
+                    // Allowed to set image and overlay
+                    let image = UIImage(ciImage: CIImage(cvPixelBuffer: pixelBuffer))
+
+                    // If score is too low, clear result remaining in the overlayView.
+                    if result.score < self.minimumScore {
+                        self.overlayView.image = image
+                        return
                     }
-                    self.currentFrame = nil
+
+                    self.overlayView.draw(at: image, person: result)
                 }
+            } catch {
+                print("Error running pose estimation.")
+                return
             }
-        } else {
-            currentFrame = nil
         }
     }
 }
