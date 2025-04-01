@@ -79,6 +79,7 @@ struct DailyMissionsView: View {
             }
             
             VStack {
+                
                 HStack {
                     // X button to dismiss and return to GameCenterPageView
                     Button(action: {
@@ -88,10 +89,12 @@ struct DailyMissionsView: View {
                             .foregroundColor(.darkBlue)
                             .font(.title)
                     }
+                    .padding(.leading, 20)
                     Spacer()
                 }
                 Spacer()
             }
+            
             
 
         }
