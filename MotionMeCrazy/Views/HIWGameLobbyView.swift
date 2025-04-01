@@ -166,6 +166,7 @@ struct HIWGameLobbyView: View {
                     levelNumber: currentLevel,
                     score: 100, // TODO: Replace with actual score logic
                     health: 100, // TODO: Replace with actual health logic
+                    userId: userId,
                     onNextLevel: {
                         // Increment the level and reset the game state
                         currentLevel += 1

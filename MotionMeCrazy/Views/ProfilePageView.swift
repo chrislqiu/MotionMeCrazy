@@ -27,6 +27,7 @@ struct ProfilePageView: View {
                     if !appState.offlineMode {
                         
                         VStack(alignment: .center, spacing: 10) {
+                            
                             Image(userViewModel.profilePicId)
                                 .resizable()
                                 .scaledToFit()
@@ -63,14 +64,25 @@ struct ProfilePageView: View {
                             } message: {
                                 Text("Please enter a new username")
                             }
-                            CustomButton(
-                                config: CustomButtonConfig(
-                                    title: "Stats",
+                            
+                            HStack(alignment: .top, spacing: 10) {
+                                CustomButton(config: CustomButtonConfig(
+                                    title: "Badges",
                                     width: 100,
                                     buttonColor: .darkBlue,
-                                    destination: AnyView(StatisticsPageView(userViewModel: userViewModel))  // Ensure type erasure with AnyView
-                                )
-                            ).accessibilityIdentifier("statsButton")
+                                    destination: AnyView(BadgesPageView(userViewModel: userViewModel))
+                                ))
+                                
+                                CustomButton(
+                                    config: CustomButtonConfig(
+                                        title: "Stats",
+                                        width: 100,
+                                        buttonColor: .darkBlue,
+                                        destination: AnyView(StatisticsPageView(userViewModel: userViewModel))  // Ensure type erasure with AnyView
+                                    )
+                                ).accessibilityIdentifier("statsButton")
+                            }
+                            
                             
                         }
                     } else {

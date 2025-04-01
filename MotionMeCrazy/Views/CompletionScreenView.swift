@@ -7,14 +7,19 @@ import SwiftUI
 //
 
 struct CompletionScreenView: View {
+
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var appState: AppState
+
     @State private var showQuitConfirmation = false // shows quit
+    @State private var errorMessage: String?
     var levelNumber: Int
     var score: Int
     var health: Double
+    var userId: Int
     var onNextLevel: () -> Void
     var onQuitGame: () -> Void
-        
+    
         var body: some View {
             ZStack {
                 // darkened background overlay
@@ -72,13 +77,57 @@ struct CompletionScreenView: View {
                 .background(Color.white.opacity(0.9))
                 .cornerRadius(20)
                 .shadow(radius: 10)
+            }.onAppear {
+                if !appState.offlineMode {
+                    updateBadge(levelNumber: levelNumber)
+                }
             }
         }
     
+    func updateBadge(levelNumber: Int) {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/badges?userId=\(userId)") else {
+            print("Invalid URL for user \(userId)")
+            return
+        }
+        
+        let body: [String: Any] = [
+            "badge": "level" + String(levelNumber)
+        ]
+            
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
+        else {
+            print("Failed to encode JSON")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if error != nil {
+                    self.errorMessage = "Network error, please try again"
+                    return
+                }
+                
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode == 200 {
+                        print("Badge successfully added!")
+                        self.errorMessage = nil
+                    } else {
+                        self.errorMessage =
+                        "Error adding badge, please try again"
+                    }
+                }
+            }
+        }.resume()
+    }
 }
 
 #Preview {
-    CompletionScreenView(levelNumber:1, score:1, health:1, onNextLevel: {
+    CompletionScreenView(levelNumber:1, score:1, health:1, userId: 724, onNextLevel: {
     },
     onQuitGame: {
     })
