@@ -37,6 +37,7 @@ struct LeaguePageView: View {
     @State private var leagueName: String = ""
     @State private var leagueCodeToJoin: String = "" // Added for league code input
     @State private var isJoiningLeague: Bool = false // Added for tracking league join state
+    @State private var inputJoinLeagueCode = ""
     
     @ObservedObject var userViewModel: UserViewModel
     @EnvironmentObject var appState: AppState
@@ -78,7 +79,7 @@ struct LeaguePageView: View {
                             ScrollView {
                                 VStack {
                                     ForEach(otherLeagues, id: \.id) { league in
-                                        CustomText(config: .init(text: "\(league.name)"))
+                                        CustomText(config: .init(text: "\(league.name) (Code: \(league.code))"))
                                             .onTapGesture {
                                                 joinLeague(leagueCode: league.code) // Handle join league action
                                             }
@@ -95,6 +96,44 @@ struct LeaguePageView: View {
                         .sheet(isPresented: $isCreatingLeague) {
                             LeaguePopupView(isCreatingLeague: $isCreatingLeague, leagueName: $leagueName, userId: $userViewModel.userid, onCreateLeague: fetchLeagues)
                         }
+                        
+                        CustomButton(config: .init(title: "Join League", width: 250, buttonColor: .darkBlue) {
+                            // action for join league
+                            isJoiningLeague.toggle()
+                        })
+                        .padding()
+                        .sheet(isPresented: $isJoiningLeague) {
+                            Text("Enter League Code")
+                                .font(.title)
+                                .bold()
+                                .padding()
+                            
+                            TextField("Type here...", text: $inputJoinLeagueCode)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding()
+                            
+                            
+                            HStack {
+                                Button("Submit") {
+                                    joinLeague(leagueCode: inputJoinLeagueCode)
+                                    isJoiningLeague = false
+                                }
+                                .padding()
+                                .background(Color.darkBlue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+
+                                Button("Cancel") {
+                                    isJoiningLeague = false
+                                }
+                                .padding()
+                                .background(Color.darkBlue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                            }
+            
+                        }
+                        Spacer()
                     } else {
                         Spacer()
                         
