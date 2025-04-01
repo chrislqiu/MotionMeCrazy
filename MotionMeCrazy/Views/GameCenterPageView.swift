@@ -45,6 +45,16 @@ struct GameCenterPageView: View {
                     VStack {
                         HStack {
                             Spacer()
+                            // Button to go to Daily Missions
+                            NavigationLink(destination: DailyMissionsView()) {
+                                Image(systemName: "checkmark.seal.text.page.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(.white)
+                            }
+                            .padding(.trailing, 20)
+                            
                             Menu {
                                 Button("Most Popular") {
                                     sortOption = .mostPopular
