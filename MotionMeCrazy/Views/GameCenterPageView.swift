@@ -46,7 +46,7 @@ struct GameCenterPageView: View {
                         HStack {
                             Spacer()
                             // Button to go to Daily Missions
-                            NavigationLink(destination: DailyMissionsView()) {
+                            NavigationLink(destination: DailyMissionsView(userId: userViewModel.userid)) {
                                 Image(systemName: "checkmark.seal.text.page.fill")
                                     .resizable()
                                     .scaledToFit()

@@ -8,54 +8,111 @@
 import SwiftUI
 
 struct Mission: Identifiable {
-    let id = UUID()
+    let id: Int
     let title: String
     var isCompleted: Bool
 }
 
 class MissionViewModel: ObservableObject {
     @Published var missions: [Mission] = []
-    private let allMissions: [String] = [
-        "Play 3 levels", "Dodge 10 obstacles", "Earn 500 points", "Survive for 2 minutes",
-        "Complete a level without taking damage", "Play 5 levels", "Earn a total of 1000 points",
-        "Complete a level without taking damage in medium mode", "Complete a level without taking damage in easy mode",
-        "Complete a level without taking damage in hard mode", "Reach a combo streak of 5", "Break through 3 walls",
-        "Finish a level in under 30 seconds", "Jump through 10 holes",
-        "Customize your character", "Earn 500 points in hard mode", "Score 200 points in one level",
-        "Try a different difficulty mode", "Play 10 minutes in one session", "Earn a perfect score in a level",
-        "Earn 500 points in medium mode", "Try a new challenge mode", "Dodge 20 obstacles in a row", "Hit a score milestone",
-        "Play with a friend", "Complete 2 levels without failing", "Reach a leaderboard position",
-        "Achieve a new personal best", "Complete a mission streak for 3 days", "Win a daily reward"
-    ]
-    
-    init() {
-        resetMissions()
+    private let userId: Int
+
+    init(userId: Int) {
+        self.userId = userId
+        fetchMissions()
     }
-    
-    func resetMissions() {
-            let selectedMissions = allMissions.shuffled().prefix(3).map { Mission(title: $0, isCompleted: false) }
-            missions = selectedMissions
+
+    func fetchMissions() {
+        let url = URL(string: APIHelper.getBaseURL() + "/missions?userId=\(userId)")!
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching missions: \(error)")
+                return
+            }
+
+            guard let data = data else {
+                print("No data received")
+                return
+            }
+
+            do {
+
+                let decodedMissions = try JSONDecoder().decode([MissionAPIResponse].self, from: data)
+
+                DispatchQueue.main.async {
+                    self.missions = decodedMissions.map { Mission(id: $0.id, title: $0.mission_name, isCompleted: $0.completed) }
+                }
+            } catch {
+                print("Error decoding missions: \(error)")
+            }
+        }.resume()
     }
-    
+
     func markAsCompleted(index: Int) {
-            missions[index].isCompleted = true
+        let mission = missions[index]
+        let url = URL(string: APIHelper.getBaseURL() + "/mission/complete")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "userId": userId,
+            "missionId": mission.id
+        ]
+
+        do {
+            let bodyData = try JSONSerialization.data(withJSONObject: body, options: [])
+            request.httpBody = bodyData
+
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    print("Error marking mission as complete: \(error)")
+                    return
+                }
+
+                guard let data = data else {
+                    print("No data received")
+                    return
+                }
+
+                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                    DispatchQueue.main.async {
+                        self.missions[index].isCompleted = true
+                    }
+                } else {
+                    print("Failed to mark mission as complete")
+                }
+            }.resume()
+        } catch {
+            print("Error encoding request body: \(error)")
+        }
     }
 }
 
+struct MissionAPIResponse: Decodable {
+    let id: Int
+    let mission_name: String
+    let completed: Bool
+}
+
 struct DailyMissionsView: View {
-    @StateObject private var viewModel = MissionViewModel()
+    @StateObject private var viewModel: MissionViewModel
     @Environment(\.presentationMode) var presentationMode
-    
+
+    init(userId: Int) {
+        _viewModel = StateObject(wrappedValue: MissionViewModel(userId: userId))
+    }
+
     var body: some View {
         ZStack {
             Image("background")
                 .resizable()
                 .ignoresSafeArea()
-            
+
             VStack {
-                
                 CustomHeader(config: CustomHeaderConfig(title: "Daily Missions"))
-                
+
                 List {
                     ForEach(viewModel.missions.indices, id: \.self) { index in
                         HStack {
@@ -77,11 +134,11 @@ struct DailyMissionsView: View {
                 .scrollContentBackground(.hidden)
                 .background(Color.clear)
             }
-            
+
             VStack {
-                
                 HStack {
                     // X button to dismiss and return to GameCenterPageView
+
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
                     }) {
@@ -94,24 +151,16 @@ struct DailyMissionsView: View {
                 }
                 Spacer()
             }
-            
-            
-
         }
         .onAppear {
-            // simulate daily reset (actual implentation completed in backend)
-            // right now it just displays 3 random missions every 5 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                viewModel.resetMissions()
-            }
-            
+
         }
     }
 }
 
 struct DailyMissionsView_Previews: PreviewProvider {
     static var previews: some View {
-        DailyMissionsView()
+
+        DailyMissionsView(userId: 421)
     }
 }
-
