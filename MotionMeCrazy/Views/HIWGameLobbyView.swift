@@ -1,4 +1,14 @@
+
 import SwiftUI
+import AVFoundation
+
+//
+//  HIWGameLobbyView.swift
+//  MotionMeCrazy
+//
+//  Created by Tea Lazareto.
+//
+
 
 struct HIWGameLobbyView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -16,7 +26,32 @@ struct HIWGameLobbyView: View {
     @State private var currentLevel = 1
     @State private var obstacles: [String] = []
     @State private var levelImageMap: [Int: [String]] = [:]
+    
+    //Mute stuff
+    @State private var audioPlayer: AVAudioPlayer?
+    @State private var isMuted = false
 
+
+    //Loading audio
+    func loadAudio() {
+        //getting royalty free song lol
+        guard let url = Bundle.main.url(forResource: "best-game-console-301284", withExtension: "mp3") else {
+            print("Audio file not found.")
+            return
+        }
+        
+        do {
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.numberOfLoops = -1  // loops forever
+            audioPlayer?.prepareToPlay()
+            audioPlayer?.volume = 0.5
+            audioPlayer?.play()
+            print("Playing audio!!")
+        } catch {
+            print("audio file loading fail: \(error)")
+        }
+    }
+    
     //TODO: ADD FUNCTIONALITY game stats
     @State private var score: Int = 0  //TODO: Adjust
     @State private var health: Double = 0  //TODO: Adjust
@@ -113,7 +148,6 @@ struct HIWGameLobbyView: View {
                             // Spacer to push VStack below the pause button
                             Spacer().frame(height: 20)  // Adjust the height as needed for spacing
 
-                            // The rest of your VStack content
                             VStack {
                                 // Score Section
                                 HStack {
@@ -190,7 +224,11 @@ struct HIWGameLobbyView: View {
                         }
 
                     } else {
+                        //OFFICIAL exit button
                         Button(action: {
+                            //completely stops audio player
+                            isMuted = true
+                            audioPlayer?.stop()
                             presentationMode.wrappedValue.dismiss()
                         }) {
                             Image(systemName: "x.circle.fill")
@@ -217,7 +255,9 @@ struct HIWGameLobbyView: View {
                     showSettings: $showSettings, userId: userId, gameId: gameId,
                     selectedDifficulty: $selectedDifficulty,
                     showPauseMenu: $showPauseMenu,
-                    openedFromPauseMenu: $openedFromPauseMenu
+                    openedFromPauseMenu: $openedFromPauseMenu,
+                    isMuted: $isMuted,
+                    audioPlayer: $audioPlayer
                 )
                 .frame(width: 300, height: 350)
                 .background(Color.white)
@@ -241,7 +281,9 @@ struct HIWGameLobbyView: View {
                     isPlaying: $isPlaying, showPauseMenu: $showPauseMenu,
                     showSettings: $showSettings,
                     showQuitConfirmation: $showQuitConfirmation,
-                    openedFromPauseMenu: $openedFromPauseMenu
+                    openedFromPauseMenu: $openedFromPauseMenu,
+                    isMuted: $isMuted,
+                    audioPlayer: $audioPlayer
                 )
                 .frame(width: 300, height: 300)
                 .background(Color.white)
@@ -287,6 +329,7 @@ struct HIWGameLobbyView: View {
             loadLevelImageMap()
             obstacles = levelImageMap[currentLevel] ?? []
             fetchGameSettings(userId: userId, gameId: gameId)
+            loadAudio()
         }
         .onChange(of: currentLevel) { newLevel in
             // Update obstacles when the level changes
@@ -436,9 +479,13 @@ struct SettingsView: View {
     @Binding var selectedDifficulty: Difficulty
     @Binding var showPauseMenu: Bool
     @Binding var openedFromPauseMenu: Bool
-
+    
+    //audio stuff
+    @Binding var isMuted: Bool
+    @Binding var audioPlayer: AVAudioPlayer?
+    
     @State private var isMusicMuted: Bool = false
-    @State private var isSoundEffectsMuted: Bool = false
+//    @State private var isSoundEffectsMuted: Bool = false
 
     enum Difficulty: String, CaseIterable, Identifiable {
         case easy = "Easy"
@@ -484,16 +531,16 @@ struct SettingsView: View {
                         width: 150,
                         buttonColor: .lightBlue,
                         action: {
-                            isMusicMuted.toggle()
-                            // actually will mute
-                            toggleMusicMute(isMuted: isMusicMuted)
+                            // mute game from in game settings
+                            toggleMusicMute(isMuted: isMuted, audioPlayer: audioPlayer)
+                            isMuted.toggle()
                         })
                 )
                 .accessibilityIdentifier("muteMusicButton")
                 .overlay(
                     HStack {
                         Image(
-                            systemName: isMusicMuted
+                            systemName: isMuted
                                 ? "speaker.slash.fill" : "speaker.2.fill"
                         )
                         .resizable()
@@ -508,8 +555,8 @@ struct SettingsView: View {
                     .padding(.horizontal)
                 )
 
-                // Mute Sound Effects Button
-                CustomButton(
+                // TODO: (temporarily removed sound effect button bc we dont need it rn) but ADD SOUND EFFECTS BACK AT SOME POINT
+/*                CustomButton(
                     config: CustomButtonConfig(
                         title: " ",
                         width: 150,
@@ -537,7 +584,7 @@ struct SettingsView: View {
                             .font(.system(size: 16))
                     }
                     .padding(.horizontal)
-                )
+                ) */
             }
 
             // Close Button
@@ -558,17 +605,22 @@ struct SettingsView: View {
         .padding()
     }
 
-    // TODO: ACTUALLY MUTE MUSIC
-    private func toggleMusicMute(isMuted: Bool) {
-        // TODO: add functionality
+    // mutes music and updates toggle (through in game settings)
+    private func toggleMusicMute(isMuted: Bool, audioPlayer: AVAudioPlayer?) {
         print("music \(isMuted ? "muted" : "unmuted")")
+        if isMuted {
+            print("Playing (togglemusicmute)")
+            audioPlayer?.play()
+        } else {
+            print("Stop(togglemusicmute)")
+            audioPlayer?.pause()
+        }
     }
 
-    // TODO: ACTUALLY MUTE SOUND EFFECTS
-    private func toggleSoundEffectsMute(isMuted: Bool) {
-        // TODO: add functionality
-        print("sound effect \(isMuted ? "muted" : "unmuted")")
-    }
+//    // TODO: add sound effects
+//    private func toggleSoundEffectsMute(isMuted: Bool) {
+//        print("sound effect \(isMuted ? "muted" : "unmuted")")
+//    }
 }
 
 // pause menu
@@ -579,6 +631,10 @@ struct PauseMenuView: View {
     @Binding var showSettings: Bool  // shows settings
     @Binding var showQuitConfirmation: Bool  // shows quit confirmation
     @Binding var openedFromPauseMenu: Bool  //checks where settings was closed from
+    
+    //muting audio
+    @Binding var isMuted: Bool
+    @Binding var audioPlayer: AVAudioPlayer?
 
     var body: some View {
         VStack(spacing: 15) {
@@ -602,6 +658,7 @@ struct PauseMenuView: View {
                         openedFromPauseMenu = true
                         showSettings = true
                         showPauseMenu = false
+                        
                     })
             )
             .accessibilityIdentifier("gameSettingsButton")
@@ -623,6 +680,8 @@ struct PauseMenuView: View {
                     presentationMode.wrappedValue.dismiss()
                     isPlaying = false
                     showPauseMenu = false
+                    isMuted = true
+                    audioPlayer?.stop()
                 }
             }
 
@@ -630,16 +689,23 @@ struct PauseMenuView: View {
         }
         .padding()
     }
+    // mutes music and updates toggle after quitting (through pause menu settings)
+    private func toggleMusicMute(isMuted: Bool, audioPlayer: AVAudioPlayer?) {
+        print("music \(isMuted ? "muted" : "unmuted")")
+        if isMuted {
+            print("Playing (quit game)")
+            audioPlayer?.play()
+        } else {
+            print("Stop(quit game)")
+            audioPlayer?.pause()
+        }
+    }
 }
 
 struct GameSettings: Codable {
     let user_id: Int
     let game_id: Int
     let difficulty: String
-}
-
-#Preview {
-    HIWGameLobbyView(userId: 421, gameId: 0)
 }
 
 struct HIWObstacleView: View {
@@ -655,6 +721,9 @@ struct HIWObstacleView: View {
     }
 }
 
-#Preview {
-    HIWObstacleView(imageName: "wall1")
-}
+//#Preview {
+//    HIWGameLobbyView(userId: 421, gameId: 0)
+//}
+//#Preview {
+//    HIWObstacleView(imageName: "wall1")
+//}
