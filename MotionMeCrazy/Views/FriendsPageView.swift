@@ -162,7 +162,7 @@ struct SearchBar: View {
                 CustomButton(config: CustomButtonConfig(title: "Search", width: 100, buttonColor: .darkBlue) {findUser()})
                 
                 if !searchText.isEmpty {
-                    Button(action: { searchText = "" }) {
+                    Button(action: { searchText = ""; hasSearched = false }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.darkBlue)
                             .font(.system(size: 24, weight: .bold))
@@ -238,7 +238,6 @@ struct SearchBar: View {
                                     print(userResult.userid)
                                 } else {
                                     self.result = nil
-                                    print("No user found")
                                 }
                                 
                             } catch {
@@ -246,11 +245,6 @@ struct SearchBar: View {
                                 self.errorMessage = "Failed to parse user data"
                             }
                         }
-                    } else {
-                        print(httpResponse.statusCode)
-
-                        self.result = nil
-                        self.errorMessage = "Failed to fetch user data"
                     }
                 }
             }

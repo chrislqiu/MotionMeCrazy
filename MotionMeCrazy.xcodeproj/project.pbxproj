@@ -46,9 +46,22 @@
 		DB62BBA101B7EC368DF38E0A /* Pods-MotionMeCrazyTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotionMeCrazyTests.debug.xcconfig"; path = "Target Support Files/Pods-MotionMeCrazyTests/Pods-MotionMeCrazyTests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F5E764542D9CB0B4005FD986 /* Exceptions for "MotionMeCrazy" folder in "MotionMeCrazy" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 016671732D550E2A008DF279 /* MotionMeCrazy */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		016671762D550E2A008DF279 /* MotionMeCrazy */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F5E764542D9CB0B4005FD986 /* Exceptions for "MotionMeCrazy" folder in "MotionMeCrazy" target */,
+			);
 			path = MotionMeCrazy;
 			sourceTree = "<group>";
 		};
@@ -542,6 +555,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MotionMeCrazy/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires access to the camera to capture photos and videos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -574,6 +588,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MotionMeCrazy/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires access to the camera to capture photos and videos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
