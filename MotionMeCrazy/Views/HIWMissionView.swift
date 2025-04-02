@@ -99,6 +99,8 @@ struct MissionAPIResponse: Decodable {
 struct DailyMissionsView: View {
     @StateObject private var viewModel: MissionViewModel
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var appState: AppState
+
 
     init(userId: Int) {
         _viewModel = StateObject(wrappedValue: MissionViewModel(userId: userId))
@@ -113,6 +115,7 @@ struct DailyMissionsView: View {
             VStack {
                 CustomHeader(config: CustomHeaderConfig(title: "Daily Missions"))
 
+                if !appState.offlineMode {
                 List {
                     ForEach(viewModel.missions.indices, id: \.self) { index in
                         HStack {
@@ -133,6 +136,19 @@ struct DailyMissionsView: View {
                 }
                 .scrollContentBackground(.hidden)
                 .background(Color.clear)
+                
+            } else {
+                Spacer()
+                
+                Text("This page is not available in offline mode")
+                    .font(.title2)
+                    .foregroundColor(.black)
+                    .multilineTextAlignment(.center)
+                    .padding()
+                    .accessibilityIdentifier("offlineMessage")
+                
+                Spacer()
+            }
             }
 
             VStack {

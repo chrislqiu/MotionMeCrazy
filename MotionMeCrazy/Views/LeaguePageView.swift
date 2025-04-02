@@ -111,6 +111,9 @@ struct LeaguePageView: View {
                             TextField("Type here...", text: $inputJoinLeagueCode)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .padding()
+                                .onChange(of: inputJoinLeagueCode) { newValue in
+                                    inputJoinLeagueCode = newValue.uppercased()
+                                }
                             
                             
                             HStack {
