@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 //
 //  CompletionScreenView.swift
 //  MotionMeCrazy
@@ -17,8 +18,14 @@ struct CompletionScreenView: View {
     var score: Int
     var health: Double
     var userId: Int
+    @Binding var isMuted: Bool
+    @Binding var audioPlayer: AVAudioPlayer?
     var onNextLevel: () -> Void
     var onQuitGame: () -> Void
+
+    
+    //audio stuff
+    
     
         var body: some View {
             ZStack {
@@ -40,7 +47,7 @@ struct CompletionScreenView: View {
                             .font(.title2)
                             .foregroundColor(.white)
                         
-                        CustomText(config: CustomTextConfig(text: "Remaining Health: \(Int(health))", titleColor: .white, fontSize:20))
+                        CustomText(config: CustomTextConfig(text: "Remaining Lives: \(Int(health))", titleColor: .white, fontSize:20))
                             .font(.title2)
                             .foregroundColor(.white)
                     }
@@ -66,6 +73,8 @@ struct CompletionScreenView: View {
                         .alert("Are you sure you want to quit?", isPresented: $showQuitConfirmation) {
                                     Button("No", role: .cancel) { }
                                     Button("Yes", role: .destructive) {
+                                        isMuted.toggle()
+                                        audioPlayer?.stop()
                                         presentationMode.wrappedValue.dismiss()
                                         
                                     }
@@ -125,13 +134,13 @@ struct CompletionScreenView: View {
         }.resume()
     }
 }
-
-#Preview {
-    CompletionScreenView(levelNumber:1, score:1, health:1, userId: 724, onNextLevel: {
-    },
-    onQuitGame: {
-    })
-}
+//
+//#Preview {
+//    CompletionScreenView(levelNumber:1, score:1, health:1, userId: 724, onNextLevel: {
+//    },
+//    onQuitGame: {
+//    })
+//}
 
 
 

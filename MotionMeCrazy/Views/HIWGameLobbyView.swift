@@ -53,9 +53,9 @@ struct HIWGameLobbyView: View {
     }
     
     //TODO: ADD FUNCTIONALITY game stats
-    @State private var score: Int = 0  //TODO: Adjust
-    @State private var health: Double = 0  //TODO: Adjust
-    @State private var maxHealth: Double = 0  //TODO: Adjust
+    @State private var score: Int = 100  //TODO: Adjust
+    @State private var health: Double = 5  //TODO: Adjust
+    @State private var maxHealth: Double = 5  //TODO: Adjust
     @State private var progress: String = "Level 1/10"
 
     private let wallsPerLevel = 4  // Number of walls per level
@@ -148,6 +148,7 @@ struct HIWGameLobbyView: View {
                             // Spacer to push VStack below the pause button
                             Spacer().frame(height: 20)  // Adjust the height as needed for spacing
 
+                            //score,health,level
                             VStack {
                                 // Score Section
                                 HStack {
@@ -177,27 +178,32 @@ struct HIWGameLobbyView: View {
                                     .font(.headline)
                                     .bold()
                                     Spacer()
-                                    CustomText(
-                                        config: CustomTextConfig(
-                                            text: "\(health)",
-                                            titleColor: .darkBlue, fontSize: 18)
-                                    )
-                                    .font(.body)
-                                    ProgressView(
-                                        value: health, total: maxHealth
-                                    )
-                                    .progressViewStyle(
-                                        LinearProgressViewStyle()
-                                    )
-                                    .frame(width: 50)  // Adjust width as needed
-                                    .tint(.darkBlue)
-                                    CustomText(
-                                        config: CustomTextConfig(
-                                            text: "\(maxHealth)",
-                                            titleColor: .darkBlue, fontSize: 18)
-                                    )
+                                    
+                                    // Hearts for Health
+                                    HStack(spacing: 5) {
+
+                                        ForEach(0..<Int(maxHealth), id: \.self) { index in
+                                            if index < Int(health) {
+                                                Image(systemName: "heart.fill")
+                                                    .foregroundColor(.darkBlue)
+                                                    .font(.title2)
+                                            } else {
+                                                Image(systemName: "heart")
+                                                    .foregroundColor(.darkBlue)
+                                                    .font(.title2)
+                                            }
+                                        }
+                                    }
+
+//                                    CustomText(
+//                                        config: CustomTextConfig(
+//                                            text: "5",
+//                                            titleColor: .darkBlue, fontSize: 18)
+//                                    )
                                     .font(.body)
                                 }
+
+
 
                                 // Progress Section
                                 HStack {
@@ -218,7 +224,7 @@ struct HIWGameLobbyView: View {
                                 }
                             }
                             .padding()
-                            .background(Color(UIColor.systemGray6))
+                            .background(Color(UIColor.systemGray6).opacity(0.7))
                             .cornerRadius(10)
                             .padding(.horizontal)
                         }
@@ -307,8 +313,10 @@ struct HIWGameLobbyView: View {
                 CompletionScreenView(
                     levelNumber: currentLevel,
                     score: 100, // TODO: Replace with actual score logic
-                    health: 100, // TODO: Replace with actual health logic
+                    health: 5, // TODO: Replace with actual health logic
                     userId: userId,
+                    isMuted: $isMuted,
+                    audioPlayer: $audioPlayer,
                     onNextLevel: {
                         // Increment the level and reset the game state
                         currentLevel += 1
@@ -321,7 +329,8 @@ struct HIWGameLobbyView: View {
                         // Logic for quitting the game
                         stopObstacleCycle()  // Ensure the timer is stopped
                         presentationMode.wrappedValue.dismiss()
-                    }
+                    },
+
                 )
             }
         }
