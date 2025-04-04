@@ -308,7 +308,6 @@ struct HIWGameLobbyView: View {
                 HIWObstacleView(imageName: obstacles[obstacleIndex])
                     .animation(.linear(duration: 0), value: obstacleIndex)
                     .opacity(0.75) // Lower opacity
-
             }
 
             if showCompletionScreen {
@@ -331,8 +330,7 @@ struct HIWGameLobbyView: View {
                         // Logic for quitting the game
                         stopObstacleCycle()  // Ensure the timer is stopped
                         presentationMode.wrappedValue.dismiss()
-                    },
-
+                    }
                 )
             }
         }
