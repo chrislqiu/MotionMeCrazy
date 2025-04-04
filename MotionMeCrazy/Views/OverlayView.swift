@@ -49,7 +49,7 @@ class OverlayView: UIImageView {
   /// - Parameters:
   ///     - image: The input image.
   ///     - person: Keypoints of the person detected (i.e. output of a pose estimation model)
-  func draw(at image: UIImage, person: Person) {
+    func draw(at image: UIImage, person: Person, collisions: [CGPoint]) {
     if context == nil {
       UIGraphicsBeginImageContext(image.size)
       guard let context = UIGraphicsGetCurrentContext() else {
@@ -63,6 +63,10 @@ class OverlayView: UIImageView {
     drawDots(at: context, dots: strokes.dots)
     drawLines(at: context, lines: strokes.lines)
     context.setStrokeColor(UIColor.blue.cgColor)
+    context.strokePath()
+    drawCollisions(at: context, collisions: collisions)
+    context.setStrokeColor(UIColor.red.cgColor)
+    context.setLineWidth(3.0)
     context.strokePath()
     guard let newImage = UIGraphicsGetImageFromCurrentImageContext() else { fatalError() }
     self.image = newImage
@@ -94,6 +98,19 @@ class OverlayView: UIImageView {
     for line in lines {
       context.move(to: CGPoint(x: line.from.x, y: line.from.y))
       context.addLine(to: CGPoint(x: line.to.x, y: line.to.y))
+    }
+  }
+
+  func drawCollisions(at context: CGContext, collisions: [CGPoint]) {
+    let size: CGFloat = 20 // Size of the X
+    let halfSize = size / 2
+    
+    for point in collisions {
+      context.move(to: CGPoint(x: point.x - halfSize, y: point.y - halfSize))
+      context.addLine(to: CGPoint(x: point.x + halfSize, y: point.y + halfSize))
+
+      context.move(to: CGPoint(x: point.x - halfSize, y: point.y + halfSize))
+      context.addLine(to: CGPoint(x: point.x + halfSize, y: point.y - halfSize))
     }
   }
 
