@@ -49,7 +49,7 @@ class OverlayView: UIImageView {
   /// - Parameters:
   ///     - image: The input image.
   ///     - person: Keypoints of the person detected (i.e. output of a pose estimation model)
-    func draw(at image: UIImage, person: Person, collisions: [CGPoint]) {
+  func draw(at image: UIImage, person: Person, collisions: [CGPoint]) {
     if context == nil {
       UIGraphicsBeginImageContext(image.size)
       guard let context = UIGraphicsGetCurrentContext() else {
@@ -101,7 +101,7 @@ class OverlayView: UIImageView {
     }
   }
 
-  func drawCollisions(at context: CGContext, collisions: [CGPoint]) {
+  private func drawCollisions(at context: CGContext, collisions: [CGPoint]) {
     let size: CGFloat = 20 // Size of the X
     let halfSize = size / 2
     
