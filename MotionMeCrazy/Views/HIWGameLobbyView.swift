@@ -26,6 +26,7 @@ struct HIWGameLobbyView: View {
     @State private var currentLevel = 1
     @State private var obstacles: [String] = []
     @State private var levelImageMap: [Int: [String]] = [:]
+    @State private var checkCollisionOn: String!
     
     //Mute stuff
     @State private var audioPlayer: AVAudioPlayer?
@@ -65,7 +66,7 @@ struct HIWGameLobbyView: View {
 
     var body: some View {
         ZStack {
-            ViewControllerView()
+            ViewControllerView(obstacleImageName: $checkCollisionOn)
                 .edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 50) {
@@ -306,7 +307,7 @@ struct HIWGameLobbyView: View {
             if isPlaying {
                 HIWObstacleView(imageName: obstacles[obstacleIndex])
                     .animation(.linear(duration: 0), value: obstacleIndex)
-                    .opacity(0.5)  // Lower opacity
+                    .opacity(0.75) // Lower opacity
             }
 
             if showCompletionScreen {
@@ -329,8 +330,7 @@ struct HIWGameLobbyView: View {
                         // Logic for quitting the game
                         stopObstacleCycle()  // Ensure the timer is stopped
                         presentationMode.wrappedValue.dismiss()
-                    },
-
+                    }
                 )
             }
         }
@@ -364,13 +364,15 @@ struct HIWGameLobbyView: View {
     private func startObstacleCycle() {
         stopObstacleCycle()  // Ensure no previous timer is running
         obstacleIndex = 0
-        timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) {
-            _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+            checkCollisionOn = obstacles[obstacleIndex]
             obstacleIndex = (obstacleIndex + 1) % obstacles.count
             if obstacleIndex == 0 {
                 // All obstacles have been cycled through
                 stopObstacleCycle()
-                showCompletionScreen = true
+                Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
+                    showCompletionScreen = true
+                }
             }
         }
     }
@@ -724,10 +726,10 @@ struct HIWObstacleView: View {
     var body: some View {
         Image(imageName)
             .resizable()
-            .aspectRatio(contentMode: .fit)  // Maintain aspect ratio and fit within the screen
-            .frame(maxWidth: .infinity, maxHeight: .infinity)  // Take up all available space
-            .clipped()  // Ensure the image doesn't overflow outside its bounds
-            .opacity(0.5)  // Lower opacity
+            .aspectRatio(contentMode: .fit) // Maintain aspect ratio and fit within the screen
+            .frame(maxWidth: .infinity, maxHeight: .infinity) // Take up all available space
+            .clipped() // Ensure the image doesn't overflow outside its bounds
+            .opacity(0.75) // Lower opacity
     }
 }
 

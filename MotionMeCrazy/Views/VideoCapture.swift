@@ -12,7 +12,7 @@ import UIKit
 import VideoToolbox
 
 protocol VideoCaptureDelegate: AnyObject {
-    func videoCapture(_ videoCapture: VideoCapture, didCaptureFrame image: CGImage?)
+    func videoCapture(_ videoCapture: VideoCapture, didOutput pixelBuffer: CVPixelBuffer)
 }
 
 /// - Tag: VideoCapture
@@ -112,7 +112,7 @@ class VideoCapture: NSObject {
 
         // Set the pixel type.
         let settings: [String: Any] = [
-            String(kCVPixelBufferPixelFormatTypeKey): kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+            String(kCVPixelBufferPixelFormatTypeKey): kCVPixelFormatType_32BGRA
         ]
 
         videoOutput.videoSettings = settings
@@ -187,27 +187,11 @@ extension VideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
     public func captureOutput(_ output: AVCaptureOutput,
                               didOutput sampleBuffer: CMSampleBuffer,
                               from connection: AVCaptureConnection) {
-        guard let delegate = delegate else { return }
-
-        if let pixelBuffer = sampleBuffer.imageBuffer {
-            // Attempt to lock the image buffer to gain access to its memory.
-            guard CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly) == kCVReturnSuccess
-                else {
-                    return
-            }
-
-            // Create Core Graphics image placeholder.
-            var image: CGImage?
-
-            // Create a Core Graphics bitmap image from the pixel buffer.
-            VTCreateCGImageFromCVPixelBuffer(pixelBuffer, options: nil, imageOut: &image)
-
-            // Release the image buffer.
-            CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
-
-            DispatchQueue.main.sync {
-                delegate.videoCapture(self, didCaptureFrame: image)
-            }
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+              return
         }
+        CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+        delegate?.videoCapture(self, didOutput: pixelBuffer)
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
     }
 }
