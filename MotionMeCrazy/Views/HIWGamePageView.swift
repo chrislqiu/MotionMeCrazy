@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 //
 //  HIWGamePageView.swift
 //  MotionMeCrazy
@@ -14,6 +15,8 @@ struct HIWGamePageView:View {
     @State private var showQuitConfirmation = false // shows quit
     @State private var isPlaying = true  // checks if game is active
     @State private var openedFromPauseMenu = false // to show where the game settings was closed from (pause or lobby) - tea
+    @State private var isMuted = false
+    @State private var audioPlayer: AVAudioPlayer?
     
     // game stats
     @State private var score: Int = 1000
@@ -127,7 +130,9 @@ struct HIWGamePageView:View {
                     showPauseMenu: $showPauseMenu,
                     showSettings: $showSettings,
                     showQuitConfirmation: $showQuitConfirmation,
-                    openedFromPauseMenu: $openedFromPauseMenu // tea change
+                    openedFromPauseMenu: $openedFromPauseMenu, // tea change
+                    isMuted: $isMuted,
+                    audioPlayer: $audioPlayer
                 )
                 .frame(width: 300, height: 300)
                 .background(Color.white)
