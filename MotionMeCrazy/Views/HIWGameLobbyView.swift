@@ -28,6 +28,9 @@ struct HIWGameLobbyView: View {
     @State private var levelImageMap: [Int: [String]] = [:]
     @State private var checkCollisionOn: String!
     @StateObject private var countdownManager = CountdownManager()
+    @State private var isPaused = false
+    @State private var savedObstacleIndex = 0
+    @State private var countdownWasActive = false
     
     //Mute stuff
     @State private var audioPlayer: AVAudioPlayer?
@@ -135,7 +138,10 @@ struct HIWGameLobbyView: View {
                                 Spacer()
                                 Button(action: {
                                     showPauseMenu = true
-                                    stopObstacleCycle()  //TODO: Pause the obstacle cycling
+                                    isPaused = true
+                                    savedObstacleIndex = obstacleIndex
+                                    countdownWasActive = countdownManager.isActive
+                                    stopObstacleCycle()
                                 }) {
                                     Image(systemName: "pause.circle.fill")
                                         .resizable()
@@ -299,8 +305,9 @@ struct HIWGameLobbyView: View {
                 .shadow(radius: 20)
                 .accessibilityIdentifier("pauseMenuView")
                 .onDisappear {
-                    if isPlaying {
-                        startObstacleCycle()  // Resume the obstacle cycling
+                    if isPlaying && isPaused {
+                        isPaused = false
+                        startObstacleCycle(resumeFromPause: true)  
                     }
                 }
             }
@@ -309,12 +316,11 @@ struct HIWGameLobbyView: View {
                 HIWObstacleView(imageName: obstacles[obstacleIndex])
                     .animation(.linear(duration: 0), value: obstacleIndex)
                     .opacity(0.75) // Lower opacity
+                    .allowsHitTesting(false)
             }
             
             if isPlaying && countdownManager.isActive {
                 CountdownView(value: countdownManager.value)
-                    .transition(.opacity)
-                    .animation(.easeInOut, value: countdownManager.value)
             }
 
             if showCompletionScreen {
@@ -368,19 +374,15 @@ struct HIWGameLobbyView: View {
         }
     }
 
-    private func startObstacleCycle() {
-        // First ensure no previous timers are running
-        stopObstacleCycle()
+    private func startObstacleCycle(resumeFromPause: Bool = false) {
+        stopObstacleCycle()  // Ensure no previous timers are running
         
-        // Reset obstacle index
-        obstacleIndex = 0
-        
-        // Start the countdown
-        countdownManager.start {
-            // This code runs when countdown completes
+        if resumeFromPause && !countdownWasActive {
+            // Resume from where we left off (skip countdown if it wasn't active)
+            obstacleIndex = savedObstacleIndex
             
-            // Start the obstacle timer
-            self.timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+            // Start the obstacle timer directly
+            timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
                 self.checkCollisionOn = self.obstacles[self.obstacleIndex]
                 self.obstacleIndex = (self.obstacleIndex + 1) % self.obstacles.count
                 if self.obstacleIndex == 0 {
@@ -391,8 +393,30 @@ struct HIWGameLobbyView: View {
                     }
                 }
             }
+        } else {
+            // Normal start (with countdown)
+            obstacleIndex = 0
+            
+            // Start the countdown
+            countdownManager.start {
+                // This code runs when countdown completes
+                
+                // Start the obstacle timer
+                self.timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+                    self.checkCollisionOn = self.obstacles[self.obstacleIndex]
+                    self.obstacleIndex = (self.obstacleIndex + 1) % self.obstacles.count
+                    if self.obstacleIndex == 0 {
+                        // All obstacles have been cycled through
+                        self.stopObstacleCycle()
+                        Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
+                            self.showCompletionScreen = true
+                        }
+                    }
+                }
+            }
         }
     }
+    
     private func stopObstacleCycle() {
         timer?.invalidate()
         timer = nil
