@@ -312,7 +312,7 @@ struct HIWGameLobbyView: View {
                 }
             }
 
-            if isPlaying {
+            if isPlaying && !countdownManager.isActive {
                 HIWObstacleView(imageName: obstacles[obstacleIndex])
                     .animation(.linear(duration: 0), value: obstacleIndex)
                     .opacity(0.75) // Lower opacity
