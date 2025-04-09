@@ -308,6 +308,7 @@ struct HIWGameLobbyView: View {
                 HIWObstacleView(imageName: obstacles[obstacleIndex])
                     .animation(.linear(duration: 0), value: obstacleIndex)
                     .opacity(0.75) // Lower opacity
+                    .allowsHitTesting(false)
             }
 
             if showCompletionScreen {
