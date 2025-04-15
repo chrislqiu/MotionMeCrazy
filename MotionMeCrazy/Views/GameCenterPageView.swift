@@ -1,10 +1,3 @@
-//
-//  GameCenterPageView.swift
-//  MotionMeCrazy
-//
-//  Created by Tea Lazareto 2/13/25.
-//
-
 import SwiftUI
 
 struct GameData: Decodable {
@@ -18,34 +11,39 @@ enum PlayCountType {
 
 struct GameCenterPageView: View {
     @State private var selectedGame: Int = 0
-    @State private var sortOption: SortOption = .default // Enum to track sorting options
-    @State private var playCountType: PlayCountType = .everyone // Enum to track play count type
+    @State private var sortOption: SortOption = .default
+    @State private var playCountType: PlayCountType = .everyone
     @State private var games: [(gameId: Int, name: String, icon: String, buttonColor: Color, sessionCount: Int, destination: AnyView)] = []
     @State private var showComingSoonPopup: Bool = false
     @ObservedObject var userViewModel: UserViewModel
     @EnvironmentObject var appState: AppState
     
+    @State private var showCreateLobbyPopup = false
+    @State private var showJoinGamePopup = false
+    @State private var nameInput = ""
+    @State private var codeInput = ""
+    
+    @StateObject private var webSocketManager = WebSocketManager()
+
     enum SortOption {
         case `default`, leastPopular, mostPopular
     }
-    
+
     init(userViewModel: UserViewModel) {
         self.userViewModel = userViewModel
     }
-    
+
     var body: some View {
         NavigationView {
             ZStack {
                 Image("background")
                     .resizable()
                     .ignoresSafeArea()
-                
+
                 VStack {
-                    // Header and sort button
                     VStack {
                         HStack {
                             Spacer()
-                            // Button to go to Daily Missions
                             NavigationLink(destination: DailyMissionsView(userId: userViewModel.userid)) {
                                 Image(systemName: "checkmark.seal.text.page.fill")
                                     .resizable()
@@ -54,7 +52,7 @@ struct GameCenterPageView: View {
                                     .foregroundColor(.white)
                             }
                             .padding(.trailing, 20)
-                            
+
                             Menu {
                                 Button("Most Popular") {
                                     sortOption = .mostPopular
@@ -76,7 +74,7 @@ struct GameCenterPageView: View {
                                     .foregroundColor(.white)
                             }
                             .padding(.trailing, 20)
-                            
+
                             Menu {
                                 Button("Personal") {
                                     playCountType = .me
@@ -95,26 +93,167 @@ struct GameCenterPageView: View {
                             }
                             .padding(.trailing, 20)
                         }
-                        
+
                         CustomHeader(config: .init(title: "Game Center"))
                             .padding(.top, 10)
                     }
-                    
+
                     Spacer()
-                    
-                    // Game selection
+
                     TabView(selection: $selectedGame) {
                         ForEach(Array(games.indices), id: \.self) { index in
-                            SelectGame(game: games[index], playCountType: playCountType)
-                                .scaleEffect(selectedGame == index ? 1.2 : 1.0)
-                                .tag(index)
+                            VStack {
+                                SelectGame(game: games[index], playCountType: playCountType)
+
+                                if games[index].gameId == 1 { // Hole In Wall
+                                    HStack(spacing: 5) {
+                                        Spacer()
+                                        
+                                        Button("Create Game") {
+                                            showCreateLobbyPopup = true
+                                        }
+                                        .buttonStyle(DefaultButtonStyle())
+                                        .padding()
+                                        .frame(width: 150, height: 50, alignment: .center)
+                                        .background(Color.darkBlue)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(10)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
+
+                                        Spacer()
+                                        
+                                        Button("Join Game") {
+                                            showJoinGamePopup = true
+                                        }
+                                        .buttonStyle(DefaultButtonStyle())
+                                        .padding()
+                                        .frame(width: 150, height: 50, alignment: .center)
+                                        .background(Color.darkBlue)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(10)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
+                                        
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 40)
+                                    .padding(.top, 20)
+                                    .padding(.bottom, 20)
+                                }
+                            }
+                            .scaleEffect(selectedGame == index ? 1.2 : 1.0)
+                            .tag(index)
                         }
                     }
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
-                    .frame(height: 325)
-                    
+                    .frame(height: 375)
+
                     Spacer()
+
+                    // Show WebSocket response message
+                    if let responseMessage = webSocketManager.receivedMessage {
+                        Text(responseMessage)
+                            .font(.headline)
+                            .foregroundColor(responseMessage.contains("success") ? .green : .red)
+                            .padding()
+                    }
                 }
+
+                // Create Lobby Popup
+                .sheet(isPresented: $showCreateLobbyPopup) {
+                    VStack {
+                        Text("Enter Your Name")
+                            .font(.title)
+                            .padding()
+
+                        TextField("Nickname", text: $nameInput)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding()
+
+                        Button("Create") {
+                            webSocketManager.connect()
+                            let message: [String: Any] = [
+                                "type": "CREATE_LOBBY",
+                                "payload": [
+                                    "userId": userViewModel.userid,
+                                    "username": nameInput
+                                ]
+                            ]
+                            webSocketManager.send(message: message)
+                            showCreateLobbyPopup = false
+                        }
+                        .padding()
+                        .background(Color.darkBlue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .padding()
+
+                        Button("Cancel") {
+                            showCreateLobbyPopup = false
+                        }
+                        .padding()
+                        .background(Color.red)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
+                    .padding()
+                }
+
+                // Join Game Popup
+                .sheet(isPresented: $showJoinGamePopup) {
+                    VStack {
+                        Text("Enter Lobby Code and Your Name")
+                            .font(.title)
+                            .padding()
+
+                        TextField("Lobby Code", text: $codeInput)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding()
+
+                        TextField("Nickname", text: $nameInput)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding()
+
+                        Button("Join") {
+                            // Handle join game logic
+                            webSocketManager.connect()
+                            let message: [String: Any] = [
+                                "type": "JOIN_LOBBY",
+                                "payload": [
+                                    "code": codeInput,
+                                    "userId": userViewModel.userid,
+                                    "username": nameInput
+                                ]
+                            ]
+                            webSocketManager.send(message: message)
+                            showJoinGamePopup = false
+                        }
+                        .padding()
+                        .background(Color.darkBlue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .padding()
+
+                        Button("Cancel") {
+                            showJoinGamePopup = false
+                        }
+                        .padding()
+                        .background(Color.red)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
+                    .padding()
+                }
+                
+                NavigationLink(destination: LobbyView(userViewModel: userViewModel, webSocketManager: webSocketManager), isActive: $webSocketManager.onJoinLobby) {
+                                    EmptyView()
+                                }
+
             }
         }
         .onAppear {
@@ -126,6 +265,7 @@ struct GameCenterPageView: View {
         }
     }
     
+    // Fetch Game Data (for game sessions and play counts)
     private func fetchGameData() {
         let playCountQuery: String
         switch playCountType {
@@ -134,52 +274,39 @@ struct GameCenterPageView: View {
         case .me:
             playCountQuery = "me"
         }
-        
+
         guard let url = URL(string: APIHelper.getBaseURL() + "/stats/games?playCountType=\(playCountQuery)&userId=\(userViewModel.userid)") else {
             print("Invalid URL")
             return
         }
-        
+
         let request = URLRequest(url: url)
-        
+
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Error fetching game data: \(error.localizedDescription)")
                 return
             }
-            
+
             guard let data = data else {
                 print("No data received")
                 return
             }
-            
+
             do {
                 let decodedGames: [GameData] = try JSONDecoder().decode([GameData].self, from: data)
-                
+
                 DispatchQueue.main.async {
                     for i in 0..<games.count {
                         if let updatedGame = decodedGames.first(where: { $0.game_id == games[i].gameId }) {
                             games[i].sessionCount = updatedGame.session_count
                         }
                     }
-                    sortGames()
                 }
-                
             } catch {
                 print("Error decoding game data: \(error.localizedDescription)")
             }
         }.resume()
-    }
-    
-    private func sortGames() {
-        switch sortOption {
-        case .mostPopular:
-            games.sort { $0.sessionCount > $1.sessionCount }
-        case .leastPopular:
-            games.sort { $0.sessionCount < $1.sessionCount }
-        case .default:
-            break // Keep default order
-        }
     }
 }
 
@@ -187,7 +314,7 @@ struct SelectGame: View {
     @EnvironmentObject var appState: AppState
     let game: (gameId: Int, name: String, icon: String, buttonColor: Color, sessionCount: Int, destination: AnyView)
     let playCountType: PlayCountType
-    
+
     var body: some View {
         VStack {
             Image(systemName: game.icon)
@@ -196,28 +323,21 @@ struct SelectGame: View {
                 .frame(width: 100, height: 100)
                 .foregroundColor(game.buttonColor)
                 .padding(.bottom, 10)
-            
+
             if !appState.offlineMode {
-                        HStack {
-                            if playCountType == .everyone {
-                                Image(systemName: "person.3.fill") // Icon for everyone
-                                    .foregroundColor(.darkBlue)
-                            }
-                            else {
-                                Image(systemName: "person.fill") // Icon for everyone
-                                    .foregroundColor(.darkBlue)
-                            }
-                            Text(playCountText)
-                                .font(.headline)
-                        }
-                    }
-            
+                HStack {
+                    Image(systemName: playCountType == .everyone ? "person.3.fill" : "person.fill")
+                        .foregroundColor(.darkBlue)
+                    Text(playCountText)
+                        .font(.headline)
+                }
+            }
+
             CustomButton(config: .init(title: game.name, width: 250, buttonColor: game.buttonColor, destination: game.destination))
-            
         }
         .frame(width: 250, height: 150)
     }
-    
+
     private var playCountText: String {
         switch playCountType {
         case .everyone:
