@@ -15,6 +15,7 @@ struct CompletionScreenView: View {
     @State private var showQuitConfirmation = false // shows quit
     @State private var errorMessage: String?
     var levelNumber: Int
+    var totalLevels: Int
     var score: Int
     var health: Double
     var userId: Int
@@ -37,7 +38,7 @@ struct CompletionScreenView: View {
                     }
 
                 VStack(spacing: 20) {
-                    CustomText(config: CustomTextConfig(text: "Level \(levelNumber) Completed!", titleColor: .darkBlue, fontSize: 30))
+                    CustomText(config: CustomTextConfig(text: "Level \(levelNumber)/\(totalLevels) Completed!", titleColor: .darkBlue, fontSize: 30))
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
@@ -73,8 +74,8 @@ struct CompletionScreenView: View {
                         .alert("Are you sure you want to quit?", isPresented: $showQuitConfirmation) {
                                     Button("No", role: .cancel) { }
                                     Button("Yes", role: .destructive) {
-                                        isMuted.toggle()
-                                        audioPlayer?.stop()
+                                        //isMuted.toggle()
+                                        //audioPlayer?.stop()
                                         presentationMode.wrappedValue.dismiss()
                                         
                                     }

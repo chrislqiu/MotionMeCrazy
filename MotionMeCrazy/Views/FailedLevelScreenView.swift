@@ -10,6 +10,7 @@ struct FailedLevelScreenView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var showQuitConfirmation = false // shows quit
     var levelNumber: Int
+    var totalLevels: Int
     var score: Int
     var health: Double
     var onRetryLevel: () -> Void
@@ -25,7 +26,7 @@ struct FailedLevelScreenView: View {
                     }
 
                 VStack(spacing: 20) {
-                    CustomText(config: CustomTextConfig(text: "Level \(levelNumber) Failed!", titleColor: .darkBlue, fontSize: 30))
+                    CustomText(config: CustomTextConfig(text: "Level \(levelNumber)/\(totalLevels) Failed!", titleColor: .darkBlue, fontSize: 30))
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
@@ -78,7 +79,7 @@ struct FailedLevelScreenView: View {
 }
 
 #Preview {
-    FailedLevelScreenView(levelNumber:1, score:1, health:1, onRetryLevel: {
+    FailedLevelScreenView(levelNumber:1, totalLevels: 4, score:1, health:1, onRetryLevel: {
     },
     onQuitGame: {
     })

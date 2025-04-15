@@ -218,7 +218,7 @@ struct HIWGameLobbyView: View {
                                     Spacer()
                                     CustomText(
                                         config: CustomTextConfig(
-                                            text: "\(progress)",
+                                            text: "\(currentLevel)/\(wallsPerLevel)",
                                             titleColor: .darkBlue, fontSize: 18)
                                     )
                                     .font(.body)
@@ -314,6 +314,7 @@ struct HIWGameLobbyView: View {
             if showCompletionScreen {
                 CompletionScreenView(
                     levelNumber: currentLevel,
+                    totalLevels: wallsPerLevel,
                     score: 100, // TODO: Replace with actual score logic
                     health: 5, // TODO: Replace with actual health logic
                     userId: userId,
