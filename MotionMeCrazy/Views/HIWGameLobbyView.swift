@@ -314,6 +314,7 @@ struct HIWGameLobbyView: View {
             if showCompletionScreen {
                 CompletionScreenView(
                     levelNumber: currentLevel,
+                    totalLevels: wallsPerLevel,
                     score: 100, // TODO: Replace with actual score logic
                     health: 5, // TODO: Replace with actual health logic
                     userId: userId,
