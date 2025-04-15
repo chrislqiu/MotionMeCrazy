@@ -218,7 +218,7 @@ struct HIWGameLobbyView: View {
                                     Spacer()
                                     CustomText(
                                         config: CustomTextConfig(
-                                            text: "\(progress)",
+                                            text: "\(currentLevel)/\(wallsPerLevel)",
                                             titleColor: .darkBlue, fontSize: 18)
                                     )
                                     .font(.body)
