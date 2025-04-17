@@ -16,7 +16,7 @@ struct BadgesPageView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Image("background")
+                Image(appState.darkMode ? "background_dm" :  "background")
                     .resizable()
                     .ignoresSafeArea()
                 VStack(alignment: .center, spacing: 10) {

@@ -11,6 +11,7 @@ private var friendRequests: [FriendRequest] = []
 
 struct PendingPageView: View {
     @ObservedObject var userViewModel: UserViewModel
+    @EnvironmentObject var appState: AppState
     
     @State private var errorMessage: String?
     @State private var requests: [FriendRequest] = []
@@ -19,7 +20,7 @@ struct PendingPageView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Image("background")
+                Image(appState.darkMode ? "background_dm" : "background")
                     .resizable()
                     .ignoresSafeArea()
                 VStack(alignment: .center, spacing: 10) {

@@ -45,7 +45,7 @@ struct LeaguePageView: View {
     var body: some View {
         NavigationStack{
             ZStack {
-                Image("background")
+                Image(appState.darkMode ? "background_dm" : "background")
                     .resizable()
                     .ignoresSafeArea()
                 
@@ -55,9 +55,7 @@ struct LeaguePageView: View {
                     if !appState.offlineMode {
                         
                         if myLeagues.isEmpty {
-                            Text("You are not in any leagues")
-                                .foregroundColor(.black)
-                                .padding()
+                            CustomText(config: .init(text: "You are not in any leagues", fontSize: 20))
                         } else {
                             ScrollView {
                                 VStack {
@@ -72,9 +70,7 @@ struct LeaguePageView: View {
                         
                         
                         if otherLeagues.isEmpty {
-                            Text("No other leagues available")
-                                .foregroundColor(.black)
-                                .padding()
+                            CustomText(config: .init(text: "No other leagues available", fontSize: 20))
                         } else {
                             ScrollView {
                                 VStack {
@@ -103,53 +99,55 @@ struct LeaguePageView: View {
                         })
                         .padding()
                         .sheet(isPresented: $isJoiningLeague) {
-                            Text("Enter League Code")
-                                .font(.title)
-                                .bold()
-                                .padding()
-                            
-                            TextField("Type here...", text: $inputJoinLeagueCode)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding()
-                                .onChange(of: inputJoinLeagueCode) { newValue in
-                                    inputJoinLeagueCode = newValue.uppercased()
-                                }
-                            
-                            
-                            HStack {
-                                Button("Submit") {
-                                    joinLeague(leagueCode: inputJoinLeagueCode)
-                                    isJoiningLeague = false
-                                }
-                                .padding()
-                                .background(Color.darkBlue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
+                            NavigationView {
+                                ZStack {
+                                    (appState.darkMode ? Color.darkBlue : Color.white)
+                                        .ignoresSafeArea()
+                                    
+                                    VStack(spacing: 20) {
+                                        CustomHeader(config: .init(title: "Enter League Code"))
 
-                                Button("Cancel") {
-                                    isJoiningLeague = false
+                                        CustomTextField(config: .init(text: $inputJoinLeagueCode, placeholder: "Type here..."))
+                                            .onChange(of: inputJoinLeagueCode) { newValue in
+                                                inputJoinLeagueCode = newValue.uppercased()
+                                            }
+
+                                        HStack {
+                                            CustomButton(config: .init(title: "Submit", width: 100, buttonColor: .darkBlue,
+                                                                       action: {
+                                                joinLeague(leagueCode: inputJoinLeagueCode)
+                                                isJoiningLeague = false
+                                            }))
+
+                                            CustomButton(config: .init(title: "Cancel", width: 100, buttonColor: .lightBlue,
+                                                                       action: { isJoiningLeague = false }))
+                                        }
+                                    }
+                                    .padding()
                                 }
-                                .padding()
-                                .background(Color.darkBlue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
+                                .navigationBarItems(trailing: Button("Close") {
+                                    isJoiningLeague = false
+                                })
                             }
-            
                         }
+
                         Spacer()
                     } else {
                         Spacer()
+                        CustomText(config: .init(text: "This page is not available in offline mode", fontSize: 20))
+                            .accessibilityIdentifier("offlineMessage")
                         
-                        Text("This page is not available in offline mode")
+                        /*Text("This page is not available in offline mode")
                             .font(.title2)
                             .foregroundColor(.black)
                             .multilineTextAlignment(.center)
                             .padding()
-                            .accessibilityIdentifier("offlineMessage")
+                            .accessibilityIdentifier("offlineMessage")*/
                         
                         Spacer()
                     }
                 }
+                
             }
             .onAppear {
                 if !appState.offlineMode {
@@ -266,34 +264,33 @@ struct LeaguePageView: View {
 }
 
 struct LeaguePopupView: View {
+    @EnvironmentObject var appState: AppState
     @Binding var isCreatingLeague: Bool
     @Binding var leagueName: String
     @Binding var userId: Int
     var onCreateLeague: () -> Void
     
     var body: some View {
-        NavigationView {
-            VStack {
-                CustomText(config: .init(text: "Create Your League"))
-                    .font(.headline)
-                    .padding()
-                
-                TextField("Enter league name", text: $leagueName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal)
-                
+        ZStack {
+            (appState.darkMode ? Color.darkBlue : Color.white)
+                .ignoresSafeArea()
+
+            VStack(spacing: 20) {
+                CustomHeader(config: .init(title: "Create Your League"))
+
+                CustomTextField(config: .init(text: $leagueName, placeholder: "Enter league name"))
+
                 HStack {
-                    CustomButton(config: .init(title: "Create", width: 150, buttonColor: .darkBlue) {
+                    CustomButton(config: .init(title: "Create", width: 100, buttonColor: .darkBlue) {
                         createLeague()
                     })
-                    
-                    CustomButton(config: .init(title: "Cancel", width: 150, buttonColor: .gray) {
+
+                    CustomButton(config: .init(title: "Cancel", width: 100, buttonColor: .lightBlue) {
                         isCreatingLeague = false
                     })
                 }
-                .padding()
             }
-            .navigationBarItems(trailing: Button("Close") { isCreatingLeague = false })
+            .padding()
         }
     }
     

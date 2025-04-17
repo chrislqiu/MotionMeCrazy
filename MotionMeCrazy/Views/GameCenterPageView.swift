@@ -36,7 +36,7 @@ struct GameCenterPageView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Image("background")
+                Image(appState.darkMode ? "background_dm" : "background")
                     .resizable()
                     .ignoresSafeArea()
                 
@@ -201,14 +201,15 @@ struct SelectGame: View {
                         HStack {
                             if playCountType == .everyone {
                                 Image(systemName: "person.3.fill") // Icon for everyone
-                                    .foregroundColor(.darkBlue)
+                                    .foregroundColor(appState.darkMode ? .white  : .darkBlue)
                             }
                             else {
                                 Image(systemName: "person.fill") // Icon for everyone
-                                    .foregroundColor(.darkBlue)
+                                    .foregroundColor(appState.darkMode ? .white : .darkBlue)
                             }
                             Text(playCountText)
                                 .font(.headline)
+                                .foregroundColor(appState.darkMode ? Color.white : .darkBlue)
                         }
                     }
             

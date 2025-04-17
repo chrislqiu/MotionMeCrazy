@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct StatisticsPageView: View {
+    @EnvironmentObject var appState: AppState
+
     @State private var highScore: Int = 0
     @State private var timePlayed: String = "0h 0m"
     @State private var errorMessage: String?
@@ -25,22 +27,13 @@ struct StatisticsPageView: View {
     var body: some View {
         ZStack {
             // Background
-            Image("background")
+            Image(appState.darkMode ? "background_dm" : "background")
                 .resizable()
                 .ignoresSafeArea()
 
             VStack {
-                // Navigation Bar
-                HStack {
-                    Spacer()
-                    Text("Statistics")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                    Spacer()
-                }
-                .padding()
-                .background(Color("DarkBlue"))
+                CustomHeader(config: .init(title: "Statistics"))
+
 
                 Spacer()
 
@@ -74,10 +67,7 @@ struct StatisticsPageView: View {
 
                 // Highscore and Time Played Display
                 VStack {
-                    Text("Total Time Played: \(timePlayed)")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color("DarkBlue"))
+                    CustomHeader(config: .init(title: "Total Time Played: \(timePlayed)", fontSize: 26))
                     Menu {
                         Button("Past Day") {
                             selectedTimePeriod = "Past Day"
