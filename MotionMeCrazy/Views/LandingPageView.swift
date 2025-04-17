@@ -48,7 +48,7 @@ struct LandingPageView: View {
     let images = ["pfp1", "pfp2", "pfp3", "pfp4", "pfp5", "pfp6"]
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             //Forces the background to be in the very back
             ZStack {
                 Image("background")

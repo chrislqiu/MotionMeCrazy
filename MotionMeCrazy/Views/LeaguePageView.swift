@@ -99,7 +99,7 @@ struct LeaguePageView: View {
                         })
                         .padding()
                         .sheet(isPresented: $isJoiningLeague) {
-                            NavigationView {
+                            NavigationStack {
                                 ZStack {
                                     (appState.darkMode ? Color.darkBlue : Color.white)
                                         .ignoresSafeArea()

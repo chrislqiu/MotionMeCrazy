@@ -34,7 +34,7 @@ struct GameCenterPageView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Image(appState.darkMode ? "background_dm" : "background")
                     .resizable()

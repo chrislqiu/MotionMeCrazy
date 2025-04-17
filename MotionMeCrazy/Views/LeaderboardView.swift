@@ -29,7 +29,7 @@ struct LeaderboardView: View {
 
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Image("background")
                     .resizable()
