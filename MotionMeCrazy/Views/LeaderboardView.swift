@@ -1,29 +1,32 @@
 //
-//  Leaderboard.swift
+//  LeaderboardView.swift
 //  MotionMeCrazy
 //
 //  Created by Tea Lazareto on 4/9/25.
 //
-//
+
 import SwiftUI
 
 struct LeaderboardView: View {
-    @State private var publicLeaderboardVisible = true  // track which leaderboard
+    @State private var publicLeaderboardVisible = true
     @ObservedObject var userViewModel: UserViewModel
     @EnvironmentObject var appState: AppState
-    @Environment(\.presentationMode) var presentationMode  // access the presentation mode
+    @Environment(\.presentationMode) var presentationMode
+    @State private var errorMessage: String? = nil
     
-    let leaderboardEntries: [(name: String, score: Int)] = [
-        ("FierceOtter123", 120),
-        ("ValiantCreature350", 95),
-        ("User456", 88),
+    @State private var leaderboardEntries: [(username: String, profilePicId: String, score: Int)] = []
+    @State private var friendsLeaderboardEntries: [(username: String, profilePicId: String, score: Int)] = [
+        ("FriendOne", "pfp1", 150),
+        ("FriendTwo", "pfp1", 130),
+        ("FriendThree", "pfp1", 110)
     ]
     
-    let friendsLeaderboardEntries: [(name: String, score: Int)] = [
-        ("FriendOne", 150),
-        ("FriendTwo", 130),
-        ("FriendThree", 110),
-    ]
+
+    private func refreshLeaderboard() {
+        fetchTopScores()
+       
+    }
+
 
     var body: some View {
         NavigationView {
@@ -31,7 +34,7 @@ struct LeaderboardView: View {
                 Image("background")
                     .resizable()
                     .ignoresSafeArea()
-                
+
                 VStack {
                     Text("Leaderboard")
                         .font(.largeTitle)
@@ -40,9 +43,7 @@ struct LeaderboardView: View {
 
                     HStack {
                         Button(action: {
-                            withAnimation {
-                                publicLeaderboardVisible = true
-                            }
+                            withAnimation { publicLeaderboardVisible = true }
                         }) {
                             Text("Public")
                                 .font(.headline)
@@ -53,14 +54,12 @@ struct LeaderboardView: View {
                         }
 
                         Button(action: {
-                            withAnimation {
-                                publicLeaderboardVisible = false
-                            }
+                            withAnimation { publicLeaderboardVisible = false }
                         }) {
                             Text("Friends")
                                 .font(.headline)
                                 .padding()
-                                .background(publicLeaderboardVisible ? Color.clear : Color.darkBlue)
+                                .background(!publicLeaderboardVisible ? Color.darkBlue : Color.clear)
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
                         }
@@ -77,10 +76,9 @@ struct LeaderboardView: View {
 
                                 ScrollView {
                                     VStack(spacing: 10) {
-                                        ForEach(leaderboardEntries, id: \.name) { entry in
+                                        ForEach(leaderboardEntries, id: \.username) { entry in
                                             HStack {
-                                                //TODO: ADD REAL USER DATA HEREE
-                                                Image("pfp3") /
+                                                Image(entry.profilePicId)
                                                     .resizable()
                                                     .scaledToFit()
                                                     .frame(width: 40, height: 40)
@@ -88,7 +86,7 @@ struct LeaderboardView: View {
                                                     .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
 
                                                 VStack(alignment: .leading) {
-                                                    Text(entry.name)
+                                                    Text(entry.username)
                                                         .font(.headline)
                                                         .foregroundColor(.white)
                                                     Text("Score: \(entry.score)")
@@ -116,10 +114,9 @@ struct LeaderboardView: View {
 
                                 ScrollView {
                                     VStack(spacing: 10) {
-                                        ForEach(friendsLeaderboardEntries, id: \.name) { entry in
+                                        ForEach(friendsLeaderboardEntries, id: \.username) { entry in
                                             HStack {
-                                                //TODO: ADD REAL USER DATA HEREE
-                                                Image("pfp1")
+                                                Image(entry.profilePicId)
                                                     .resizable()
                                                     .scaledToFit()
                                                     .frame(width: 40, height: 40)
@@ -127,7 +124,7 @@ struct LeaderboardView: View {
                                                     .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
 
                                                 VStack(alignment: .leading) {
-                                                    Text(entry.name)
+                                                    Text(entry.username)
                                                         .font(.headline)
                                                         .foregroundColor(.white)
                                                     Text("Score: \(entry.score)")
@@ -153,15 +150,78 @@ struct LeaderboardView: View {
             }
             .background(Color.black.ignoresSafeArea())
             .navigationBarBackButtonHidden(true)
-            .navigationBarItems(leading: Button(action: {
-                // bye
-                presentationMode.wrappedValue.dismiss()
-            }) {
-                Image(systemName: "arrow.left.circle.fill")
-                    .font(.title)
-                    .foregroundColor(.darkBlue)
-                    .padding(.bottom, 40)
-            })
+            .navigationBarItems(
+                leading: Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Image(systemName: "arrow.left.circle.fill")
+                        .font(.title)
+                        .foregroundColor(.darkBlue)
+                },
+                trailing: Button(action: {
+                    refreshLeaderboard()
+                }) {
+                    Image(systemName: "arrow.clockwise.circle.fill")
+                        .font(.title)
+                        .foregroundColor(.darkBlue)
+                }
+            )
         }
+        .onAppear {
+            refreshLeaderboard()
+        }
+        
     }
+    //get public high scores
+    private func fetchTopScores() {
+        let urlString = APIHelper.getBaseURL() + "/stats/topScores"
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            self.errorMessage = "Invalid URL"
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    self.errorMessage = "Network error: \(error.localizedDescription)"
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse, let data = data else {
+                    print("Invalid response from server")
+                    self.errorMessage = "Invalid response from server"
+                    return
+                }
+
+                if httpResponse.statusCode == 200 {
+                    do {
+                        if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
+                            let scores = jsonArray.compactMap { entry in
+                                if let username = entry["username"] as? String,
+                                   let profilePicId = entry["profilepicid"] as? String,
+                                   let score = entry["score"] as? Int {
+                                    return (username, profilePicId, score)
+                                }
+                                return nil
+                            }
+                            self.leaderboardEntries = scores
+                        }
+                    } catch {
+                        print("Failed to decode JSON: \(error.localizedDescription)")
+                        self.errorMessage = "Failed to decode JSON: \(error.localizedDescription)"
+                    }
+                } else {
+                    print("Failed to fetch top scores. Status code: \(httpResponse.statusCode)")
+                    self.errorMessage = "Failed to fetch top scores. Status code: \(httpResponse.statusCode)"
+                }
+            }
+        }.resume()
+    }
+    
 }
