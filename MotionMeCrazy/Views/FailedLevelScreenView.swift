@@ -8,6 +8,8 @@ import SwiftUI
 
 struct FailedLevelScreenView: View {
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var appState: AppState
+
     @State private var showQuitConfirmation = false // shows quit
     var levelNumber: Int
     var totalLevels: Int
@@ -26,23 +28,12 @@ struct FailedLevelScreenView: View {
                     }
 
                 VStack(spacing: 20) {
-                    CustomText(config: CustomTextConfig(text: "Level \(levelNumber)/\(totalLevels) Failed!", titleColor: .darkBlue, fontSize: 30))
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
+                    CustomHeader(config: .init(title: "Level \(levelNumber)/\(totalLevels) Failed!", fontSize: 26))
                     
                     VStack(spacing: 10) {
-                        CustomText(config: CustomTextConfig(text: "Score: \(score)", titleColor: .white, fontSize:20))
-                            .font(.title2)
-                            .foregroundColor(.white)
-                        
-                        CustomText(config: CustomTextConfig(text: "Remaining Health: \(Int(health))", titleColor: .white, fontSize:20))
-                            .font(.title2)
-                            .foregroundColor(.white)
+                        CustomText(config: CustomTextConfig(text: "Score: \(score)", fontSize:20))
+                        CustomText(config: CustomTextConfig(text: "Remaining Health: \(Int(health))", fontSize:20))
                     }
-                    .padding()
-                    .background(Color.darkBlue.opacity(0.8))
-                    .cornerRadius(15)
 
                     HStack(spacing: 30) {
                         // retry level button
@@ -70,7 +61,7 @@ struct FailedLevelScreenView: View {
                     .padding(.top, 10)
                 }
                 .padding()
-                .background(Color.white.opacity(0.9))
+                .background(appState.darkMode ? .darkBlue.opacity(0.9) : Color.white.opacity(0.9))
                 .cornerRadius(20)
                 .shadow(radius: 10)
             }

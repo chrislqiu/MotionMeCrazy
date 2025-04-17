@@ -38,23 +38,13 @@ struct CompletionScreenView: View {
                     }
 
                 VStack(spacing: 20) {
-                    CustomText(config: CustomTextConfig(text: "Level \(levelNumber)/\(totalLevels) Completed!", titleColor: .darkBlue, fontSize: 30))
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                    
+                    CustomHeader(config: .init(title: "Level \(levelNumber)/\(totalLevels) Completed!", fontSize: 26))
+
                     VStack(spacing: 10) {
-                        CustomText(config: CustomTextConfig(text: "Score: \(score)", titleColor: .white, fontSize:20))
-                            .font(.title2)
-                            .foregroundColor(.white)
-                        
-                        CustomText(config: CustomTextConfig(text: "Remaining Lives: \(Int(health))", titleColor: .white, fontSize:20))
-                            .font(.title2)
-                            .foregroundColor(.white)
+                        CustomText(config: CustomTextConfig(text: "Score: \(score)", fontSize:20))
+                        CustomText(config: CustomTextConfig(text: "Remaining Lives: \(Int(health))", fontSize:20))
                     }
-                    .padding()
-                    .background(Color.darkBlue.opacity(0.8))
-                    .cornerRadius(15)
+                   
 
                     HStack(spacing: 30) {
                         // next level button
@@ -84,7 +74,7 @@ struct CompletionScreenView: View {
                     .padding(.top, 10)
                 }
                 .padding()
-                .background(Color.white.opacity(0.9))
+                .background(appState.darkMode ? .darkBlue.opacity(0.9) : Color.white.opacity(0.9))
                 .cornerRadius(20)
                 .shadow(radius: 10)
             }.onAppear {

@@ -107,7 +107,7 @@ struct HIWGamePageView:View {
                     })
                 }
                 .padding()
-                .background(Color(UIColor.systemGray6))
+                .background(appState.darkMode ? .darkBlue : Color(UIColor.systemGray6))
                 .cornerRadius(10)
                 .padding(.horizontal)
                 .onPreferenceChange(SectionFrameKey.self) { newValues in

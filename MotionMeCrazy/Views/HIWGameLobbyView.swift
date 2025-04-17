@@ -36,6 +36,7 @@ struct HIWGameLobbyView: View {
     @State private var audioPlayer: AVAudioPlayer?
     @State private var isMuted = false
 
+    @EnvironmentObject var appState: AppState
 
     //Loading audio
     func loadAudio() {
@@ -70,9 +71,19 @@ struct HIWGameLobbyView: View {
 
     var body: some View {
         ZStack {
+            // 1. Game Background
             ViewControllerView(obstacleImageName: $checkCollisionOn)
                 .edgesIgnoringSafeArea(.all)
 
+            // 2. Obstacle View
+            if isPlaying && !countdownManager.isActive {
+                HIWObstacleView(imageName: obstacles[obstacleIndex])
+                    .animation(.linear(duration: 0), value: obstacleIndex)
+                    .opacity(0.75)
+                    .allowsHitTesting(false)
+            }
+
+            // 3. Start/Play Button
             VStack(spacing: 50) {
                 if !isPlaying {
                     CustomHeader(config: .init(title: "Hole in the Wall"))
@@ -96,6 +107,7 @@ struct HIWGameLobbyView: View {
                 }
             }
 
+            // 4. Top-right Controls, Score/Health/Progress
             VStack {
                 HStack {
                     Spacer()
@@ -104,14 +116,12 @@ struct HIWGameLobbyView: View {
                         Button(action: {
                             showTutorial = true
                         }) {
-                            Image(
-                                systemName: "play.rectangle.on.rectangle.fill"
-                            )
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(.darkBlue)
-                            .padding(.trailing, 10)
+                            Image(systemName: "play.rectangle.on.rectangle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 40, height: 40)
+                                .foregroundColor(.darkBlue)
+                                .padding(.trailing, 10)
                         }
                         .sheet(isPresented: $showTutorial) {
                             HIWTutorialPageView()
@@ -133,7 +143,6 @@ struct HIWGameLobbyView: View {
 
                     if isPlaying {
                         VStack {
-                            // TODO: UPDATE PAUSE BUTTON FUNCTIONALITY
                             HStack {
                                 Spacer()
                                 Button(action: {
@@ -153,12 +162,9 @@ struct HIWGameLobbyView: View {
                                 .accessibilityIdentifier("pauseButton")
                             }
 
-                            // Spacer to push VStack below the pause button
-                            Spacer().frame(height: 20)  // Adjust the height as needed for spacing
+                            Spacer().frame(height: 20)
 
-                            //score,health,level
                             VStack {
-                                // Score Section
                                 HStack {
                                     CustomText(
                                         config: CustomTextConfig(
@@ -176,7 +182,6 @@ struct HIWGameLobbyView: View {
                                     .font(.body)
                                 }
 
-                                // Health Section
                                 HStack {
                                     CustomText(
                                         config: CustomTextConfig(
@@ -186,14 +191,12 @@ struct HIWGameLobbyView: View {
                                     .font(.headline)
                                     .bold()
                                     Spacer()
-                                    
-                                    // Hearts for Health
-                                    HStack(spacing: 5) {
 
+                                    HStack(spacing: 5) {
                                         ForEach(0..<Int(maxHealth), id: \.self) { index in
                                             if index < Int(health) {
                                                 Image(systemName: "heart.fill")
-                                                    .foregroundColor(.darkBlue)
+                                                    .foregroundColor(appState.darkMode ? .white : .darkBlue)
                                                     .font(.title2)
                                             } else {
                                                 Image(systemName: "heart")
@@ -202,18 +205,9 @@ struct HIWGameLobbyView: View {
                                             }
                                         }
                                     }
-
-//                                    CustomText(
-//                                        config: CustomTextConfig(
-//                                            text: "5",
-//                                            titleColor: .darkBlue, fontSize: 18)
-//                                    )
                                     .font(.body)
                                 }
 
-
-
-                                // Progress Section
                                 HStack {
                                     CustomText(
                                         config: CustomTextConfig(
@@ -232,15 +226,12 @@ struct HIWGameLobbyView: View {
                                 }
                             }
                             .padding()
-                            .background(Color(UIColor.systemGray6).opacity(0.7))
+                            .background(appState.darkMode ? .darkBlue.opacity(0.7) : Color(UIColor.systemGray6).opacity(0.7))
                             .cornerRadius(10)
                             .padding(.horizontal)
                         }
-
                     } else {
-                        //OFFICIAL exit button
                         Button(action: {
-                            //completely stops audio player
                             isMuted = true
                             audioPlayer?.stop()
                             presentationMode.wrappedValue.dismiss()
@@ -258,6 +249,12 @@ struct HIWGameLobbyView: View {
                 Spacer()
             }
 
+            // 5. Countdown Overlay
+            if isPlaying && countdownManager.isActive {
+                CountdownView(value: countdownManager.value)
+            }
+
+            // 6. Settings View
             if showSettings {
                 Color.black.opacity(0.4)
                     .edgesIgnoringSafeArea(.all)
@@ -274,16 +271,13 @@ struct HIWGameLobbyView: View {
                     audioPlayer: $audioPlayer
                 )
                 .frame(width: 300, height: 350)
-                .background(Color.white)
+                .background(appState.darkMode ? .darkBlue : Color.white)
                 .cornerRadius(20)
                 .shadow(radius: 20)
                 .accessibilityIdentifier("settingsView")
             }
 
-            if showTutorial {
-                //HIWTutorialPageView()
-            }
-
+            // 7. Pause Menu View
             if showPauseMenu {
                 Color.black.opacity(0.4)
                     .edgesIgnoringSafeArea(.all)
@@ -300,50 +294,37 @@ struct HIWGameLobbyView: View {
                     audioPlayer: $audioPlayer
                 )
                 .frame(width: 300, height: 300)
-                .background(Color.white)
+                .background(appState.darkMode ? .darkBlue : Color.white)
                 .cornerRadius(20)
                 .shadow(radius: 20)
                 .accessibilityIdentifier("pauseMenuView")
                 .onDisappear {
                     if isPlaying && isPaused {
                         isPaused = false
-                        startObstacleCycle(resumeFromPause: true)  
+                        startObstacleCycle(resumeFromPause: true)
                     }
                 }
             }
 
-            if isPlaying && !countdownManager.isActive {
-                HIWObstacleView(imageName: obstacles[obstacleIndex])
-                    .animation(.linear(duration: 0), value: obstacleIndex)
-                    .opacity(0.75) // Lower opacity
-                    .allowsHitTesting(false)
-
-            }
-            
-            if isPlaying && countdownManager.isActive {
-                CountdownView(value: countdownManager.value)
-            }
-
+            // 8. Completion Screen
             if showCompletionScreen {
                 CompletionScreenView(
                     levelNumber: currentLevel,
                     totalLevels: wallsPerLevel,
-                    score: 100, // TODO: Replace with actual score logic
-                    health: 5, // TODO: Replace with actual health logic
+                    score: 100,
+                    health: 5,
                     userId: userId,
                     isMuted: $isMuted,
                     audioPlayer: $audioPlayer,
                     onNextLevel: {
-                        // Increment the level and reset the game state
                         currentLevel += 1
                         showCompletionScreen = false
                         isPlaying = false
-                        stopObstacleCycle()  // Ensure the timer is stopped
-                        startObstacleCycle()  // Restart the obstacle cycle for the next level
+                        stopObstacleCycle()
+                        startObstacleCycle()
                     },
                     onQuitGame: {
-                        // Logic for quitting the game
-                        stopObstacleCycle()  // Ensure the timer is stopped
+                        stopObstacleCycle()
                         presentationMode.wrappedValue.dismiss()
                     }
                 )
@@ -357,19 +338,19 @@ struct HIWGameLobbyView: View {
             loadAudio()
         }
         .onChange(of: currentLevel) { newLevel in
-            // Update obstacles when the level changes
             obstacles = levelImageMap[newLevel] ?? []
-            stopObstacleCycle()  // Stop any existing timer
-            startObstacleCycle()  // Start the timer for the new level
+            stopObstacleCycle()
+            startObstacleCycle()
         }
     }
+
 
     // load images from folder
     private func loadLevelImageMap() {
         for level in 1...5 {
             var imageNames: [String] = []
             for wall in 1...wallsPerLevel {
-                let imageName = "level\(level)_wall\(wall)"
+                let imageName = "level\(level)_wall\(wall)e"
                 imageNames.append(imageName)
             }
             levelImageMap[level] = imageNames
@@ -539,6 +520,8 @@ struct SettingsView: View {
     @Binding var isMuted: Bool
     @Binding var audioPlayer: AVAudioPlayer?
     
+    @State private var showThemeDialog = false
+    @State private var selectedTheme: String? = nil
     @State private var isMusicMuted: Bool = false
 //    @State private var isSoundEffectsMuted: Bool = false
 
@@ -549,7 +532,7 @@ struct SettingsView: View {
 
         var id: String { self.rawValue }
     }
-
+    
     var body: some View {
         VStack(spacing: 15) {
             CustomHeader(config: .init(title: "Game Settings"))
@@ -557,9 +540,7 @@ struct SettingsView: View {
 
             VStack {
                 // Difficulty Picker
-                Text("Difficulty")
-                    .font(.headline)
-                    .foregroundColor(.darkBlue)
+                CustomText(config: .init(text: "Difficulty"))
 
                 Picker("Difficulty", selection: $selectedDifficulty) {
                     ForEach(Difficulty.allCases) { difficulty in
@@ -575,6 +556,8 @@ struct SettingsView: View {
                     updateGameSettings(
                         userId: userId, gameId: gameId, diff: newValue.rawValue)
                 }
+                
+        
             }
 
             // mute
@@ -658,6 +641,8 @@ struct SettingsView: View {
             Spacer()
         }
         .padding()
+       
+
     }
 
     // mutes music and updates toggle (through in game settings)

@@ -31,18 +31,19 @@ struct LeaderboardView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Image("background")
+                Image(appState.darkMode ? "background_dm" : "background")
                     .resizable()
                     .ignoresSafeArea()
 
                 VStack {
-                    Text("Leaderboard")
-                        .font(.largeTitle)
-                        .foregroundColor(.darkBlue)
-                        .padding()
+                    CustomHeader(config: .init(title: "Leaderboard"))
 
                     HStack {
-                        Button(action: {
+                        //CustomSelectedButton(config: .init(title: "Public", width: 100, action: { withAnimation { publicLeaderboardVisible = true }}))
+                        CustomButton(config: .init(title: "Public", width: 100, buttonColor: publicLeaderboardVisible ? .darkBlue : .white.opacity(0.25), action: { withAnimation { publicLeaderboardVisible = true }}))
+                        CustomButton(config: .init(title: "Friends", width: 100, buttonColor: !publicLeaderboardVisible ? .darkBlue : .white.opacity(0.5), action: { withAnimation { publicLeaderboardVisible = false }}))
+
+                        /*Button(action: {
                             withAnimation { publicLeaderboardVisible = true }
                         }) {
                             Text("Public")
@@ -62,17 +63,14 @@ struct LeaderboardView: View {
                                 .background(!publicLeaderboardVisible ? Color.darkBlue : Color.clear)
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
-                        }
+                        }*/
                     }
                     .padding()
 
                     ZStack {
                         if publicLeaderboardVisible {
                             VStack {
-                                Text("Public Leaderboard")
-                                    .font(.title)
-                                    .foregroundColor(.white)
-                                    .padding()
+                                CustomHeader(config: .init(title: "Public Leaderboard", fontSize: 26))
 
                                 ScrollView {
                                     VStack(spacing: 10) {
@@ -86,12 +84,15 @@ struct LeaderboardView: View {
                                                     .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
 
                                                 VStack(alignment: .leading) {
-                                                    Text(entry.username)
+                                                    CustomText(config: .init(text: entry.username))
+                                                    CustomText(config: .init(text: "Score: \(entry.score)", fontSize: 18))
+
+                                                    /*Text(entry.username)
                                                         .font(.headline)
                                                         .foregroundColor(.white)
                                                     Text("Score: \(entry.score)")
                                                         .font(.subheadline)
-                                                        .foregroundColor(.gray)
+                                                        .foregroundColor(.gray)*/
                                                 }
 
                                                 Spacer()
@@ -107,10 +108,7 @@ struct LeaderboardView: View {
                             .transition(.move(edge: .leading))
                         } else {
                             VStack {
-                                Text("Friends Leaderboard")
-                                    .font(.title)
-                                    .foregroundColor(.white)
-                                    .padding()
+                                CustomHeader(config: .init(title: "Friends Leaderboard", fontSize: 26))
 
                                 ScrollView {
                                     VStack(spacing: 10) {
@@ -124,18 +122,20 @@ struct LeaderboardView: View {
                                                     .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
 
                                                 VStack(alignment: .leading) {
-                                                    Text(entry.username)
+                                                    CustomText(config: .init(text: entry.username))
+                                                    CustomText(config: .init(text: "Score: \(entry.score)", fontSize: 18))
+                                                    /*Text(entry.username)
                                                         .font(.headline)
                                                         .foregroundColor(.white)
                                                     Text("Score: \(entry.score)")
                                                         .font(.subheadline)
-                                                        .foregroundColor(.gray)
+                                                        .foregroundColor(.gray)*/
                                                 }
 
                                                 Spacer()
                                             }
                                             .padding()
-                                            .background(Color("DarkBlue").opacity(0.8))
+                                            .background(appState.darkMode ? .darkBlue.opacity(0.8) : .white.opacity(0.8))
                                             .cornerRadius(10)
                                         }
                                     }
@@ -156,14 +156,14 @@ struct LeaderboardView: View {
                 }) {
                     Image(systemName: "arrow.left.circle.fill")
                         .font(.title)
-                        .foregroundColor(.darkBlue)
+                        .foregroundColor(appState.darkMode ? .white : .darkBlue)
                 },
                 trailing: Button(action: {
                     refreshLeaderboard()
                 }) {
                     Image(systemName: "arrow.clockwise.circle.fill")
                         .font(.title)
-                        .foregroundColor(.darkBlue)
+                        .foregroundColor(appState.darkMode ? .white : .darkBlue)
                 }
             )
         }
