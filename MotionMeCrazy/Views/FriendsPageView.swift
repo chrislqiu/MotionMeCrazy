@@ -25,7 +25,8 @@ struct FriendsPageView: View {
                 
                 VStack(alignment: .center, spacing: 10) {
                     CustomHeader(config: CustomHeaderConfig(title: "Friends"))
-                    
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    Spacer()
                     if !appState.offlineMode {
                         
                         HStack(alignment: .top, spacing: 10) {
@@ -69,17 +70,13 @@ struct FriendsPageView: View {
                         }
                         
                     } else {
-                        Spacer()
                         
-                        Text("This page is not available in offline mode")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                            .multilineTextAlignment(.center)
-                            .padding()
+                        CustomText(config: .init(text: "This page is not available in offline mode"))
                             .accessibilityIdentifier("offlineMessage")
                         
-                        Spacer()
                     }
+                    Spacer()
+
                 }
                 .padding(.horizontal, 20)
             }

@@ -86,11 +86,7 @@ struct ProfilePageView: View {
                             
                         }
                     } else {
-                        Text("This page is not available in offline mode")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                            .multilineTextAlignment(.center)
-                            .padding()
+                        CustomText(config: .init(text: "This page is not available in offline mode"))
                             .accessibilityIdentifier("offlineMessage")
                     }
                     Spacer()

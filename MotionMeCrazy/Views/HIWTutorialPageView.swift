@@ -14,7 +14,8 @@ struct HIWTutorialPageView: View {
     @State private var showTutorial = true  // toggle tutorial visibility
     @State private var sectionFrames: [Int: CGRect] = [:]
 
-    
+    @EnvironmentObject var appState: AppState
+
     
     var body: some View {
         ZStack{
@@ -23,7 +24,7 @@ struct HIWTutorialPageView: View {
             HIWGamePageView(sectionFrames: Binding($sectionFrames))
             
             if showTutorial {
-                Color.black.opacity(0.5)  // dim background
+                Color.black.opacity(0.25)  // dim background
                     .edgesIgnoringSafeArea(.all)
                 
                 
@@ -44,7 +45,7 @@ struct HIWTutorialPageView: View {
                     // tutorial textbox
                     CustomText(config: CustomTextConfig(text: tutorialText(for: tutorialStep), titleColor: .darkBlue, fontSize: 18))
                         .frame(width: 350, height: 60)
-                        .background(Color.white)
+                        .background(appState.darkMode ? .darkBlue : .white)
                         .cornerRadius(10)
                         .shadow(radius: 5)
                         .padding()
