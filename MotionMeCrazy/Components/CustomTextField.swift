@@ -18,11 +18,12 @@ struct CustomTextFieldConfig {
 }
 
 struct CustomTextField: View {
+    @EnvironmentObject var appState: AppState
     let config: CustomTextFieldConfig
     var body: some View {
         TextField(config.placeholder, text: config.$text)
             .padding(config.padding)
-            .background(config.backgroundColor)
+            .background(appState.darkMode ? Color.white.opacity(0.75) : Color.white.opacity(0.25))
             .cornerRadius(config.cornerRadius)
             .overlay(
                 RoundedRectangle(cornerRadius: config.cornerRadius)

@@ -8,6 +8,8 @@ import AVFoundation
 //
 
 struct HIWGamePageView:View {
+    @EnvironmentObject var appState: AppState
+
     // game buttons
     @Environment(\.presentationMode) var presentationMode
     @State private var showSettings = false  // shows settings pop up
@@ -32,7 +34,7 @@ struct HIWGamePageView:View {
     
     var body: some View {
         ZStack{
-            Image("background")
+            Image(appState.darkMode ? "background_dm" : "background")
                 .resizable()
                 .ignoresSafeArea()
             

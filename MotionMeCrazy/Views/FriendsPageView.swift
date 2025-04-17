@@ -19,7 +19,7 @@ struct FriendsPageView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Image("background")
+                Image(appState.darkMode ? "background_dm" : "background")
                     .resizable()
                     .ignoresSafeArea()
                 
@@ -68,12 +68,6 @@ struct FriendsPageView: View {
                             .padding(.horizontal)
                         }
                         
-                        /*List(friends) { user in
-                         UserRowView(user: user)
-                         .listRowBackground(Color.clear)
-                         }
-                         .scrollContentBackground(.hidden)
-                         .background(Color.clear)*/
                     } else {
                         Spacer()
                         
@@ -142,6 +136,7 @@ struct FriendsPageView: View {
 
 
 struct SearchBar: View {
+    @EnvironmentObject var appState: AppState
     @Binding var searchText: String
     @ObservedObject var userViewModel: UserViewModel
     @State private var errorMessage: String?
@@ -164,7 +159,7 @@ struct SearchBar: View {
                 if !searchText.isEmpty {
                     Button(action: { searchText = ""; hasSearched = false }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.darkBlue)
+                            .foregroundColor(appState.darkMode ? .white : .darkBlue)
                             .font(.system(size: 24, weight: .bold))
                     }
                 }
@@ -188,7 +183,7 @@ struct SearchBar: View {
                 }
                 
             } else if hasSearched {
-                CustomText(config: CustomTextConfig(text: "No users found", titleColor: .darkBlue, fontSize: 20))
+                CustomText(config: CustomTextConfig(text: "No users found", fontSize: 20))
                 
             }
         }.alert("Friend request has been sent", isPresented: $hasSentRequest) {

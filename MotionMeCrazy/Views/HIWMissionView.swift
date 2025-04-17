@@ -108,7 +108,8 @@ struct DailyMissionsView: View {
 
     var body: some View {
         ZStack {
-            Image("background")
+            Image(appState.darkMode ? "background_dm" :
+                    "background")
                 .resizable()
                 .ignoresSafeArea()
 
@@ -123,7 +124,7 @@ struct DailyMissionsView: View {
                             Spacer()
                             if viewModel.missions[index].isCompleted {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.darkBlue)
+                                    .foregroundColor(appState.darkMode ? .white : .darkBlue)
                             }
                         }
                         .padding()
@@ -140,12 +141,15 @@ struct DailyMissionsView: View {
             } else {
                 Spacer()
                 
-                Text("This page is not available in offline mode")
+                CustomText(config: .init(text: "This page is not available in offline mode", fontSize: 20))
+                    .accessibilityIdentifier("offlineMessage")
+                
+                /*Text("This page is not available in offline mode")
                     .font(.title2)
                     .foregroundColor(.black)
                     .multilineTextAlignment(.center)
                     .padding()
-                    .accessibilityIdentifier("offlineMessage")
+                    .accessibilityIdentifier("offlineMessage")*/
                 
                 Spacer()
             }
@@ -159,7 +163,7 @@ struct DailyMissionsView: View {
                         presentationMode.wrappedValue.dismiss()
                     }) {
                         Image(systemName: "x.circle.fill")
-                            .foregroundColor(.darkBlue)
+                            .foregroundColor(appState.darkMode ? .white : .darkBlue)
                             .font(.title)
                     }
                     .padding(.leading, 20)

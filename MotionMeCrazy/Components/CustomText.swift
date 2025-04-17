@@ -14,11 +14,16 @@ struct CustomTextConfig {
 }
 
 struct CustomText: View {
+    @EnvironmentObject var appState: AppState
     let config: CustomTextConfig
     var body: some View {
         Text(config.text)
-            .foregroundColor(config.titleColor)
+            .foregroundColor( appState.darkMode ? .white : .darkBlue)
             .font(.system(size: config.fontSize, weight: .medium))
+            .shadow(color: appState.darkMode ? .black.opacity(0.5) : .clear,
+                        radius: appState.darkMode ? 1 : 0,
+                        x: appState.darkMode ? 1 : 0,
+                        y: appState.darkMode ? 1 : 0)
     }
 }
 

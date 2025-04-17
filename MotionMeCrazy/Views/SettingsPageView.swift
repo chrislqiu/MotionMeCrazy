@@ -32,7 +32,7 @@ struct SettingsPageView: View {
     
     var body: some View {
         ZStack {
-            Image("background")
+            Image(appState.darkMode ? "background_dm" : "background")
                 .resizable()
                 .ignoresSafeArea()
             
@@ -81,11 +81,14 @@ struct SettingsPageView: View {
                         Text("Values from 0 to 100")
                     }
                 )
-                    .accentColor(.darkBlue)
+                .accentColor(appState.darkMode ? .white : .darkBlue)
                 Text("\(selectedAudioLevel, specifier: "%.0f")")
                     .frame(maxWidth: .infinity, alignment: .center)
             }
             .padding()
+            
+            
+            CustomButton(config: .init(title: appState.darkMode ? "Light mode" : "Dark mode", width: 200, buttonColor: .darkBlue, action: { appState.darkMode = !appState.darkMode }))
             
             CustomButton(config: .init(title: "Change Theme", width: 200, buttonColor: .darkBlue) {
                 showThemePopup = true
@@ -205,7 +208,7 @@ struct ThemeSelectionPopup: View {
                 //exit
                 Button(action: { showThemeOpt = false }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
+                        .foregroundColor(appState.darkMode ? .white : .darkBlue)
                         .font(.title)
                 }
             }
@@ -233,13 +236,13 @@ struct ThemeSelectionPopup: View {
                 })
             }
             .padding()
-            .background(Color.white.opacity(0.9))
+            .background(appState.darkMode ? .darkBlue.opacity(0.9) : Color.white.opacity(0.9))
             .cornerRadius(10)
             .shadow(radius: 5)
         }
         .padding()
         .frame(width: 250)
-        .background(Color.white.opacity(0.95))
+        .background(appState.darkMode ? .darkBlue.opacity(0.95) : Color.white.opacity(0.95))
         .cornerRadius(15)
         .shadow(radius: 10)
     }
@@ -261,7 +264,7 @@ struct LanguageSelectionPopup: View {
                 //exit
                 Button(action: { showLangOpt = false }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
+                        .foregroundColor(appState.darkMode ? .white : .darkBlue)
                         .font(.title)
                 }
             }
@@ -277,7 +280,7 @@ struct LanguageSelectionPopup: View {
         }
         .padding()
         .frame(width: 250)
-        .background(Color.white.opacity(0.95))
+        .background(appState.darkMode ? .darkBlue.opacity(0.95) : Color.white.opacity(0.95))
         .cornerRadius(15)
         .shadow(radius: 10)
     }

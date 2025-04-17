@@ -10,4 +10,5 @@ import Combine
 class AppState: ObservableObject {
     @Published var offlineMode: Bool = false
     @Published var loading: Bool = true
+    @Published var darkMode: Bool = false
 }

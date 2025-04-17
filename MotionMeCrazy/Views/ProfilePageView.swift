@@ -14,7 +14,7 @@ struct ProfilePageView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Image("background")
+                Image(appState.darkMode ? "background_dm" : "background")
                     .resizable()
                     .ignoresSafeArea()
                 
@@ -33,7 +33,7 @@ struct ProfilePageView: View {
                                 .scaledToFit()
                                 .frame(width: 120, height: 120)
                                 .clipShape(Circle())
-                                .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
+                                .overlay(Circle().stroke(appState.darkMode ? .white : .darkBlue, lineWidth: 3))
                                 .onTapGesture {
                                     showSelector.toggle()
                                 }.accessibilityIdentifier("profilePicture")
