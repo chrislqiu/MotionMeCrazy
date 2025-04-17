@@ -112,8 +112,28 @@ struct GameCenterPageView: View {
                     }
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
                     .frame(height: 325)
-                    
+            
                     Spacer()
+                    //leaderboard button
+                    HStack {
+                        Spacer()
+                        NavigationLink(destination: LeaderboardView(userViewModel: userViewModel)) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "list.number")
+                                    .font(.title2)
+                                Text("Leaderboard")
+                                    .font(.headline)
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.darkBlue)
+                            .cornerRadius(10)
+                        }
+                        .padding(.trailing, 20)
+                    }
+                    .padding(.top, 10)
+                    .padding(.bottom, 20)
                 }
             }
         }
