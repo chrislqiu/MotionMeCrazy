@@ -342,14 +342,26 @@ struct HIWGameLobbyView: View {
             stopObstacleCycle()
             startObstacleCycle()
         }
+        .onChange(of: selectedDifficulty) { newDifficulty in
+            loadLevelImageMap()
+            obstacles = levelImageMap[currentLevel] ?? []
+        }
     }
 
 
     // load images from folder
     private func loadLevelImageMap() {
+        // Clear any existing mappings
+        levelImageMap.removeAll()
+        
+        // Determine the difficulty suffix
+        let difficultySuffix = selectedDifficulty == .easy ? "e" : "h"
+        
+        // Load images based on difficulty
         for level in 1...5 {
             var imageNames: [String] = []
             for wall in 1...wallsPerLevel {
+
                 let suffix: String
 
                 switch selectedTheme {
@@ -363,7 +375,8 @@ struct HIWGameLobbyView: View {
                     suffix = ""
                 }
 
-                let imageName = "level\(level)_wall\(wall)e\(suffix)"
+                let imageName = "level\(level)_wall\(wall)\(difficultySuffix)\(suffix)"
+
                 imageNames.append(imageName)
             }
             levelImageMap[level] = imageNames
@@ -405,7 +418,8 @@ struct HIWGameLobbyView: View {
         checkCollisionOn = obstacles[obstacleIndex]
         
         // Schedule the next one after a delay
-        timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
+        let difficultyTimer = selectedDifficulty == .easy ? 3.0 : 1.0
+        timer = Timer.scheduledTimer(withTimeInterval: difficultyTimer, repeats: false) { _ in
             self.obstacleIndex += 1
             self.scheduleNextObstacle()
         }
@@ -454,6 +468,9 @@ struct HIWGameLobbyView: View {
                             rawValue: settings.difficulty)
                         {
                             self.selectedDifficulty = difficulty
+                            // Reload level images when difficulty is set
+                            self.loadLevelImageMap()
+                            self.obstacles = self.levelImageMap[self.currentLevel] ?? []
                         } else {
                             self.selectedDifficulty = .normal
                             print("Invalid difficulty stored in server")
