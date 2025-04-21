@@ -10,6 +10,7 @@ struct HIWGameLobbyView: View {
     @State private var isPlaying = false
     @State private var openedFromPauseMenu = false
     @State private var selectedDifficulty: SettingsView.Difficulty = .normal
+    @State private var selectedTheme: SettingsView.Theme = .basic
     @State private var fetchingError: Bool = false
     @State private var obstacleIndex = 0
     @State private var timer: Timer? = nil
@@ -56,7 +57,6 @@ struct HIWGameLobbyView: View {
     @State private var progress: String = "Level 1/10"
 
     private let wallsPerLevel = 4  // Number of walls per level
-    private let totalLevel = 5
 
     var userId: Int
     var gameId: Int
@@ -213,7 +213,7 @@ struct HIWGameLobbyView: View {
                                     Spacer()
                                     CustomText(
                                         config: CustomTextConfig(
-                                            text: "\(currentLevel)/\(totalLevel)",
+                                            text: "\(currentLevel)/\(5)",
                                             titleColor: .darkBlue, fontSize: 18)
                                     )
                                     .font(.body)
@@ -259,6 +259,7 @@ struct HIWGameLobbyView: View {
                 SettingsView(
                     showSettings: $showSettings, userId: userId, gameId: gameId,
                     selectedDifficulty: $selectedDifficulty,
+                    selectedTheme: $selectedTheme,
                     showPauseMenu: $showPauseMenu,
                     openedFromPauseMenu: $openedFromPauseMenu,
                     isMuted: $isMuted,
@@ -269,6 +270,11 @@ struct HIWGameLobbyView: View {
                 .cornerRadius(20)
                 .shadow(radius: 20)
                 .accessibilityIdentifier("settingsView")
+                .onDisappear {
+                    loadLevelImageMap()
+                    obstacles = levelImageMap[currentLevel] ?? []
+                    fetchGameSettings(userId: userId, gameId: gameId)
+                }
             }
 
             // 7. Pause Menu View
@@ -304,7 +310,7 @@ struct HIWGameLobbyView: View {
             if showCompletionScreen {
                 CompletionScreenView(
                     levelNumber: currentLevel,
-                    totalLevels: totalLevel,
+                    totalLevels: 5,
                     score: 100,
                     health: 5,
                     userId: userId,
@@ -355,7 +361,22 @@ struct HIWGameLobbyView: View {
         for level in 1...5 {
             var imageNames: [String] = []
             for wall in 1...wallsPerLevel {
-                let imageName = "level\(level)_wall\(wall)\(difficultySuffix)"
+
+                let suffix: String
+
+                switch selectedTheme {
+                case .basic:
+                    suffix = ""
+                case .light:
+                    suffix = "_lm"
+                case .dark:
+                    suffix = "_dm"
+                default:
+                    suffix = ""
+                }
+
+                let imageName = "level\(level)_wall\(wall)\(difficultySuffix)\(suffix)"
+
                 imageNames.append(imageName)
             }
             levelImageMap[level] = imageNames
@@ -454,6 +475,16 @@ struct HIWGameLobbyView: View {
                             self.selectedDifficulty = .normal
                             print("Invalid difficulty stored in server")
                         }
+                        
+                        if let theme = SettingsView.Theme(
+                            rawValue: settings.theme)
+                        {
+                            self.selectedTheme = theme
+                            print(self.selectedTheme)
+                        } else {
+                            self.selectedTheme = .basic
+                            print("Invalid theme stored in server")
+                        }
                     } catch {
                         print(
                             "Failed to decode JSON: \(error.localizedDescription)"
@@ -470,7 +501,7 @@ struct HIWGameLobbyView: View {
     }
 }
 
-func updateGameSettings(userId: Int, gameId: Int, diff: String) {
+func updateGameSettings(userId: Int, gameId: Int, diff: String, theme: String) {
     guard let url = URL(string: APIHelper.getBaseURL() + "/gameSettings") else {
         print("Invalid URL")
         return
@@ -480,6 +511,7 @@ func updateGameSettings(userId: Int, gameId: Int, diff: String) {
         "userId": String(userId),
         "gameId": String(gameId),
         "difficulty": diff,
+        "theme": theme
     ]
 
     guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
@@ -523,6 +555,7 @@ struct SettingsView: View {
     var userId: Int
     var gameId: Int
     @Binding var selectedDifficulty: Difficulty
+    @Binding var selectedTheme: Theme
     @Binding var showPauseMenu: Bool
     @Binding var openedFromPauseMenu: Bool
     
@@ -530,8 +563,8 @@ struct SettingsView: View {
     @Binding var isMuted: Bool
     @Binding var audioPlayer: AVAudioPlayer?
     
-    @State private var showThemeDialog = false
-    @State private var selectedTheme: String? = nil
+    //@State private var showThemeDialog = false
+    //@State private var selectedTheme: String? = nil
     @State private var isMusicMuted: Bool = false
 //    @State private var isSoundEffectsMuted: Bool = false
 
@@ -539,6 +572,14 @@ struct SettingsView: View {
         case easy = "Easy"
         case normal = "Normal"
         case hard = "Hard"
+
+        var id: String { self.rawValue }
+    }
+    
+    enum Theme: String, CaseIterable, Identifiable {
+        case basic = "Basic"
+        case light = "Light"
+        case dark = "Dark"
 
         var id: String { self.rawValue }
     }
@@ -564,11 +605,29 @@ struct SettingsView: View {
                 .accessibilityIdentifier("difficultyPicker")
                 .onChange(of: selectedDifficulty) { newValue in
                     updateGameSettings(
-                        userId: userId, gameId: gameId, diff: newValue.rawValue)
+                        userId: userId, gameId: gameId, diff: newValue.rawValue, theme: selectedTheme.rawValue)
+
                 }
                 
-        
+                // Theme Picker
+                CustomText(config: .init(text: "Themes"))
+
+                Picker("Theme", selection: $selectedTheme) {
+                    ForEach(Theme.allCases) { theme in
+                        Text(theme.rawValue).tag(theme)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                .frame(width: 150)
+                .background(Color.lightBlue)
+                .cornerRadius(8)
+                .accessibilityIdentifier("themePicker")
+                .onChange(of: selectedTheme) { newValue in
+                    updateGameSettings(
+                        userId: userId, gameId: gameId, diff: selectedDifficulty.rawValue, theme: newValue.rawValue)
+                }
             }
+            
 
             // mute
             VStack(spacing: 15) {
@@ -756,6 +815,7 @@ struct GameSettings: Codable {
     let user_id: Int
     let game_id: Int
     let difficulty: String
+    let theme: String
 }
 
 struct HIWObstacleView: View {
