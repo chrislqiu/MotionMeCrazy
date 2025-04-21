@@ -1,14 +1,5 @@
-
 import SwiftUI
 import AVFoundation
-
-//
-//  HIWGameLobbyView.swift
-//  MotionMeCrazy
-//
-//  Created by Tea Lazareto.
-//
-
 
 struct HIWGameLobbyView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -78,10 +69,12 @@ struct HIWGameLobbyView: View {
 
             // 2. Obstacle View
             if isPlaying && !countdownManager.isActive {
-                HIWObstacleView(imageName: obstacles[obstacleIndex])
-                    .animation(.linear(duration: 0), value: obstacleIndex)
-                    .opacity(0.75)
-                    .allowsHitTesting(false)
+                if obstacleIndex >= 0 && obstacleIndex < obstacles.count {
+                    HIWObstacleView(imageName: obstacles[obstacleIndex])
+                        .animation(.linear(duration: 0), value: obstacleIndex)
+                        .opacity(0.75)
+                        .allowsHitTesting(false)
+                }
             }
 
             // 3. Start/Play Button
@@ -384,18 +377,8 @@ struct HIWGameLobbyView: View {
             // Resume from where we left off (skip countdown if it wasn't active)
             obstacleIndex = savedObstacleIndex
             
-            // Start the obstacle timer directly
-            timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
-                self.checkCollisionOn = self.obstacles[self.obstacleIndex]
-                self.obstacleIndex = (self.obstacleIndex + 1) % self.obstacles.count
-                if self.obstacleIndex == 0 {
-                    // All obstacles have been cycled through
-                    self.stopObstacleCycle()
-                    Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
-                        self.showCompletionScreen = true
-                    }
-                }
-            }
+            // Create a non-repeating timer that shows each obstacle and schedules the next one
+            scheduleNextObstacle()
         } else {
             // Normal start (with countdown)
             obstacleIndex = 0
@@ -403,26 +386,37 @@ struct HIWGameLobbyView: View {
             // Start the countdown
             countdownManager.start {
                 // This code runs when countdown completes
-                
-                // Start the obstacle timer
-                self.timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
-                    self.checkCollisionOn = self.obstacles[self.obstacleIndex]
-                    self.obstacleIndex = (self.obstacleIndex + 1) % self.obstacles.count
-                    if self.obstacleIndex == 0 {
-                        // All obstacles have been cycled through
-                        self.stopObstacleCycle()
-                        Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
-                            self.showCompletionScreen = true
-                        }
-                    }
-                }
+                // Start showing obstacles one by one
+                self.scheduleNextObstacle()
             }
         }
     }
     
+    private func scheduleNextObstacle() {
+        // If we've gone through all obstacles or have an invalid index, show completion screen
+        if obstacleIndex < 0 || obstacleIndex >= obstacles.count {
+            // Safety check: ensure we stop any running timers
+            stopObstacleCycle()
+            showCompletionScreen = true
+            return
+        }
+        
+        // Show current obstacle
+        checkCollisionOn = obstacles[obstacleIndex]
+        
+        // Schedule the next one after a delay
+        timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
+            self.obstacleIndex += 1
+            self.scheduleNextObstacle()
+        }
+    }
+    
     private func stopObstacleCycle() {
+        // Invalidate any active timer
         timer?.invalidate()
         timer = nil
+        
+        // Stop countdown if active
         countdownManager.stop()
     }
 
@@ -819,10 +813,3 @@ struct HIWObstacleView: View {
             .opacity(0.75) // Lower opacity
     }
 }
-
-//#Preview {
-//    HIWGameLobbyView(userId: 421, gameId: 0)
-//}
-//#Preview {
-//    HIWObstacleView(imageName: "wall1")
-//}
