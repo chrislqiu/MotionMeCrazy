@@ -21,12 +21,22 @@ enum Language: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 }
 
+enum GameMode: String, CaseIterable, Identifiable {
+    case normal = "Normal"
+    case accessibility = "Accessibility"
+    case timer = "Timer"
+    
+    var id: String {self.rawValue}
+}
+
 struct SettingsPageView: View {
     @State private var selectedAudioLevel: Double = 50
     @State var selectedTheme: Theme = .light
     @State var selectedLanguage: Language = .en
+    @State var selectedGameMode: GameMode = .normal
     @State private var showThemePopup: Bool = false
     @State private var showLanguagePopup: Bool = false
+    @State private var showGameModePopup: Bool = false
     @ObservedObject var userViewModel: UserViewModel
     @EnvironmentObject var appState: AppState
     
@@ -47,6 +57,11 @@ struct SettingsPageView: View {
             }
             if showLanguagePopup {
                 LanguageSelectionPopup(showLangOpt: $showLanguagePopup, userId: userViewModel.userid, audioLevel: selectedAudioLevel, theme: selectedTheme, language: $selectedLanguage)
+                    .transition(.scale)
+            }
+            
+            if showGameModePopup {
+                GameModeSelectionPopup(showGameModeOpts: $showGameModePopup, userId: userViewModel.userid, audioLevel: selectedAudioLevel, theme: selectedTheme, language: selectedLanguage, gameMode: $selectedGameMode)
                     .transition(.scale)
             }
         }
@@ -92,6 +107,10 @@ struct SettingsPageView: View {
             
             CustomButton(config: .init(title: "Change Theme", width: 200, buttonColor: .darkBlue) {
                 showThemePopup = true
+            })
+            
+            CustomButton(config: .init(title: "Change Game Mode", width: 200, buttonColor: .darkBlue) {
+                showGameModePopup = true
             })
             
             CustomButton(config: .init(title: "Change Language", width: 200, buttonColor: .darkBlue) {
@@ -228,7 +247,7 @@ struct ThemeSelectionPopup: View {
                     .frame(width: 120, height: 50)
                     .cornerRadius(10)
                 
-                CustomButton(config: .init(title: "Default", width: 150, buttonColor: .darkBlue) {
+                CustomButton(config: .init(title: "Default", width:150, buttonColor: .darkBlue) {
                     theme = .light
                     if !appState.offlineMode {
                         updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue)
@@ -286,6 +305,64 @@ struct LanguageSelectionPopup: View {
     }
 }
 
+//popup for game mode selection
+struct GameModeSelectionPopup: View {
+    @Binding var showGameModeOpts: Bool
+    var userId: Int
+    var audioLevel: Double
+    var theme: Theme
+    var language: Language
+    @Binding var gameMode: GameMode
+    @EnvironmentObject var appState: AppState
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            HStack {
+                Spacer()
+                //exit
+                Button(action: { showGameModeOpts = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(appState.darkMode ? .white : .darkBlue)
+                        .font(.title)
+                }
+            }
+            
+            CustomText(config: .init(text: "Game Mode Options:"))
+            
+            CustomButton(config: .init(title: "Normal", width: 200, buttonColor: .darkBlue) {
+                gameMode = .normal
+                
+                //TODO: update this to work with game mode
+                /*if !appState.offlineMode{
+                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue)
+                }*/
+            })
+            
+            CustomButton(config: .init(title: "Accessibility", width: 200, buttonColor: .darkBlue) {
+                gameMode = .accessibility
+                
+                //TODO: update this to work with game mode
+                /*if !appState.offlineMode{
+                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue)
+                }*/
+            })
+            
+            CustomButton(config: .init(title: "Timer", width: 200, buttonColor: .darkBlue) {
+                gameMode = .timer
+                
+                //TODO: update this to work with game mode
+                /*if !appState.offlineMode{
+                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue)
+                }*/
+            })
+        }
+        .padding()
+        .frame(width: 250)
+        .background(appState.darkMode ? .darkBlue.opacity(0.95) : Color.white.opacity(0.95))
+        .cornerRadius(15)
+        .shadow(radius: 10)
+    }
+}
 struct AppSettings: Codable {
     let user_id: Int
     let audio_level: Double
