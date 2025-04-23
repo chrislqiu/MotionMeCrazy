@@ -81,7 +81,7 @@ struct HIWGameLobbyView: View {
             // 3. Start/Play Button
             VStack(spacing: 50) {
                 if !isPlaying {
-                    CustomHeader(config: .init(title: "Hole in the Wall"))
+                    CustomHeader(config: .init(title: appState.localized("Hole in the Wall")))
                         .accessibilityIdentifier("holeInTheWallTitle")
                 }
 
@@ -163,7 +163,7 @@ struct HIWGameLobbyView: View {
                                 HStack {
                                     CustomText(
                                         config: CustomTextConfig(
-                                            text: "Score",
+                                            text: appState.localized("Score"),
                                             titleColor: .darkBlue, fontSize: 20)
                                     )
                                     .font(.headline)
@@ -180,7 +180,7 @@ struct HIWGameLobbyView: View {
                                 HStack {
                                     CustomText(
                                         config: CustomTextConfig(
-                                            text: "Health",
+                                            text: appState.localized("Health"),
                                             titleColor: .darkBlue, fontSize: 20)
                                     )
                                     .font(.headline)
@@ -206,7 +206,7 @@ struct HIWGameLobbyView: View {
                                 HStack {
                                     CustomText(
                                         config: CustomTextConfig(
-                                            text: "Progress",
+                                            text: appState.localized("Progress"),
                                             titleColor: .darkBlue, fontSize: 20)
                                     )
                                     .font(.headline)
@@ -590,6 +590,8 @@ struct SettingsView: View {
     //@State private var selectedTheme: String? = nil
     @State private var isMusicMuted: Bool = false
 //    @State private var isSoundEffectsMuted: Bool = false
+    
+    @EnvironmentObject var appState: AppState
 
     enum Difficulty: String, CaseIterable, Identifiable {
         case easy = "Easy"
@@ -609,12 +611,12 @@ struct SettingsView: View {
     
     var body: some View {
         VStack(spacing: 15) {
-            CustomHeader(config: .init(title: "Game Settings"))
+            CustomHeader(config: .init(title: appState.localized("Game Settings")))
                 .accessibilityLabel("modeSelectionTitle")
 
             VStack {
                 // Difficulty Picker
-                CustomText(config: .init(text: "Difficulty"))
+                CustomText(config: .init(text: appState.localized("Difficulty")))
 
                 Picker("Difficulty", selection: $selectedDifficulty) {
                     ForEach(Difficulty.allCases) { difficulty in
@@ -633,7 +635,7 @@ struct SettingsView: View {
                 }
                 
                 // Theme Picker
-                CustomText(config: .init(text: "Themes"))
+                CustomText(config: .init(text: appState.localized("Themes")))
 
                 Picker("Theme", selection: $selectedTheme) {
                     ForEach(Theme.allCases) { theme in
@@ -677,7 +679,7 @@ struct SettingsView: View {
                         .scaledToFit()
                         .frame(width: 25, height: 20)
                         .foregroundColor(.white)
-                        Text("Music")
+                        Text(appState.localized("Music"))
                             .foregroundColor(.white)
                             .font(.body)
                             .font(.system(size: 16))
@@ -720,7 +722,7 @@ struct SettingsView: View {
             // Close Button
             CustomButton(
                 config: CustomButtonConfig(
-                    title: "Close", width: 150, buttonColor: .darkBlue,
+                    title: appState.localized("Close"), width: 150, buttonColor: .darkBlue,
                     action: {
                         showSettings = false
                         if openedFromPauseMenu {
@@ -767,16 +769,17 @@ struct PauseMenuView: View {
     //muting audio
     @Binding var isMuted: Bool
     @Binding var audioPlayer: AVAudioPlayer?
+    @EnvironmentObject var appState: AppState
 
     var body: some View {
         VStack(spacing: 15) {
 
-            CustomHeader(config: .init(title: "Game Paused"))
+            CustomHeader(config: .init(title: appState.localized("Game Paused")))
                 .accessibilityIdentifier("pauseMenuTitle")
 
             CustomButton(
                 config: CustomButtonConfig(
-                    title: "Resume", width: 175, buttonColor: .lightBlue,
+                    title: appState.localized("Resume"), width: 175, buttonColor: .lightBlue,
                     action: {
                         showPauseMenu = false
                     })
@@ -785,7 +788,7 @@ struct PauseMenuView: View {
 
             CustomButton(
                 config: CustomButtonConfig(
-                    title: "Game Settings", width: 175, buttonColor: .lightBlue,
+                    title: appState.localized("Game Settings"), width: 175, buttonColor: .lightBlue,
                     action: {
                         openedFromPauseMenu = true
                         showSettings = true
@@ -797,18 +800,18 @@ struct PauseMenuView: View {
 
             CustomButton(
                 config: CustomButtonConfig(
-                    title: "Quit Game", width: 175, buttonColor: .darkBlue,
+                    title: appState.localized("Quit Game"), width: 175, buttonColor: .darkBlue,
                     action: {
                         showQuitConfirmation = true
                     })
             )
             .accessibilityIdentifier("quitGameButton")
             .alert(
-                "Are you sure you want to quit?",
+                appState.localized("Are you sure you want to quit?"),
                 isPresented: $showQuitConfirmation
             ) {
-                Button("No", role: .cancel) {}
-                Button("Yes", role: .destructive) {
+                Button(appState.localized("No"), role: .cancel) {}
+                Button(appState.localized("Yes"), role: .destructive) {
                     presentationMode.wrappedValue.dismiss()
                     isPlaying = false
                     showPauseMenu = false

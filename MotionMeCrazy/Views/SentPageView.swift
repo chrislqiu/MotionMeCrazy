@@ -20,25 +20,25 @@ struct SentPageView: View {
                     .resizable()
                     .ignoresSafeArea()
                 VStack(alignment: .center, spacing: 10) {
-                    CustomHeader(config: CustomHeaderConfig(title: "Sent Requests"))
+                    CustomHeader(config: CustomHeaderConfig(title: appState.localized("Sent Requests")))
                     
                     HStack(alignment: .top, spacing: 10) {
                         CustomButton(config: CustomButtonConfig(
-                            title: "All",
+                            title: appState.localized("All"),
                             width: 75,
                             buttonColor: .darkBlue,
                             destination: AnyView(FriendsPageView(userViewModel: userViewModel))
                         ))
                         
                         CustomButton(config: CustomButtonConfig(
-                            title: "Pending",
+                            title: appState.localized("Pending"),
                             width: 100,
                             buttonColor: .darkBlue,
                             destination: AnyView(PendingPageView(userViewModel: userViewModel))
                         ))
                         
                         CustomSelectedButton(config: CustomSelectedButtonConfig(
-                            title: "Sent",
+                            title: appState.localized("Sent"),
                             width: 75) {}
                         )
                     }

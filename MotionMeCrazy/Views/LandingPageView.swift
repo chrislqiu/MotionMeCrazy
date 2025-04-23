@@ -75,7 +75,7 @@ struct LandingPageView: View {
                                 Button(action: {
                                     navigateToMainPage = true
                                 }) {
-                                    Text("Play Offline")
+                                    Text(appState.localized("Play Offline"))
                                         .font(.title2)
                                         .fontWeight(.bold)
                                         .foregroundColor(.white)
@@ -102,7 +102,7 @@ struct LandingPageView: View {
                                 .accessibilityIdentifier("profilePicture")
                             
                             HStack {
-                                TextField("Enter your username", text: $username)
+                                TextField(appState.localized("Enter your username"), text: $username)
                                     .font(.title2)
                                     .padding()
                                     .frame(width: 250)
@@ -149,7 +149,7 @@ struct LandingPageView: View {
                             
                             // Show confirmation message
                             if showCopiedMessage {
-                                Text("Copied to clipboard!")
+                                Text(appState.localized("Copied to clipboard!"))
                                     .font(.caption)
                                     .foregroundColor(.green)
                                     .padding(.top, 5)
@@ -174,7 +174,7 @@ struct LandingPageView: View {
                                 Button(action: {
                                     createUser()
                                 }) {
-                                    Text("Start")
+                                    Text(appState.localized("Start"))
                                         .font(.title2)
                                         .fontWeight(.bold)
                                         .foregroundColor(.white)
@@ -193,7 +193,7 @@ struct LandingPageView: View {
             }
             .sheet(isPresented: $showSelector) {
                 VStack {
-                    Text("Select Your Profile Picture")
+                    Text(appState.localized("Select Your Profile Picture"))
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundColor(Color("DarkBlue"))
