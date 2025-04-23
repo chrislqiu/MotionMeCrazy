@@ -24,9 +24,7 @@ struct CompletionScreenView: View {
     var onNextLevel: () -> Void
     var onQuitGame: () -> Void
 
-    
     //audio stuff
-    
     
         var body: some View {
             ZStack {
@@ -38,34 +36,33 @@ struct CompletionScreenView: View {
                     }
 
                 VStack(spacing: 20) {
-                    CustomHeader(config: .init(title: "Level \(levelNumber)/\(totalLevels) Completed!", fontSize: 26))
-
+                    CustomHeader(config: .init(title: String(format: appState.localized("Level %d/%d Completed!"), levelNumber, totalLevels), fontSize: 26))
                     VStack(spacing: 10) {
-                        CustomText(config: CustomTextConfig(text: "Score: \(score)", fontSize:20))
-                        CustomText(config: CustomTextConfig(text: "Remaining Lives: \(Int(health))", fontSize:20))
+                        CustomText(config: CustomTextConfig(text: String(format: appState.localized("Score: %d"),score), fontSize:20))
+                        CustomText(config: CustomTextConfig(text: String(format: appState.localized("Remaining Lives: %d"),health), fontSize:20))
                     }
                    
 
                     HStack(spacing: 30) {
                         // next level button
-                        CustomButton(config: CustomButtonConfig(title: "Next Level", width: 140, buttonColor: .darkBlue, action: {
+                        CustomButton(config: CustomButtonConfig(title: appState.localized("Next Level"), width: 140, buttonColor: .darkBlue, action: {
                                 onNextLevel() // TODO: add logic for moving onto next level
                             }
                        ))
                         
                         // quit game button
-                        CustomButton(config: CustomButtonConfig(title: "Quit Game", width: 140, buttonColor: .darkBlue, action: {
+                        CustomButton(config: CustomButtonConfig(title: appState.localized("Quit Game"), width: 140, buttonColor: .darkBlue, action: {
                                 //TODO: add logic for going back to home screen
                                 //onQuitGame()
                                 showQuitConfirmation = true
                             }
                        ))
                         .accessibilityIdentifier("quitGameButton")
-                        .alert("Are you sure you want to quit?", isPresented: $showQuitConfirmation) {
-                                    Button("No", role: .cancel) { }
-                                    Button("Yes", role: .destructive) {
-                                        //isMuted.toggle()
-                                        //audioPlayer?.stop()
+                        .alert(appState.localized("Are you sure you want to quit?"), isPresented: $showQuitConfirmation) {
+                            Button(appState.localized("No"), role: .cancel) { }
+                            Button(appState.localized("Yes"), role: .destructive) {
+                                        isMuted.toggle()
+                                        audioPlayer?.stop()
                                         presentationMode.wrappedValue.dismiss()
                                         
                                     }

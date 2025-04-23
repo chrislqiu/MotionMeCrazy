@@ -114,7 +114,7 @@ struct DailyMissionsView: View {
                 .ignoresSafeArea()
 
             VStack {
-                CustomHeader(config: CustomHeaderConfig(title: "Daily Missions"))
+                CustomHeader(config: CustomHeaderConfig(title: appState.localized("Daily Missions")))
 
                 if !appState.offlineMode {
                 List {
@@ -141,7 +141,7 @@ struct DailyMissionsView: View {
             } else {
                 Spacer()
                 
-                CustomText(config: .init(text: "This page is not available in offline mode", fontSize: 20))
+                CustomText(config: .init(text: appState.localized("This page is not available in offline mode"), fontSize: 20))
                     .accessibilityIdentifier("offlineMessage")
                 
                 /*Text("This page is not available in offline mode")

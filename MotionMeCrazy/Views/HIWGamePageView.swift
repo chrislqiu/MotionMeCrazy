@@ -63,7 +63,7 @@ struct HIWGamePageView:View {
                 VStack() {
                     // Score Section
                     HStack {
-                        CustomText(config: CustomTextConfig(text: "Score", titleColor: .darkBlue, fontSize: 20))
+                        CustomText(config: CustomTextConfig(text: appState.localized("Score"), titleColor: .darkBlue, fontSize: 20))
                             .font(.headline)
                             .bold()
                         Spacer()
@@ -76,7 +76,7 @@ struct HIWGamePageView:View {
                     
                     // Health Section
                     HStack {
-                        CustomText(config: CustomTextConfig(text: "Health", titleColor: .darkBlue, fontSize: 20))
+                        CustomText(config: CustomTextConfig(text: appState.localized("Health"), titleColor: .darkBlue, fontSize: 20))
                             .font(.headline)
                             .bold()
                         Spacer()
@@ -95,7 +95,7 @@ struct HIWGamePageView:View {
                     
                     // Progress Section
                     HStack {
-                        CustomText(config: CustomTextConfig(text: "Progress", titleColor: .darkBlue, fontSize: 20))
+                        CustomText(config: CustomTextConfig(text: appState.localized("Progress"), titleColor: .darkBlue, fontSize: 20))
                             .font(.headline)
                             .bold()
                         Spacer()

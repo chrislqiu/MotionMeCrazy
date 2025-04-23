@@ -14,7 +14,7 @@ enum Theme: String, CaseIterable, Identifiable {
 }
 
 enum Language: String, CaseIterable, Identifiable {
-    case en = "EN"
+    case en = "EN" //reminding to update
     case es = "ES"
     case zh = "ZH"
 
@@ -62,39 +62,39 @@ struct SettingsPageView: View {
     //all the content presented on settings (MAIN) view
     var settingsContent: some View {
         VStack(spacing: 20) {
-            CustomHeader(config: .init(title: "Settings"))
+            CustomHeader(config: .init(title: appState.localized("Settings")))
             
-            VStack(alignment: .leading) {
-                CustomText(config: .init(text: "Audio Level"))
-                Slider(
-                    value: $selectedAudioLevel,
-                    in: 0...100,
-                    step: 1,
-                    onEditingChanged: { editing in
-                        if !editing  && !appState.offlineMode {
-                            updateAppSettings(userId: userViewModel.userid, audio: selectedAudioLevel, lan: selectedLanguage.rawValue, theme: selectedTheme.rawValue)
-                        }
-                    },
-                    minimumValueLabel: Text("0"),
-                    maximumValueLabel: Text("100"),
-                    label: {
-                        Text("Values from 0 to 100")
-                    }
-                )
-                .accentColor(appState.darkMode ? .white : .darkBlue)
-                Text("\(selectedAudioLevel, specifier: "%.0f")")
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-            .padding()
+//            VStack(alignment: .leading) {
+//                CustomText(config: .init(text: "Audio Level"))
+//                Slider(
+//                    value: $selectedAudioLevel,
+//                    in: 0...100,
+//                    step: 1,
+//                    onEditingChanged: { editing in
+//                        if !editing  && !appState.offlineMode {
+//                            updateAppSettings(userId: userViewModel.userid, audio: selectedAudioLevel, lan: selectedLanguage.rawValue, theme: selectedTheme.rawValue)
+//                        }
+//                    },
+//                    minimumValueLabel: Text("0"),
+//                    maximumValueLabel: Text("100"),
+//                    label: {
+//                        Text("Values from 0 to 100")
+//                    }
+//                )
+//                .accentColor(appState.darkMode ? .white : .darkBlue)
+//                Text("\(selectedAudioLevel, specifier: "%.0f")")
+//                    .frame(maxWidth: .infinity, alignment: .center)
+//            }
+//            .padding()
             
             
-            CustomButton(config: .init(title: appState.darkMode ? "Light mode" : "Dark mode", width: 200, buttonColor: .darkBlue, action: { appState.darkMode = !appState.darkMode }))
+            CustomButton(config: .init(title: appState.darkMode ? appState.localized("Light mode") : appState.localized("Dark mode"), width: 200, buttonColor: .darkBlue, action: { appState.darkMode = !appState.darkMode }))
             
-            CustomButton(config: .init(title: "Change Theme", width: 200, buttonColor: .darkBlue) {
+            CustomButton(config: .init(title: appState.localized("Change Theme"), width: 200, buttonColor: .darkBlue) {
                 showThemePopup = true
             })
             
-            CustomButton(config: .init(title: "Change Language", width: 200, buttonColor: .darkBlue) {
+            CustomButton(config: .init(title: appState.localized("Change Language"), width: 200, buttonColor: .darkBlue) {
                 showLanguagePopup = true
             })
         }
@@ -213,7 +213,7 @@ struct ThemeSelectionPopup: View {
                 }
             }
             
-            CustomText(config: .init(text: "Theme Options:"))
+            CustomText(config: .init(text: appState.localized("Theme Options:")))
             
             VStack(spacing: 5) {
                 RoundedRectangle(cornerRadius: 10)
@@ -228,7 +228,7 @@ struct ThemeSelectionPopup: View {
                     .frame(width: 120, height: 50)
                     .cornerRadius(10)
                 
-                CustomButton(config: .init(title: "Default", width: 150, buttonColor: .darkBlue) {
+                CustomButton(config: .init(title: appState.localized("Default"), width: 150, buttonColor: .darkBlue) {
                     theme = .light
                     if !appState.offlineMode {
                         updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue)
@@ -269,12 +269,21 @@ struct LanguageSelectionPopup: View {
                 }
             }
             
-            CustomText(config: .init(text: "Language Options:"))
+            CustomText(config: .init(text: appState.localized("Language Options:")))
             
-            CustomButton(config: .init(title: "English", width: 100, buttonColor: .darkBlue) {
+            CustomButton(config: .init(title: appState.localized("English"), width: 100, buttonColor: .darkBlue) {
                 language = .en
-                if !appState.offlineMode{
-                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue)
+                appState.currentLanguage = language.rawValue
+                if !appState.offlineMode {
+                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue)
+                }
+            })
+
+            CustomButton(config: .init(title: appState.localized("Spanish"), width: 100, buttonColor: .darkBlue) {
+                language = .es
+                appState.currentLanguage = language.rawValue
+                if !appState.offlineMode {
+                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue)
                 }
             })
         }
