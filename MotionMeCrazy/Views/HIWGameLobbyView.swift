@@ -23,6 +23,7 @@ struct HIWGameLobbyView: View {
     @State private var isPaused = false
     @State private var savedObstacleIndex = 0
     @State private var countdownWasActive = false
+    @State private var showEndGameScreen = false
     
     //Mute stuff
     @State private var audioPlayer: AVAudioPlayer?
@@ -329,6 +330,24 @@ struct HIWGameLobbyView: View {
                     }
                 )
             }
+            
+            // 9. End Game Screen
+            if showEndGameScreen {
+                EndGameScreenView(
+                    levelNumber: 5,  // Final level
+                    totalLevels: 5,  // Total levels
+                    score: 100,      // TODO: replace with actual score
+                    health: 100,       // TODO: replace with actua health
+                    userId: userId,
+                    isMuted: $isMuted,
+                    audioPlayer: $audioPlayer,
+                    onNextLevel: { },
+                    onQuitGame: {
+                        stopObstacleCycle()
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                )
+            }
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
@@ -410,7 +429,11 @@ struct HIWGameLobbyView: View {
         if obstacleIndex < 0 || obstacleIndex >= obstacles.count {
             // Safety check: ensure we stop any running timers
             stopObstacleCycle()
-            showCompletionScreen = true
+            if currentLevel >= 5 {
+                showEndGameScreen = true
+            } else {
+                showCompletionScreen = true
+            }
             return
         }
         
