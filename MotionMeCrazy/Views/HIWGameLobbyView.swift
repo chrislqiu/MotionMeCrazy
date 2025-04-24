@@ -266,7 +266,7 @@ struct HIWGameLobbyView: View {
                     isMuted: $isMuted,
                     audioPlayer: $audioPlayer
                 )
-                .frame(width: 300, height: 350)
+                .frame(width: 300, height: 450)
                 .background(appState.darkMode ? .darkBlue : Color.white)
                 .cornerRadius(20)
                 .shadow(radius: 20)
@@ -589,7 +589,7 @@ struct SettingsView: View {
     //@State private var showThemeDialog = false
     //@State private var selectedTheme: String? = nil
     @State private var isMusicMuted: Bool = false
-//    @State private var isSoundEffectsMuted: Bool = false
+    @State private var isSoundEffectsMuted: Bool = false
     
     @EnvironmentObject var appState: AppState
 
@@ -688,7 +688,7 @@ struct SettingsView: View {
                 )
 
                 // TODO: (temporarily removed sound effect button bc we dont need it rn) but ADD SOUND EFFECTS BACK AT SOME POINT
-/*                CustomButton(
+               CustomButton(
                     config: CustomButtonConfig(
                         title: " ",
                         width: 150,
@@ -710,13 +710,13 @@ struct SettingsView: View {
                         .scaledToFit()
                         .frame(width: 25, height: 22)
                         .foregroundColor(.white)
-                        Text("Sound Effects")
+                        Text(appState.localized("Sound Effects"))
                             .foregroundColor(.white)
                             .font(.body)
                             .font(.system(size: 16))
                     }
                     .padding(.horizontal)
-                ) */
+                )
             }
 
             // Close Button
@@ -751,10 +751,10 @@ struct SettingsView: View {
         }
     }
 
-//    // TODO: add sound effects
-//    private func toggleSoundEffectsMute(isMuted: Bool) {
-//        print("sound effect \(isMuted ? "muted" : "unmuted")")
-//    }
+    // TODO: add sound effects
+    private func toggleSoundEffectsMute(isMuted: Bool) {
+        print("sound effect \(isMuted ? "muted" : "unmuted")")
+    }
 }
 
 // pause menu
