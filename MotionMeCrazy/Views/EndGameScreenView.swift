@@ -38,23 +38,24 @@ struct EndGameScreenView: View {
                     }
 
                 VStack(spacing: 20) {
-                    CustomHeader(config: .init(title: "Level \(levelNumber)/\(totalLevels) Completed!", fontSize: 26))
+                    CustomHeader(config: .init(title: String(format: appState.localized("Level %d/%d Completed!"), levelNumber, totalLevels), fontSize: 26))
 
                     VStack(spacing: 10) {
-                        CustomText(config: CustomTextConfig(text: "Score: \(score)", fontSize:20))
-                        CustomText(config: CustomTextConfig(text: "Remaining Lives: \(Int(health))", fontSize:20))
+                        CustomText(config: CustomTextConfig(text: String(format: appState.localized("Score: %d"),score), fontSize:20))
+                        CustomText(config:CustomTextConfig(text: String(format: appState.localized("Remaining Lives: %d"),health), fontSize:20))
                     }
                    
 
                     HStack(spacing: 30) {
                         // quit game button
-                        // quit game button
                         CustomButton(config: CustomButtonConfig(
-                            title: "Quit Game",
+                            title: appState.localized("Quit Game"),
                             width: 140,
                             buttonColor: .darkBlue,
                             action: {
                                 // Directly dismiss the view without showing an alert
+                                isMuted.toggle()
+                                audioPlayer?.stop()
                                 presentationMode.wrappedValue.dismiss()
                             }
                         ))

@@ -120,7 +120,7 @@ struct DailyMissionsView: View {
                 List {
                     ForEach(viewModel.missions.indices, id: \.self) { index in
                         HStack {
-                            CustomText(config: CustomTextConfig(text: viewModel.missions[index].title, titleColor: .darkBlue, fontSize: 18))
+                            CustomText(config: CustomTextConfig(text: appState.localized(viewModel.missions[index].title), titleColor: .darkBlue, fontSize: 18))
                             Spacer()
                             if viewModel.missions[index].isCompleted {
                                 Image(systemName: "checkmark.circle.fill")

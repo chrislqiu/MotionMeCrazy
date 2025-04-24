@@ -125,7 +125,10 @@ class AppState: ObservableObject {
                "Tap the pause button to pause the game." : "Tap the pause button to pause the game.",
                "That's the tutorial! Press play to start the game!" : "That's the tutorial! Press play to start the game!",
                "Welcome to the game!" :  "Welcome to the game!",
-               "Session Time: %d h": "Session Time: %d h"
+               "Session Time: %d h": "Session Time: %d h",
+               "Earn 500 points in hard mode": "Earn 500 points in hard mode",
+                "Dodge 10 obstacles": "Dodge 10 obstacles",
+                "Play 5 levels": "Play 5 levels"
                
            ],
         "ES": [
@@ -239,9 +242,10 @@ class AppState: ObservableObject {
             "Tap the pause button to pause the game." : "Toca el botón de pausa para pausar el juego.",
             "That's the tutorial! Press play to start the game!" : "¡Ese fue el tutorial! Presiona jugar para comenzar el juego.",
             "Welcome to the game!" : "¡Bienvenido al juego!",
-            "Session Time: %d h" : "Tiempo de sesión: %d h"
-
-
+            "Session Time: %d h" : "Tiempo de sesión: %d h",
+            "Earn 500 points in hard mode": "Consigue 500 puntos en modo difícil",
+            "Dodge 10 obstacles": "Esquiva 10 obstáculos",
+            "Play 5 levels": "Juega 5 niveles"
         ]
     ]
 
