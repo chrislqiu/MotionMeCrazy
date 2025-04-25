@@ -23,9 +23,13 @@ import UIKit
 
 struct ViewControllerView: UIViewControllerRepresentable {
     @Binding var obstacleImageName: String!
+    var appState: AppState?
+    var soundEffectPlayer: AVAudioPlayer?
     
     func makeUIViewController(context: Context) -> ViewController {
         let vc = ViewController()
+        vc.appState = appState
+        vc.soundEffectPlayer = soundEffectPlayer
         return vc
     }
     
@@ -46,6 +50,8 @@ class ViewController: UIViewController {
     
     let queue = DispatchQueue(label: "serial_queue")
     let minimumScore: Float32 = 0.3
+    var appState: AppState?
+    var soundEffectPlayer: AVAudioPlayer?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -70,6 +76,8 @@ class ViewController: UIViewController {
         overlayView.backgroundColor = .clear // Ensure transparency
         overlayView.autoresizingMask = [.flexibleWidth, .flexibleHeight] // Resizes correctly
         view.addSubview(overlayView)
+        overlayView.appState = appState
+        overlayView.soundEffectPlayer = soundEffectPlayer
     }
 
     private func setupPreviewLayer() {
@@ -181,6 +189,10 @@ class ViewController: UIViewController {
             // If we get here, the keypoint is in white and has no transparent pixels nearby.
             print("Collision detected at (\(x), \(y))")
             collisionPoints.append(CGPoint(x: x, y: y))
+            if (appState?.isSoundEffectsMuted == false) {
+                soundEffectPlayer?.volume = 1.0
+                soundEffectPlayer?.play()
+            }
         }
     }
 }

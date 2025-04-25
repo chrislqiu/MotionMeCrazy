@@ -13,6 +13,9 @@ class AppState: ObservableObject {
     @Published var darkMode: Bool = false
     @Published var currentLanguage: String = "EN"
     
+    //sound effects
+    @Published var isSoundEffectsMuted: Bool = false
+    
     var localizedStrings: [String: [String: String]] = [
         "EN": [
                "Play Offline": "Play Offline",

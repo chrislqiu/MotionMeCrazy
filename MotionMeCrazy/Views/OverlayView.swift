@@ -16,8 +16,41 @@
 import UIKit
 import os
 
+import SwiftUI
+import AVFoundation
+
 /// Custom view to visualize the pose estimation result on top of the input image.
 class OverlayView: UIImageView {
+ // for collision sound effects
+    var appState: AppState? 
+    var soundEffectPlayer: AVAudioPlayer?
+    
+//    
+//    func playSoundEffect() {
+//        DispatchQueue.global(qos: .background).async {
+//            guard let url = Bundle.main.url(forResource: "vine-boom", withExtension: "mp3") else {
+//                print("Sound file not found.")
+//                return
+//            }
+//            
+//            do {
+//                // Load the audio player on the background thread
+//                let player = try AVAudioPlayer(contentsOf: url)
+//                player.prepareToPlay()
+//
+//                // Play the sound on the main thread
+//                DispatchQueue.main.async {
+//                    player.play()
+//                    print("Collision sound played")
+//                    self.soundEffectPlayer = player  // Store the player reference
+//                }
+//            } catch {
+//                print("Error loading sound effect: \(error)")
+//            }
+//        }
+//    }
+
+
 
   /// Visualization configs
   private enum Config {
@@ -101,7 +134,7 @@ class OverlayView: UIImageView {
     }
   }
 
-  private func drawCollisions(at context: CGContext, collisions: [CGPoint]) {
+    private func drawCollisions(at context: CGContext, collisions: [CGPoint]) {
     let size: CGFloat = 20 // Size of the X
     let halfSize = size / 2
     
@@ -111,6 +144,10 @@ class OverlayView: UIImageView {
 
       context.move(to: CGPoint(x: point.x - halfSize, y: point.y + halfSize))
       context.addLine(to: CGPoint(x: point.x + halfSize, y: point.y - halfSize))
+        if (appState?.isSoundEffectsMuted == false) {
+            soundEffectPlayer?.play()
+            print("playing sound effect")
+        }
     }
   }
 

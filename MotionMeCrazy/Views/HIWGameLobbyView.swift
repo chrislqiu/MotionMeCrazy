@@ -25,9 +25,11 @@ struct HIWGameLobbyView: View {
     @State private var countdownWasActive = false
     @State private var showEndGameScreen = false
     
-    //Mute stuff
+    //Mute stuff for music
     @State private var audioPlayer: AVAudioPlayer?
     @State private var isMuted = false
+    
+    @State private var soundEffectPlayer: AVAudioPlayer?
 
     @EnvironmentObject var appState: AppState
 
@@ -51,6 +53,23 @@ struct HIWGameLobbyView: View {
         }
     }
     
+    // Preload sound effect
+    func preloadSoundEffect() {
+        guard let url = Bundle.main.url(forResource: "vine-boom", withExtension: "mp3") else {
+            print("Sound file not found.")
+            return
+        }
+        do {
+            let player = try AVAudioPlayer(contentsOf: url)
+            player.volume = 1.0
+            player.prepareToPlay()
+            soundEffectPlayer = player
+            print("Sound effect preloaded.")
+        } catch {
+            print("Error preloading sound effect: \(error)")
+        }
+    }
+    
     //TODO: ADD FUNCTIONALITY game stats
     @State private var score: Int = 100  //TODO: Adjust
     @State private var health: Double = 5  //TODO: Adjust
@@ -65,7 +84,7 @@ struct HIWGameLobbyView: View {
     var body: some View {
         ZStack {
             // 1. Game Background
-            ViewControllerView(obstacleImageName: $checkCollisionOn)
+            ViewControllerView(obstacleImageName: $checkCollisionOn, appState: appState, soundEffectPlayer: soundEffectPlayer)
                 .edgesIgnoringSafeArea(.all)
 
             // 2. Obstacle View
@@ -355,6 +374,7 @@ struct HIWGameLobbyView: View {
             obstacles = levelImageMap[currentLevel] ?? []
             fetchGameSettings(userId: userId, gameId: gameId)
             loadAudio()
+            preloadSoundEffect()
         }
         .onChange(of: currentLevel) { newLevel in
             obstacles = levelImageMap[newLevel] ?? []
@@ -694,9 +714,9 @@ struct SettingsView: View {
                         width: 150,
                         buttonColor: .lightBlue,
                         action: {
-                            isSoundEffectsMuted.toggle()
                             // actually will mute
-                            toggleSoundEffectsMute(isMuted: isSoundEffectsMuted)
+                            appState.isSoundEffectsMuted.toggle()
+                            toggleSoundEffectsMute(isMuted: appState.isSoundEffectsMuted)
                         })
                 )
                 .accessibilityIdentifier("muteSoundEffectsButton")
@@ -746,13 +766,14 @@ struct SettingsView: View {
             print("Playing (togglemusicmute)")
             audioPlayer?.play()
         } else {
-            print("Stop(togglemusicmute)")
+            print("Stop (togglemusicmute)")
             audioPlayer?.pause()
         }
     }
 
-    // TODO: add sound effects
+    // TODO: add sound effects -- probably unnecessary if im using appstate
     private func toggleSoundEffectsMute(isMuted: Bool) {
+        
         print("sound effect \(isMuted ? "muted" : "unmuted")")
     }
 }
