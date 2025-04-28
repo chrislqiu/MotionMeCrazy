@@ -19,6 +19,8 @@ struct HIWGamePageView:View {
     @State private var openedFromPauseMenu = false // to show where the game settings was closed from (pause or lobby) - tea
     @State private var isMuted = false
     @State private var audioPlayer: AVAudioPlayer?
+    @State private var soundEffectPlayer: AVAudioPlayer?
+    @State private var isSoundEffectMuted = true
     
     // game stats
     @State private var score: Int = 1000
@@ -26,6 +28,10 @@ struct HIWGamePageView:View {
     @State private var maxHealth: Double = 100
     @State private var progress: String = "Level 1/10"
     
+    
+    private func startObstacleCycle(resumeFromPause: Bool = false) {
+        print("filler")
+    }
     // tutorial
     @Binding var sectionFrames: [Int: CGRect]?
     init(sectionFrames: Binding<[Int: CGRect]?> = .constant(nil)) {
@@ -134,7 +140,10 @@ struct HIWGamePageView:View {
                     showQuitConfirmation: $showQuitConfirmation,
                     openedFromPauseMenu: $openedFromPauseMenu, // tea change
                     isMuted: $isMuted,
-                    audioPlayer: $audioPlayer
+                    audioPlayer: $audioPlayer,
+                    soundEffectPlayer: $soundEffectPlayer,
+                    isSoundEffectMuted: $isSoundEffectMuted,
+                    startObstacleCycle: startObstacleCycle
                 )
                 .frame(width: 300, height: 300)
                 .background(Color.white)
