@@ -165,9 +165,9 @@ class ViewController: UIViewController {
         guard let keypoints = skeleton else { return }
         
         if keypoints.isEmpty {
-              print("Skeleton not ready yet")
-              return
-          }
+            print("Skeleton not ready yet")
+            return
+        }
         
         var imageNameArray = imageName.split(separator: "_")
         var obstacleImageName = "\(imageNameArray[0])_\(imageNameArray[1])"
@@ -178,7 +178,14 @@ class ViewController: UIViewController {
         
         guard let pixelData = getPixelData(from: obstacleImage) else { return }
         
-        checkCollision(keypoints: keypoints, pixelData: pixelData, imageWidth: obstacleImage.width, imageHeight: obstacleImage.height, tolerance: 10)
+        var points = keypoints
+        if imageName.suffix(1) == "a" {
+            points.removeLast(6)
+        }
+        
+        let tolerance = imageName.suffix(1) == "h" ? 10 : 20
+        
+        checkCollision(keypoints: points, pixelData: pixelData, imageWidth: obstacleImage.width, imageHeight: obstacleImage.height, tolerance: tolerance)
         
         if collisionPoints.count > 0 {
             print("Detected \(collisionPoints.count) collisions on obstacle \(imageName).")
@@ -283,6 +290,7 @@ extension ViewController: VideoCaptureDelegate {
             // Run pose estimation
             do {
                 let result = try estimator.estimateSinglePose(on: pixelBuffer)
+                self.skeleton = result.keyPoints
 
                 DispatchQueue.main.async {
                     let image = UIImage(ciImage: CIImage(cvPixelBuffer: pixelBuffer))
@@ -294,7 +302,6 @@ extension ViewController: VideoCaptureDelegate {
                     }
 
                     self.overlayView.draw(at: image, person: result, collisions: self.collisionPoints)
-                    self.skeleton = result.keyPoints
                 }
             } catch {
                 print("Error running pose estimation.")

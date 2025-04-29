@@ -10,7 +10,7 @@ struct HIWGameLobbyView: View {
     @State private var showTutorial = false
     @State private var isPlaying = false
     @State private var openedFromPauseMenu = false
-    @State private var selectedDifficulty: SettingsView.Difficulty = .normal
+    @State private var selectedDifficulty: SettingsView.Difficulty = .easy
     @State private var selectedTheme: SettingsView.Theme = .basic
     @State private var selectedMode: SettingsView.GameMode = .normal
     @State private var fetchingError: Bool = false
@@ -542,8 +542,15 @@ struct HIWGameLobbyView: View {
                 levelImageMap[level] = generateWallsForLevel(level, difficulty: selectedDifficulty)
             }
         } else if selectedMode == .accessibility {
-            //TODO: LOAD ACCESSIBILITY IMAGES
-            
+            for level in 1...5 {
+                var walls: [String] = []
+                
+                for wall in 1...wallsPerLevel {
+                    walls.append("level\(level)_wall\(wall)a")
+                }
+                
+                levelImageMap[level] = walls
+            }
         } else if selectedMode == .random {
 
             var allWallsPool: [String] = []
@@ -720,7 +727,7 @@ struct HIWGameLobbyView: View {
                             self.loadLevelImageMap()
                             self.obstacles = self.levelImageMap[gameState.currentLevel] ?? []
                         } else {
-                            self.selectedDifficulty = .normal
+                            self.selectedDifficulty = .easy
                             print("Invalid difficulty stored in server")
                         }
                         
@@ -835,7 +842,6 @@ struct SettingsView: View {
 
     enum Difficulty: String, CaseIterable, Identifiable {
         case easy = "Easy"
-        case normal = "Normal"
         case hard = "Hard"
 
         var id: String { self.rawValue }
