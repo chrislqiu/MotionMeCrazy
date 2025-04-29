@@ -26,6 +26,7 @@ struct HIWGameLobbyView: View {
     @State private var maxHealth: Double = 5  //TODO: Adjust
     @State private var currentLevel = 1
     @State private var totalLevelCollisions: Int = 0
+    @State private var scoredImages: Set<String> = []
     
     @State private var obstacles: [String] = []
     @State private var levelImageMap: [Int: [String]] = [:]
@@ -96,7 +97,13 @@ struct HIWGameLobbyView: View {
             // 1. Game Background
             ViewControllerView(obstacleImageName: $checkCollisionOn) { imageName, collisionCount in
                 DispatchQueue.main.async {
-                    if self.isPlaying && !self.countdownManager.isActive {
+                   // if self.isPlaying && !self.countdownManager.isActive {
+                    print("imageName initial \(imageName)")
+                        guard !self.scoredImages.contains(imageName) else {
+                                return // already scored this image, skip
+                            }
+                    
+                       self.scoredImages.insert(imageName)
                         // makes sure that score doesn't go in the negatives
                         print("collisionCount \(collisionCount) for \(imageName)")
                         if self.score > 0 {
@@ -116,19 +123,23 @@ struct HIWGameLobbyView: View {
                         if collisionCount >= 20 {
                             self.health = max(self.health - 1, 0)
                         } else {
+                            print("currentLevel \(self.currentLevel)")
+                            print("image \(imageName), score \(self.score)")
                             self.score += 1000
                         }
                         
                         // if there are less than 20 collisions in total on all obstacles in this level, give bonus which is the level number * 1000
-                        if endOfLevel {
+                        print("endOfLevel: \(self.endOfLevel)")
+                        if self.endOfLevel {
                             if totalLevelCollisions < 20 {
-                                self.score += self.currentLevel * 1000
+                                self.score += (self.currentLevel * 1000)
                             }
                             
                             totalLevelCollisions = 0
+                            self.scoredImages.removeAll()
                         }
                         print("score after calc \(self.score)")
-                    }
+                   // }
                  
                 }
                 
@@ -590,7 +601,9 @@ struct HIWGameLobbyView: View {
         if health == 0 {
           stopObstacleCycle()
           showFailureScreen = true
-          score -= 4000
+            if self.score >= 4000 {
+                score -= 4000
+            }
           return
         }
         
