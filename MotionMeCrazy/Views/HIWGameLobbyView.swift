@@ -516,43 +516,48 @@ struct HIWGameLobbyView: View {
         // Clear any existing mappings
         levelImageMap.removeAll()
         
-        // Determine the difficulty suffix
-        let difficultySuffix = selectedDifficulty == .easy ? "e" : "h"
-        
         if selectedMode == .normal {
             
             // Load images based on difficulty
             for level in 1...5 {
-                var imageNames: [String] = []
-                for wall in 1...wallsPerLevel {
-                    
-                    let suffix: String
-                    
-                    switch selectedTheme {
-                    case .basic:
-                        suffix = ""
-                    case .light:
-                        suffix = "_lm"
-                    case .dark:
-                        suffix = "_dm"
-                    default:
-                        suffix = ""
-                    }
-                    
-                    let imageName = "level\(level)_wall\(wall)\(difficultySuffix)\(suffix)"
-                    
-                    imageNames.append(imageName)
-                    
-                }
-                
-                levelImageMap[level] = imageNames
-                
+                levelImageMap[level] = generateWallsForLevel(level, difficulty: selectedDifficulty)
             }
         } else if selectedMode == .accessibility {
             //TODO: LOAD ACCESSIBILITY IMAGES
             
         } else if selectedMode == .random {
-            //TODO: LOAD RANDOM IMAGES
+
+            var allWallsPool: [String] = []
+            
+            // Add walls from both difficulties
+            for level in 1...5 {
+                allWallsPool += generateWallsForLevel(level, difficulty: .easy)
+                allWallsPool += generateWallsForLevel(level, difficulty: .hard)
+            }
+            
+            for level in 1...5 {
+                levelImageMap[level] = Array(allWallsPool.shuffled().prefix(wallsPerLevel))
+            }
+        }
+    }
+    
+    private func generateWallsForLevel(_ level: Int, difficulty: SettingsView.Difficulty) -> [String] {
+        let difficultySuffix = difficulty == .easy ? "e" : "h"
+        let themeSuffix = themeSuffix(for: selectedTheme)
+        var walls: [String] = []
+        
+        for wall in 1...wallsPerLevel {
+            walls.append("level\(level)_wall\(wall)\(difficultySuffix)\(themeSuffix)")
+        }
+        
+        return walls
+    }
+
+    private func themeSuffix(for theme: SettingsView.Theme) -> String {
+        switch theme {
+        case .basic: return ""
+        case .light: return "_lm"
+        case .dark: return "_dm"
         }
     }
 
@@ -620,7 +625,10 @@ struct HIWGameLobbyView: View {
             }
         
         // Schedule the next one after a delay
-        let difficultyTimer = selectedDifficulty == .easy ? 3.0 : 1.0
+        var difficultyTimer = 1.5
+        if (selectedMode != .random) {
+            difficultyTimer = selectedDifficulty == .easy ? 3.0 : 1.0
+        }
         timer = Timer.scheduledTimer(withTimeInterval: difficultyTimer, repeats: false) { _ in
             print(self.obstacleIndex)
             if !isSoundEffectMuted {
