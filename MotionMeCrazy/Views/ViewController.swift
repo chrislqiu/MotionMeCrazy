@@ -169,8 +169,9 @@ class ViewController: UIViewController {
               return
           }
         
-        //guard let obstacleImage = UIImage(named: imageName)!.cgImage else { return }
-        guard let obstacleImage = UIImage(named: imageName)?.cgImage else {
+        var imageNameArray = imageName.split(separator: "_")
+        var obstacleImageName = "\(imageNameArray[0])_\(imageNameArray[1])"
+        guard let obstacleImage = UIImage(named: obstacleImageName)?.cgImage else {
             print("Image not loaded correctly")
             return
         }
