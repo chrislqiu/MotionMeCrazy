@@ -7,103 +7,102 @@ struct LobbyView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        ZStack {
-            Image("background")
-                .resizable()
-                .ignoresSafeArea()
+        NavigationView {
+            ZStack {
+                Image("background")
+                    .resizable()
+                    .ignoresSafeArea()
 
-            VStack {
-                // Header
-                HStack {
-                    Spacer()
-                    Text("Game Lobby")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                    Spacer()
-                }
-                .padding()
-                .background(Color("DarkBlue"))
-
-                Spacer()
-
-                VStack(spacing: 20) {
-                    // Lobby Code
-                    VStack {
-                        Text("Lobby Code")
-                            .foregroundColor(.white)
-                            .font(.headline)
-
-                        Text(webSocketManager.lobbyCode)
-                            .font(.largeTitle)
+                VStack {
+                    // Header
+                    HStack {
+                        Spacer()
+                        Text("Game Lobby")
+                            .font(.title2)
                             .fontWeight(.bold)
-                            .foregroundColor(Color("DarkBlue"))
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(10)
-                    }
-
-                    // Player List
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Players in Lobby:")
                             .foregroundColor(.white)
-                            .font(.headline)
-
-                        ForEach(webSocketManager.lobbyPlayers, id: \.userId) { player in
-                            HStack {
-                                Image(systemName: "person.fill")
-                                    .foregroundColor(.white)
-
-                                Text(player.username == userViewModel.username ? "You" : player.username)
-                                    .foregroundColor(.white)
-                                    .fontWeight(player.username == userViewModel.username ? .bold : .regular)
-
-                                if player.eliminated {
-                                    Text("(Eliminated)")
-                                        .foregroundColor(.red)
-                                        .font(.subheadline)
-                                }
-
-                                Spacer()
-
-                                Text("Score: \(player.score)")
-                                    .foregroundColor(.white)
-                            }
-                            .padding()
-                            .background(Color("DarkBlue").opacity(0.8))
-                            .cornerRadius(10)
-                        }
+                        Spacer()
                     }
-                    .padding(.horizontal)
-
-                    // Host-only Start Button
-//                    if webSocketManager.hostId == userViewModel.userid {
-//                        Button("Start Game") {
-//                            startGame()
-//                        }
-//                        .foregroundColor(.white)
-//                        .padding()
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color("DarkBlue"))
-//                        .cornerRadius(10)
-//                        .padding(.horizontal)
-//                    }
-
-                    // Error Message
-                    if let error = errorMessage {
-                        Text(error)
-                            .foregroundColor(.red)
-                            .padding(.top, 10)
-                    }
+                    .padding()
+                    .background(Color("DarkBlue"))
 
                     Spacer()
+
+                    VStack(spacing: 20) {
+                        // Lobby Code
+                        VStack {
+                            Text("Lobby Code")
+                                .foregroundColor(.white)
+                                .font(.headline)
+
+                            Text(webSocketManager.lobbyCode)
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundColor(Color("DarkBlue"))
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(10)
+                        }
+
+                        // Player List
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Players in Lobby:")
+                                .foregroundColor(.white)
+                                .font(.headline)
+
+                            ForEach(webSocketManager.lobbyPlayers, id: \.userId) { player in
+                                HStack {
+                                    Image(systemName: "person.fill")
+                                        .foregroundColor(.white)
+
+                                    Text(player.username)
+                                        .foregroundColor(.white)
+                                        .fontWeight(player.username == userViewModel.username ? .bold : .regular)
+
+                                    Spacer()
+                                }
+                                .padding()
+                                .background(Color("DarkBlue").opacity(0.8))
+                                .cornerRadius(10)
+                            }
+                        }
+                        .padding(.horizontal)
+
+                        // Host-only Start Button
+                        if webSocketManager.isHost {
+                            Button("Start Game") {
+                                startGame()
+                            }
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color("DarkBlue"))
+                            .cornerRadius(10)
+                            .padding(.horizontal)
+                        }
+
+                        // Error Message
+                        if let error = errorMessage {
+                            Text(error)
+                                .foregroundColor(.red)
+                                .padding(.top, 10)
+                        }
+
+                        Spacer()
+                    }
+                    .padding()
+                    
+                    NavigationLink(destination: AnyView(HIWGameLobbyView(userId: userViewModel.userid, gameId: 1)), isActive: $webSocketManager.gameStarted) {
+                        EmptyView()
+                    }
                 }
-                .padding()
             }
         }
     }
 
     private func startGame() {
+        webSocketManager.connect()
+
         let message: [String: Any] = [
             "type": "START_GAME",
             "payload": [

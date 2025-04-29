@@ -17,8 +17,12 @@ class WebSocketManager: ObservableObject {
     @Published var isHost: Bool = false
     @Published var lobbyCode: String = ""
     @Published var onJoinLobby: Bool = false
-
-    init() {}
+    @Published var gameStarted: Bool = false
+    @ObservedObject var userViewModel: UserViewModel
+     
+     init(userViewModel: UserViewModel) {
+         self.userViewModel = userViewModel
+     }
 
     func connect() {
         guard let url = URL(string: "ws://localhost:3000") else {
@@ -69,26 +73,54 @@ class WebSocketManager: ObservableObject {
                 if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                    let type = jsonResponse["type"] as? String {
 
-                    if type == "PLAYER_JOINED", let payload = jsonResponse["payload"] as? [[String: Any]] {
-                        let players: [LobbyPlayer] = payload.compactMap {
-                            guard let userId = $0["userId"] as? Int,
-                                  let username = $0["username"] as? String,
-                                  let score = $0["score"] as? Int,
-                                  let eliminated = $0["eliminated"] as? Bool else {
-                                return nil
+                    switch type {
+                    case "LOBBY_CREATED":
+                        if let payload = jsonResponse["payload"] as? [String: Any],
+                           let code = payload["code"] as? String {
+                            
+                            let players: [LobbyPlayer] = [
+                                LobbyPlayer(userId: userViewModel.userid, username: userViewModel.username, score: 0, eliminated: false)
+                            ]
+
+                            
+
+                            DispatchQueue.main.async {
+                                self.lobbyPlayers = players
+                                self.lobbyCode = code
+                                self.isHost = true
+                                self.onJoinLobby = true
                             }
-                            return LobbyPlayer(userId: userId, username: username, score: score, eliminated: eliminated)
                         }
+
+                    case "PLAYER_JOINED":
+                        if let playersArray = jsonResponse["payload"] as? [[String: Any]] {
+                            let players: [LobbyPlayer] = playersArray.compactMap { playerDict in
+                                guard let userId = playerDict["userId"] as? Int,
+                                      let username = playerDict["username"] as? String,
+                                      let score = playerDict["score"] as? Int,
+                                      let eliminated = playerDict["eliminated"] as? Bool else {
+                                    return nil
+                                }
+                                return LobbyPlayer(userId: userId, username: username, score: score, eliminated: eliminated)
+                            }
+
+                            DispatchQueue.main.async {
+                                self.lobbyPlayers = players
+                                self.onJoinLobby = true
+                            }
+                        }
+                    case "GAME_STARTED":
                         DispatchQueue.main.async {
-                            self.lobbyPlayers = players
-                            self.isHost = players.first?.userId == 1 // Replace with actual logic
-                            self.lobbyCode = "LOBBY567" // Replace with dynamic code
-                            self.onJoinLobby = true
-                        }
-                    } else {
+                                                   self.gameStarted = true
+                                               }
+                    default:
                         DispatchQueue.main.async {
-                            self.receivedMessage = "Unhandled message type or invalid payload."
+                            self.receivedMessage = "Unhandled message type: \(type)"
                         }
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self.receivedMessage = "Invalid JSON structure."
                     }
                 }
             } catch {
@@ -96,6 +128,7 @@ class WebSocketManager: ObservableObject {
             }
         }
     }
+
 
     func disconnect() {
         webSocketTask?.cancel(with: .normalClosure, reason: nil)

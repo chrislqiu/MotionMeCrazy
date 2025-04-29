@@ -23,14 +23,14 @@ struct GameCenterPageView: View {
     @State private var nameInput = ""
     @State private var codeInput = ""
     
-    @StateObject private var webSocketManager = WebSocketManager()
+    @StateObject private var webSocketManager: WebSocketManager
 
+      init(userViewModel: UserViewModel) {
+          self.userViewModel = userViewModel
+          _webSocketManager = StateObject(wrappedValue: WebSocketManager(userViewModel: userViewModel))
+      }
     enum SortOption {
         case `default`, leastPopular, mostPopular
-    }
-
-    init(userViewModel: UserViewModel) {
-        self.userViewModel = userViewModel
     }
 
     var body: some View {
@@ -110,7 +110,15 @@ struct GameCenterPageView: View {
                                         Spacer()
                                         
                                         Button("Create Game") {
-                                            showCreateLobbyPopup = true
+                                            webSocketManager.connect()
+                                            let message: [String: Any] = [
+                                                "type": "CREATE_LOBBY",
+                                                "payload": [
+                                                    "userId": userViewModel.userid,
+                                                    "username": userViewModel.username
+                                                ]
+                                            ]
+                                            webSocketManager.send(message: message)
                                         }
                                         .buttonStyle(DefaultButtonStyle())
                                         .padding()
@@ -181,7 +189,7 @@ struct GameCenterPageView: View {
                                 "type": "CREATE_LOBBY",
                                 "payload": [
                                     "userId": userViewModel.userid,
-                                    "username": nameInput
+                                    "username": userViewModel.username
                                 ]
                             ]
                             webSocketManager.send(message: message)
@@ -215,9 +223,7 @@ struct GameCenterPageView: View {
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .padding()
 
-                        TextField("Nickname", text: $nameInput)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding()
+                   
 
                         Button("Join") {
                             // Handle join game logic
@@ -227,10 +233,11 @@ struct GameCenterPageView: View {
                                 "payload": [
                                     "code": codeInput,
                                     "userId": userViewModel.userid,
-                                    "username": nameInput
+                                    "username": userViewModel.userid
                                 ]
                             ]
                             webSocketManager.send(message: message)
+                            webSocketManager.lobbyCode = codeInput
                             showJoinGamePopup = false
                         }
                         .padding()
