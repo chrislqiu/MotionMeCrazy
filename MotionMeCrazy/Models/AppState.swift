@@ -129,7 +129,13 @@ class AppState: ObservableObject {
                "Earn 500 points in hard mode": "Earn 500 points in hard mode",
                 "Dodge 10 obstacles": "Dodge 10 obstacles",
                 "Play 5 levels": "Play 5 levels",
-               "Sound Effects":"Sound Effects"
+               "Sound Effects":"Sound Effects",
+               "Change Mode":"Change Mode",
+               "Each ❌ shows where you 'hit' the wall. Each hit is -50 points.": "Each ❌ shows where you 'hit' the wall. Each hit is -50 points.",
+               "Every time you clear a wall with less than 20 hits, +1000 points": "Every time you clear a wall with less than 20 hits, +1000 points",
+               "For every level where you hit all walls less than 20 times total, you get a bonus of 1000 × the level number":
+                "For every level where you hit all walls less than 20 times total, you get a bonus of 1000 × the level number",
+               "Scoring":"Scoring"
                
            ],
         "ES": [
@@ -247,7 +253,14 @@ class AppState: ObservableObject {
             "Earn 500 points in hard mode": "Consigue 500 puntos en modo difícil",
             "Dodge 10 obstacles": "Esquiva 10 obstáculos",
             "Play 5 levels": "Juega 5 niveles",
-            "Sound Effects": "Efectos de sonido"
+            "Sound Effects": "Efectos de sonido",
+            "Change Mode": "Cambiar modo",
+            "Each ❌ shows where you 'hit' the wall. Each hit is -50 points.": "Cada ❌ muestra dónde 'golpeaste' la pared. Cada golpe resta 50 puntos.",
+                "Every time you clear a wall with less than 20 hits, +1000 points": "Cada vez que superas una pared con menos de 20 golpes, +1000 puntos.",
+            "For every level where you hit all walls less than 20 times total, you get a bonus of 1000 × the level number":
+                "Por cada nivel en el que golpees todas las paredes menos de 20 veces en total, obtienes un bono de 1000 × el número del nivel.",
+            "Scoring": "Puntuación"
+            
         ]
     ]
 

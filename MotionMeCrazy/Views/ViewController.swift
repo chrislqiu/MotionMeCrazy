@@ -24,8 +24,12 @@ import UIKit
 struct ViewControllerView: UIViewControllerRepresentable {
     @Binding var obstacleImageName: String!
     
+    //for calculating score in HIWGameLobbyView
+    var onCollisionReport: (_ imageName: String, _ collisionCount: Int) -> Void
+    
     func makeUIViewController(context: Context) -> ViewController {
         let vc = ViewController()
+        vc.onCollisionReport = onCollisionReport
         return vc
     }
     
@@ -46,6 +50,9 @@ class ViewController: UIViewController {
     
     let queue = DispatchQueue(label: "serial_queue")
     let minimumScore: Float32 = 0.3
+    
+    //collision report for calculating score in HIWGameLobbyView
+    var onCollisionReport: ((_ imageName: String, _ collisionCount: Int) -> Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -100,7 +107,16 @@ class ViewController: UIViewController {
     func detectCollisions(imageName: String) {
         guard let keypoints = skeleton else { return }
         
-        guard let obstacleImage = UIImage(named: imageName)!.cgImage else { return }
+        if keypoints.isEmpty {
+              print("Skeleton not ready yet")
+              return
+          }
+        
+        //guard let obstacleImage = UIImage(named: imageName)!.cgImage else { return }
+        guard let obstacleImage = UIImage(named: imageName)?.cgImage else {
+            print("Image not loaded correctly")
+            return
+        }
         guard let pixelData = getPixelData(from: obstacleImage) else { return }
         
         checkCollision(keypoints: keypoints, pixelData: pixelData, imageWidth: obstacleImage.width, imageHeight: obstacleImage.height, tolerance: 10)
@@ -110,6 +126,9 @@ class ViewController: UIViewController {
         } else {
             print("No collisions detected on obstacle \(imageName)!")
         }
+        
+        //for calculating score based on obstacle in HIWGameLobbyView
+        onCollisionReport?(imageName, collisionPoints.count)
         
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
             self.collisionPoints.removeAll()

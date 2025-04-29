@@ -5,6 +5,7 @@ struct HIWGameLobbyView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var showSettings = false
     @State private var showPauseMenu = false
+    @State private var showScoringInfo = false
     @State private var showQuitConfirmation = false
     @State private var showTutorial = false
     @State private var isPlaying = false
@@ -16,7 +17,16 @@ struct HIWGameLobbyView: View {
     @State private var obstacleIndex = 0
     @State private var timer: Timer? = nil
     @State private var showCompletionScreen = false
+    @State private var showFailureScreen = false
+    
+    //TODO: ADD FUNCTIONALITY game stats
+    @State private var endOfLevel = false
+    @State private var score: Int = 0  //TODO: Adjust
+    @State private var health: Double = 5  //TODO: Adjust
+    @State private var maxHealth: Double = 5  //TODO: Adjust
     @State private var currentLevel = 1
+    @State private var totalLevelCollisions: Int = 0
+    
     @State private var obstacles: [String] = []
     @State private var levelImageMap: [Int: [String]] = [:]
     @State private var checkCollisionOn: String!
@@ -26,10 +36,9 @@ struct HIWGameLobbyView: View {
     @State private var countdownWasActive = false
     @State private var showEndGameScreen = false
     
-    //Mute stuff
+    //Sound stuff
     @State private var audioPlayer: AVAudioPlayer?
     @State private var isMuted = false
-    
     @State private var soundEffectPlayer: AVAudioPlayer?
     @State private var isSoundEffectMuted = false
 
@@ -74,11 +83,8 @@ struct HIWGameLobbyView: View {
         }
     }
     
-    //TODO: ADD FUNCTIONALITY game stats
-    @State private var score: Int = 100  //TODO: Adjust
-    @State private var health: Double = 5  //TODO: Adjust
-    @State private var maxHealth: Double = 5  //TODO: Adjust
-    @State private var progress: String = "Level 1/10"
+
+    //@State private var progress: String = "Level 1/10"
 
     private let wallsPerLevel = 4  // Number of walls per level
 
@@ -88,7 +94,45 @@ struct HIWGameLobbyView: View {
     var body: some View {
         ZStack {
             // 1. Game Background
-            ViewControllerView(obstacleImageName: $checkCollisionOn)
+            ViewControllerView(obstacleImageName: $checkCollisionOn) { imageName, collisionCount in
+                DispatchQueue.main.async {
+                    if self.isPlaying && !self.countdownManager.isActive {
+                        // makes sure that score doesn't go in the negatives
+                        print("collisionCount \(collisionCount) for \(imageName)")
+                        if self.score > 0 {
+                            //if it exceeds 20, just subtract 1000 points
+                            if collisionCount >=  20 {
+                                self.score = max(self.score - 1000, 0)
+                            } else {
+                            //if its below 20, each collision deducts 50 points
+                                self.score = max(self.score - (collisionCount * 50), 0)
+                            }
+                        }
+                        // count total collisions for the level
+                        self.totalLevelCollisions += collisionCount
+                        
+                        //remember collision count is just for the image
+                        //if there are more than 20 collisions detected, deduct a health point
+                        if collisionCount >= 20 {
+                            self.health = max(self.health - 1, 0)
+                        } else {
+                            self.score += 1000
+                        }
+                        
+                        // if there are less than 20 collisions in total on all obstacles in this level, give bonus which is the level number * 1000
+                        if endOfLevel {
+                            if totalLevelCollisions < 20 {
+                                self.score += self.currentLevel * 1000
+                            }
+                            
+                            totalLevelCollisions = 0
+                        }
+                        print("score after calc \(self.score)")
+                    }
+                 
+                }
+                
+            }
                 .edgesIgnoringSafeArea(.all)
 
             // 2. Obstacle View
@@ -138,7 +182,20 @@ struct HIWGameLobbyView: View {
 
                     if !isPlaying {
                         Button(action: {
+                            showScoringInfo = true
+                            stopObstacleCycle() //added just for safety
+                        }) {
+                            Image(systemName: "questionmark.circle.fill")
+                                .resizable()
+                                .foregroundColor(.darkBlue)
+                                .scaledToFit()
+                                .frame(width: 40, height: 40)
+                                .padding(.trailing, 10)
+                        }
+                        
+                        Button(action: {
                             showTutorial = true
+                            stopObstacleCycle() //also added just for safety
                         }) {
                             Image(systemName: "play.rectangle.on.rectangle.fill")
                                 .resizable()
@@ -319,6 +376,16 @@ struct HIWGameLobbyView: View {
                     }
                 }
             }
+            //6.5 Scoring info
+            if showScoringInfo {
+                ScoringInfoPopupView(showScoringInfo: $showScoringInfo)
+                    .background(appState.darkMode ? .darkBlue : Color.white)
+                    .cornerRadius(20)
+                    .shadow(radius: 20)
+                    .transition(.scale)
+                    .zIndex(1)
+                    .frame(width: 300, height: 450)
+            }
 
             // 7. Pause Menu View
             if showPauseMenu {
@@ -348,8 +415,8 @@ struct HIWGameLobbyView: View {
                 .onDisappear {
                     if isPlaying && isPaused  {
                         isPaused = false
-                        print("showSettings: \(showSettings)")
-                        print("openedFromPauseSettings: \(openedFromPauseMenu)")
+                        //print("showSettings: \(showSettings)")
+                        //print("openedFromPauseSettings: \(openedFromPauseMenu)")
                         if !showSettings && !openedFromPauseMenu {
                             startObstacleCycle(resumeFromPause: true)
                         }
@@ -359,18 +426,18 @@ struct HIWGameLobbyView: View {
 
             // 8. Completion Screen
             if showCompletionScreen {
-                
                 CompletionScreenView(
                     levelNumber: currentLevel,
                     totalLevels: 5,
-                    score: 100,
-                    health: 5,
+                    score: score,
+                    health: health,
                     userId: userId,
                     isMuted: $isMuted,
                     audioPlayer: $audioPlayer,
                     onNextLevel: {
                         currentLevel += 1
                         showCompletionScreen = false
+                        endOfLevel = false
                         isPlaying = false
                         stopObstacleCycle()
                         //startObstacleCycle()
@@ -383,12 +450,36 @@ struct HIWGameLobbyView: View {
             }
             
             // 9. End Game Screen
+            if showFailureScreen {
+                FailedLevelScreenView(
+                    levelNumber: currentLevel,
+                    totalLevels: 5,
+                    score: score,
+                    health: health,
+                    onRetryLevel: {
+                        showFailureScreen = false
+                        isPlaying = false
+                        stopObstacleCycle()
+                        health += 3
+                        //startObstacleCycle()
+                    },
+                    onQuitGame: {
+                        stopObstacleCycle()
+                        presentationMode.wrappedValue.dismiss()
+                    },
+                    isMuted: $isMuted,
+                    audioPlayer: $audioPlayer
+                )
+                    
+            }
+            
+            // 10. End Game Screen
             if showEndGameScreen {
                 EndGameScreenView(
                     levelNumber: 5,  // Final level
                     totalLevels: 5,  // Total levels
-                    score: 100,      // TODO: replace with actual score
-                    health: 100,       // TODO: replace with actua health
+                    score: score,
+                    health: health,
                     userId: userId,
                     isMuted: $isMuted,
                     audioPlayer: $audioPlayer,
@@ -490,14 +581,24 @@ struct HIWGameLobbyView: View {
     }
     
     private func scheduleNextObstacle() {
+        //if health reaches 0 before level is over, show failure screen
+        if health == 0 {
+          stopObstacleCycle()
+          showFailureScreen = true
+          score -= 4000
+          return
+        }
+        
         // If we've gone through all obstacles or have an invalid index, show completion screen
-        if obstacleIndex < 0 || obstacleIndex >= obstacles.count {
+        if (obstacleIndex < 0 && health > 0) || (obstacleIndex >= obstacles.count) {
             // Safety check: ensure we stop any running timers
             stopObstacleCycle()
+            
             if currentLevel >= 5 {
                 showEndGameScreen = true
             } else {
                 showCompletionScreen = true
+                endOfLevel = true
             }
             return
         }
@@ -536,7 +637,7 @@ struct HIWGameLobbyView: View {
                     self.soundEffectPlayer?.stop()
                 }
 
-            print(isSoundEffectMuted)
+            //print(isSoundEffectMuted)
             self.obstacleIndex += 1
             self.scheduleNextObstacle()
         }
@@ -889,7 +990,7 @@ struct SettingsView: View {
         }
     }
 
-    // TODO: add sound effects
+   
     private func toggleSoundEffectsMute(isMuted: Bool) {
         print("sound effect \(isMuted ? "muted" : "unmuted")")
     }
@@ -980,6 +1081,66 @@ struct PauseMenuView: View {
         } else {
             print("Stop(quit game)")
             audioPlayer?.pause()
+        }
+    }
+}
+
+//popup that explains how scoring works
+struct ScoringInfoPopupView: View {
+    @Binding var showScoringInfo: Bool
+    @EnvironmentObject var appState: AppState
+    @State private var selectedInfoIndex: Int = 0
+
+    private let scoringMessages = [
+        "Each ❌ shows where you 'hit' the wall. Each hit is -50 points.",
+        "Every time you clear a wall with less than 20 hits, +1000 points",
+        "For every level where you hit all walls less than 20 times total, you get a bonus of 1000 × the level number"
+    ]
+
+    var body: some View {
+        if showScoringInfo {
+            ZStack {
+                VStack(spacing: 20) {
+                    CustomHeader(config: .init(title: appState.localized("Scoring")))
+                        .accessibilityLabel("scoringExplain")
+                    
+                    CustomText(config: .init(text: appState.localized(scoringMessages[selectedInfoIndex]), fontSize: 18))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+
+                    HStack(spacing: 8) {
+                        ForEach(0..<scoringMessages.count, id: \.self) { index in
+                            CustomButton(config: CustomButtonConfig(
+                                title: "\(index + 1)",
+                                width: 40,
+                                buttonColor: selectedInfoIndex == index ? .darkBlue : .lightBlue.opacity(0.7),
+                                action: {
+                                    selectedInfoIndex = index
+                                },
+                                titleColor: .white,
+                                fontSize: 18
+                            ))
+                            .frame(height: 40)
+                        }
+                    }
+
+
+                    // Close Button
+                    CustomButton(
+                        config: CustomButtonConfig(
+                            title: appState.localized("Close"), width: 150, buttonColor: .darkBlue,
+                            action: {
+                                showScoringInfo = false
+                            })
+                    )
+                    .accessibilityIdentifier("closeButton")
+                }
+                .padding()
+                .frame(width: 300)
+                .background(appState.darkMode ? Color.darkBlue : Color.white)
+                .cornerRadius(20)
+                .shadow(radius: 10)
+            }
         }
     }
 }
