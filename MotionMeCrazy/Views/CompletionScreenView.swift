@@ -23,6 +23,10 @@ struct CompletionScreenView: View {
     @Binding var audioPlayer: AVAudioPlayer?
     var onNextLevel: () -> Void
     var onQuitGame: () -> Void
+    
+    // social media stuff
+    @State private var showShareScoreSheet = false
+    @State private var screenshotScore: UIImage?
 
     //audio stuff
     
@@ -69,6 +73,22 @@ struct CompletionScreenView: View {
                                 }
                     }
                     .padding(.top, 10)
+                    
+                    // social media
+                    CustomButton(config: CustomButtonConfig(title: appState.localized("Share Score"), width: 140, buttonColor: .darkBlue, action: {
+                        let image = ShareScoreContent(levelNumber: levelNumber, totalLevels: totalLevels, score: score, health: health).screenshot(size: CGSize(width: 250, height: 300))
+                       
+                        screenshotScore = image
+                       
+                        showShareScoreSheet = true
+                    }))
+                    .sheet(isPresented: $showShareScoreSheet) {
+                        if let image = screenshotScore {
+                            ShareScoreView(message: "I just scored \(score) points in Motion Me Crazy: Hole in the Wall! Do you think you can beat me?", image: image)
+                        } else {
+                            CustomText(config: CustomTextConfig(text: "We are still generating your shareable score..please try again later!", fontSize:20))
+                        }
+                    }
                 }
                 .padding()
                 .background(appState.darkMode ? .darkBlue.opacity(0.9) : Color.white.opacity(0.9))
@@ -121,6 +141,47 @@ struct CompletionScreenView: View {
             }
         }.resume()
     }
+    
+    
+}
+
+// social media stuff
+struct ShareScoreContent: View {
+    var levelNumber: Int
+    var totalLevels: Int
+    var score: Int
+    var health: Double
+    
+    var body: some View {
+        
+        ZStack {
+            Image("background")
+                .resizable()
+                .ignoresSafeArea()
+            
+            VStack(alignment: .center, spacing: 10) {
+                Text("Motion Me Crazy")
+                    .font(.system(size: 30, weight: .bold))
+                    .foregroundStyle(.darkBlue)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                
+                Text(String(format: ("Level %d/%d Completed!"), levelNumber, totalLevels))
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(.darkBlue)
+                
+                Text(String(format: ("Score: %d"),score))
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.darkBlue)
+                
+                Text(String(format: ("Remaining Lives: %d"), health))
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.darkBlue)
+            }
+            
+        }
+        .frame(width: 250, height: 300, alignment: .center)
+    }
+    
 }
 //
 //#Preview {
