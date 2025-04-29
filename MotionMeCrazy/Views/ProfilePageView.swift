@@ -14,12 +14,12 @@ struct ProfilePageView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Image("background")
+                Image(appState.darkMode ? "background_dm" : "background")
                     .resizable()
                     .ignoresSafeArea()
                 
                 VStack(alignment: .center, spacing: 10) {
-                    CustomHeader(config: CustomHeaderConfig(title: "Profile"))
+                    CustomHeader(config: CustomHeaderConfig(title: appState.localized("Profile")))
                         .frame(maxWidth: .infinity, alignment: .center)
                     
                     Spacer()
@@ -33,7 +33,7 @@ struct ProfilePageView: View {
                                 .scaledToFit()
                                 .frame(width: 120, height: 120)
                                 .clipShape(Circle())
-                                .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
+                                .overlay(Circle().stroke(appState.darkMode ? .white : .darkBlue, lineWidth: 3))
                                 .onTapGesture {
                                     showSelector.toggle()
                                 }.accessibilityIdentifier("profilePicture")
@@ -41,33 +41,33 @@ struct ProfilePageView: View {
                             CustomText(config: CustomTextConfig(text: userViewModel.username))
                                 .accessibilityIdentifier("username")
                             CustomText(
-                                config: CustomTextConfig(text: "User ID: \(userViewModel.userid)")
+                                config: CustomTextConfig(text: String(format: appState.localized("User ID: %d"),userViewModel.userid))
                             ).accessibilityIdentifier("userid")
                             
                             CustomButton(
                                 config: CustomButtonConfig(
-                                    title: "Edit", width: 100,
+                                    title: appState.localized("Edit"), width: 100,
                                     buttonColor: .darkBlue
                                 ) {
                                     isEditing.toggle()
                                 }
                             )
                             .accessibilityIdentifier("Edit")
-                            .alert("Edit Username", isPresented: $isEditing) {
+                            .alert(appState.localized("Edit Username"), isPresented: $isEditing) {
                                 TextField(
                                     "Enter a new username", text: $newUsername
                                 )
                                 .accessibilityIdentifier("editUsernameField")
-                                Button("Cancel", action: { isEditing.toggle() })
-                                Button("Submit", action: submit)
+                                Button(appState.localized("Cancel"), action: { isEditing.toggle() })
+                                Button(appState.localized("Submit"), action: submit)
                                     .accessibilityIdentifier("submitUsernameButton")
                             } message: {
-                                Text("Please enter a new username")
+                                Text(appState.localized("Please enter a new username"))
                             }
                             
                             HStack(alignment: .top, spacing: 10) {
                                 CustomButton(config: CustomButtonConfig(
-                                    title: "Badges",
+                                    title: appState.localized("Badges"),
                                     width: 100,
                                     buttonColor: .darkBlue,
                                     destination: AnyView(BadgesPageView(userViewModel: userViewModel))
@@ -75,7 +75,7 @@ struct ProfilePageView: View {
                                 
                                 CustomButton(
                                     config: CustomButtonConfig(
-                                        title: "Stats",
+                                        title: appState.localized("Stats"),
                                         width: 100,
                                         buttonColor: .darkBlue,
                                         destination: AnyView(StatisticsPageView(userViewModel: userViewModel))  // Ensure type erasure with AnyView
@@ -86,11 +86,7 @@ struct ProfilePageView: View {
                             
                         }
                     } else {
-                        Text("This page is not available in offline mode")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                            .multilineTextAlignment(.center)
-                            .padding()
+                        CustomText(config: .init(text: appState.localized("This page is not available in offline mode")))
                             .accessibilityIdentifier("offlineMessage")
                     }
                     Spacer()
@@ -102,7 +98,7 @@ struct ProfilePageView: View {
             }
             .sheet(isPresented: $showSelector) {
                 VStack {
-                    Text("Select Your Profile Picture")
+                    Text(appState.localized("Select Your Profile Picture"))
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundColor(Color("DarkBlue"))

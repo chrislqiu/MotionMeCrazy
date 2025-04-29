@@ -16,6 +16,7 @@ struct CustomSelectedButtonConfig {
 }
 
 struct CustomSelectedButton: View {
+    @EnvironmentObject var appState: AppState
     let config: CustomSelectedButtonConfig
     var body: some View {
         ZStack {
@@ -28,7 +29,7 @@ struct CustomSelectedButton: View {
             .foregroundColor(.clear)
             .frame(width: config.width, height: 50)
             .background {
-                Color.white.opacity(0.25)
+                Color.white.opacity(0.75)
             }
             .overlay(
                 RoundedRectangle(cornerRadius: 15)

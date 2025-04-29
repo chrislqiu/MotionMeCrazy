@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct StatisticsPageView: View {
+    @EnvironmentObject var appState: AppState
+
     @State private var highScore: Int = 0
     @State private var timePlayed: String = "0h 0m"
     @State private var errorMessage: String?
@@ -25,22 +27,13 @@ struct StatisticsPageView: View {
     var body: some View {
         ZStack {
             // Background
-            Image("background")
+            Image(appState.darkMode ? "background_dm" : "background")
                 .resizable()
                 .ignoresSafeArea()
 
             VStack {
-                // Navigation Bar
-                HStack {
-                    Spacer()
-                    Text("Statistics")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                    Spacer()
-                }
-                .padding()
-                .background(Color("DarkBlue"))
+                CustomHeader(config: .init(title: appState.localized("Statistics")))
+
 
                 Spacer()
 
@@ -74,26 +67,23 @@ struct StatisticsPageView: View {
 
                 // Highscore and Time Played Display
                 VStack {
-                    Text("Total Time Played: \(timePlayed)")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color("DarkBlue"))
+                    CustomHeader(config: .init(title: String(format: appState.localized("Total Time Played: %@"), timePlayed), fontSize: 26))
                     Menu {
-                        Button("Past Day") {
+                        Button(appState.localized("Past Day")) {
                             selectedTimePeriod = "Past Day"
                             fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
                         }
-                        Button("Past Week") {
+                        Button(appState.localized("Past Week")) {
                             selectedTimePeriod = "Past Week"
                             fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 7)
                         }
-                        Button("Past Month") {
+                        Button(appState.localized("Past Month")) {
                             selectedTimePeriod = "Past Month"
                             fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 30)
                         }
                     } label: {
                         HStack {
-                            Text("High Scores From The: \(selectedTimePeriod)")
+                            Text(String(format: appState.localized("High Scores From The: %@"), appState.localized(selectedTimePeriod)))
                                 .foregroundColor(.white)
                                 .fontWeight(.bold)
                             Image(systemName: "arrowtriangle.down.fill")
@@ -109,13 +99,13 @@ struct StatisticsPageView: View {
                     HStack {
                         Spacer()
                         Menu {
-                            Button("High Score") {
+                            Button(appState.localized("High Score")) {
                                 filterType = "highScore"
                             }
-                            Button("Longest Session") {
+                            Button(appState.localized("Longest Session")) {
                                 filterType = "longestSession"
                             }
-                            Button("View All") {
+                            Button(appState.localized("View All")) {
                                 filterType = "viewAll"
                             }
                         } label: {
@@ -144,7 +134,7 @@ struct StatisticsPageView: View {
                                             .foregroundColor(.white)
 
                                         Text(
-                                            "\(filterType == "highScore" ? "Score: \(game.score)" : "Session Time: \(game.hours)h")"
+                                            "\(filterType == "highScore" ? String(format: appState.localized("Score: %d"),game.score) : String(format: appState.localized("Session Time: %d h"), game.hours))"
                                         )
                                         .font(.subheadline)
                                         .foregroundColor(.gray)
@@ -165,7 +155,7 @@ struct StatisticsPageView: View {
                         Spacer()
                         CustomButton(
                             config: CustomButtonConfig(
-                                title: "Share",
+                                title: appState.localized("Share"),
                                 width: 100,
                                 buttonColor: .darkBlue,
                                 action: {
@@ -175,7 +165,7 @@ struct StatisticsPageView: View {
                         )
                         CustomButton(
                             config: CustomButtonConfig(
-                                title: "Clear",
+                                title: appState.localized("Clear"),
                                 width: 100,
                                 buttonColor: .darkBlue,
                                 action: {

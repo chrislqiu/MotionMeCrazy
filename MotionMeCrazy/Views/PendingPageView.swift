@@ -11,6 +11,7 @@ private var friendRequests: [FriendRequest] = []
 
 struct PendingPageView: View {
     @ObservedObject var userViewModel: UserViewModel
+    @EnvironmentObject var appState: AppState
     
     @State private var errorMessage: String?
     @State private var requests: [FriendRequest] = []
@@ -19,27 +20,27 @@ struct PendingPageView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Image("background")
+                Image(appState.darkMode ? "background_dm" : "background")
                     .resizable()
                     .ignoresSafeArea()
                 VStack(alignment: .center, spacing: 10) {
-                    CustomHeader(config: CustomHeaderConfig(title: "Pending Requests"))
+                    CustomHeader(config: CustomHeaderConfig(title: appState.localized("Pending Requests")))
                     
                     HStack(alignment: .top, spacing: 10) {
                         CustomButton(config: CustomButtonConfig(
-                            title: "All",
+                            title: appState.localized("All"),
                             width: 75,
                             buttonColor: .darkBlue,
                             destination: AnyView(FriendsPageView(userViewModel: userViewModel))
                         ))
                         
                         CustomSelectedButton(config: CustomSelectedButtonConfig(
-                            title: "Pending",
+                            title: appState.localized("Pending"),
                             width: 100) {}
                         )
                         
                         CustomButton(config: CustomButtonConfig(
-                            title: "Sent",
+                            title: appState.localized("Sent"),
                             width: 75,
                             buttonColor: .darkBlue,
                             destination: AnyView(SentPageView(userViewModel: userViewModel))
@@ -126,6 +127,7 @@ private struct UserRowView: View {
     @State private var errorMessage: String?  // For displaying errors
     let user: FriendRequest
     @Binding var navigateToFriendsPage: Bool
+    @EnvironmentObject var appState: AppState
     
     var body: some View {
         HStack {
@@ -143,7 +145,7 @@ private struct UserRowView: View {
                 
                 CustomButton(
                     config: CustomButtonConfig(
-                        title: "Accept", width: 100,
+                        title: appState.localized("Accept"), width: 100,
                         buttonColor: .darkBlue
                     ) {
                         acceptRequest()
@@ -151,7 +153,7 @@ private struct UserRowView: View {
                 
                 CustomButton(
                     config: CustomButtonConfig(
-                        title: "Decline", width: 100,
+                        title: appState.localized("Decline"), width: 100,
                         buttonColor: .lightBlue
                     ) {
                         declineRequest()

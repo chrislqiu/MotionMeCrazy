@@ -108,22 +108,23 @@ struct DailyMissionsView: View {
 
     var body: some View {
         ZStack {
-            Image("background")
+            Image(appState.darkMode ? "background_dm" :
+                    "background")
                 .resizable()
                 .ignoresSafeArea()
 
             VStack {
-                CustomHeader(config: CustomHeaderConfig(title: "Daily Missions"))
+                CustomHeader(config: CustomHeaderConfig(title: appState.localized("Daily Missions")))
 
                 if !appState.offlineMode {
                 List {
                     ForEach(viewModel.missions.indices, id: \.self) { index in
                         HStack {
-                            CustomText(config: CustomTextConfig(text: viewModel.missions[index].title, titleColor: .darkBlue, fontSize: 18))
+                            CustomText(config: CustomTextConfig(text: appState.localized(viewModel.missions[index].title), titleColor: .darkBlue, fontSize: 18))
                             Spacer()
                             if viewModel.missions[index].isCompleted {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.darkBlue)
+                                    .foregroundColor(appState.darkMode ? .white : .darkBlue)
                             }
                         }
                         .padding()
@@ -140,12 +141,15 @@ struct DailyMissionsView: View {
             } else {
                 Spacer()
                 
-                Text("This page is not available in offline mode")
+                CustomText(config: .init(text: appState.localized("This page is not available in offline mode"), fontSize: 20))
+                    .accessibilityIdentifier("offlineMessage")
+                
+                /*Text("This page is not available in offline mode")
                     .font(.title2)
                     .foregroundColor(.black)
                     .multilineTextAlignment(.center)
                     .padding()
-                    .accessibilityIdentifier("offlineMessage")
+                    .accessibilityIdentifier("offlineMessage")*/
                 
                 Spacer()
             }
@@ -159,7 +163,7 @@ struct DailyMissionsView: View {
                         presentationMode.wrappedValue.dismiss()
                     }) {
                         Image(systemName: "x.circle.fill")
-                            .foregroundColor(.darkBlue)
+                            .foregroundColor(appState.darkMode ? .white : .darkBlue)
                             .font(.title)
                     }
                     .padding(.leading, 20)

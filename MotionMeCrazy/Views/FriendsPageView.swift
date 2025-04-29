@@ -19,30 +19,31 @@ struct FriendsPageView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Image("background")
+                Image(appState.darkMode ? "background_dm" : "background")
                     .resizable()
                     .ignoresSafeArea()
                 
                 VStack(alignment: .center, spacing: 10) {
-                    CustomHeader(config: CustomHeaderConfig(title: "Friends"))
-                    
+                    CustomHeader(config: CustomHeaderConfig(title: appState.localized("Friends")))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    Spacer()
                     if !appState.offlineMode {
                         
                         HStack(alignment: .top, spacing: 10) {
                             CustomSelectedButton(config: CustomSelectedButtonConfig(
-                                title: "All",
+                                title: appState.localized("All"),
                                 width: 75) {}
                             )
                             
                             CustomButton(config: CustomButtonConfig(
-                                title: "Pending",
+                                title: appState.localized("Pending"),
                                 width: 100,
                                 buttonColor: .darkBlue,
                                 destination: AnyView(PendingPageView(userViewModel: userViewModel))
                             ))
                             
                             CustomButton(config: CustomButtonConfig(
-                                title: "Sent",
+                                title: appState.localized("Sent"),
                                 width: 75,
                                 buttonColor: .darkBlue,
                                 destination: AnyView(SentPageView(userViewModel: userViewModel))
@@ -68,24 +69,14 @@ struct FriendsPageView: View {
                             .padding(.horizontal)
                         }
                         
-                        /*List(friends) { user in
-                         UserRowView(user: user)
-                         .listRowBackground(Color.clear)
-                         }
-                         .scrollContentBackground(.hidden)
-                         .background(Color.clear)*/
                     } else {
-                        Spacer()
                         
-                        Text("This page is not available in offline mode")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                            .multilineTextAlignment(.center)
-                            .padding()
+                        CustomText(config: .init(text: appState.localized("This page is not available in offline mode")))
                             .accessibilityIdentifier("offlineMessage")
                         
-                        Spacer()
                     }
+                    Spacer()
+
                 }
                 .padding(.horizontal, 20)
             }
@@ -142,6 +133,7 @@ struct FriendsPageView: View {
 
 
 struct SearchBar: View {
+    @EnvironmentObject var appState: AppState
     @Binding var searchText: String
     @ObservedObject var userViewModel: UserViewModel
     @State private var errorMessage: String?
@@ -157,14 +149,14 @@ struct SearchBar: View {
                     .foregroundColor(.darkBlue)
                     .font(.system(size: 24, weight: .bold))
                 
-                CustomTextField(config: CustomTextFieldConfig(text: $searchText, placeholder: "Search..."))
+                CustomTextField(config: CustomTextFieldConfig(text: $searchText, placeholder: appState.localized("Search...")))
                 
-                CustomButton(config: CustomButtonConfig(title: "Search", width: 100, buttonColor: .darkBlue) {findUser()})
+                CustomButton(config: CustomButtonConfig(title: appState.localized("Search"), width: 100, buttonColor: .darkBlue) {findUser()})
                 
                 if !searchText.isEmpty {
                     Button(action: { searchText = ""; hasSearched = false }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.darkBlue)
+                            .foregroundColor(appState.darkMode ? .white : .darkBlue)
                             .font(.system(size: 24, weight: .bold))
                     }
                 }
@@ -180,7 +172,7 @@ struct SearchBar: View {
                         .shadow(radius: 2)
                     CustomButton(
                         config: CustomButtonConfig(
-                            title: "Add", width: 80,
+                            title: appState.localized("Add"), width: 80,
                             buttonColor: .darkBlue
                         ) {
                             addRequest()
@@ -188,12 +180,12 @@ struct SearchBar: View {
                 }
                 
             } else if hasSearched {
-                CustomText(config: CustomTextConfig(text: "No users found", titleColor: .darkBlue, fontSize: 20))
+                CustomText(config: CustomTextConfig(text: appState.localized("No users found"), fontSize: 20))
                 
             }
-        }.alert("Friend request has been sent", isPresented: $hasSentRequest) {
+        }.alert(appState.localized("Friend request has been sent"), isPresented: $hasSentRequest) {
             Button("OK", role: .cancel) { hasSentRequest = false; hasSearched = false; searchText = ""; result = nil }
-        }.alert("Friend request already exists and is pending", isPresented: $hasAlreadySent) {
+        }.alert(appState.localized("Friend request already exists and is pending"), isPresented: $hasAlreadySent) {
             Button("OK", role: .cancel) { hasAlreadySent = false; hasSearched = false; searchText = ""; result = nil }
         }
         
@@ -302,6 +294,7 @@ struct SearchBar: View {
 
 private struct UserRowView: View {
     let user: UserViewModel
+    @EnvironmentObject var appState: AppState
     
     var body: some View {
         HStack {
@@ -314,7 +307,7 @@ private struct UserRowView: View {
             
             VStack(alignment: .leading) {
                 CustomText(config: CustomTextConfig(text: user.username))
-                CustomText(config: CustomTextConfig(text: "ID: \(user.userid)"))
+                CustomText(config: CustomTextConfig(text:  String(format: appState.localized("ID: %d"), user.userid)))
             }
             
             Spacer()

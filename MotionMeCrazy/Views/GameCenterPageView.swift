@@ -36,7 +36,7 @@ struct GameCenterPageView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Image("background")
+                Image(appState.darkMode ? "background_dm" : "background")
                     .resizable()
                     .ignoresSafeArea()
 
@@ -54,15 +54,15 @@ struct GameCenterPageView: View {
                             .padding(.trailing, 20)
 
                             Menu {
-                                Button("Most Popular") {
+                                Button(appState.localized("Most Popular")) {
                                     sortOption = .mostPopular
                                     fetchGameData()
                                 }
-                                Button("Least Popular") {
+                                Button(appState.localized("Least Popular")) {
                                     sortOption = .leastPopular
                                     fetchGameData()
                                 }
-                                Button("Revert to Default") {
+                                Button(appState.localized("Revert to Default")) {
                                     sortOption = .default
                                     fetchGameData()
                                 }
@@ -76,11 +76,11 @@ struct GameCenterPageView: View {
                             .padding(.trailing, 20)
 
                             Menu {
-                                Button("Personal") {
+                                Button(appState.localized("Personal")) {
                                     playCountType = .me
                                     fetchGameData()
                                 }
-                                Button("Everyone") {
+                                Button(appState.localized("Everyone")) {
                                     playCountType = .everyone
                                     fetchGameData()
                                 }
@@ -93,8 +93,8 @@ struct GameCenterPageView: View {
                             }
                             .padding(.trailing, 20)
                         }
-
-                        CustomHeader(config: .init(title: "Game Center"))
+                        
+                        CustomHeader(config: .init(title: appState.localized("Game Center")))
                             .padding(.top, 10)
                     }
 
@@ -170,6 +170,29 @@ struct GameCenterPageView: View {
                             .foregroundColor(responseMessage.contains("success") ? .green : .red)
                             .padding()
                     }
+                    .frame(height: 325)
+            
+                    Spacer()
+                    //leaderboard button
+                    HStack {
+                        Spacer()
+                        NavigationLink(destination: LeaderboardView(userViewModel: userViewModel)) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "list.number")
+                                    .font(.title2)
+                                Text(appState.localized("Leaderboard"))
+                                    .font(.headline)
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.darkBlue)
+                            .cornerRadius(10)
+                        }
+                        .padding(.trailing, 20)
+                    }
+                    .padding(.top, 10)
+                    .padding(.bottom, 20)
                 }
 
                 // Create Lobby Popup
@@ -332,14 +355,21 @@ struct SelectGame: View {
                 .padding(.bottom, 10)
 
             if !appState.offlineMode {
-                HStack {
-                    Image(systemName: playCountType == .everyone ? "person.3.fill" : "person.fill")
-                        .foregroundColor(.darkBlue)
-                    Text(playCountText)
-                        .font(.headline)
-                }
-            }
-
+                        HStack {
+                            if playCountType == .everyone {
+                                Image(systemName: "person.3.fill") // Icon for everyone
+                                    .foregroundColor(appState.darkMode ? .white  : .darkBlue)
+                            }
+                            else {
+                                Image(systemName: "person.fill") // Icon for everyone
+                                    .foregroundColor(appState.darkMode ? .white : .darkBlue)
+                            }
+                            Text(playCountText)
+                                .font(.headline)
+                                .foregroundColor(appState.darkMode ? Color.white : .darkBlue)
+                        }
+                    }
+            
             CustomButton(config: .init(title: game.name, width: 250, buttonColor: game.buttonColor, destination: game.destination))
         }
         .frame(width: 250, height: 150)
@@ -348,9 +378,9 @@ struct SelectGame: View {
     private var playCountText: String {
         switch playCountType {
         case .everyone:
-            return "Played \(game.sessionCount) times"
+            return String(format: appState.localized("Played %d times"), game.sessionCount)
         case .me:
-            return "You played this \(game.sessionCount) times"
+            return String(format: appState.localized("You played this %d times"), game.sessionCount) 
         }
     }
 }
