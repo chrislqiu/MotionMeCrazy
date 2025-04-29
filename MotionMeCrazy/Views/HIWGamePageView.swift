@@ -26,9 +26,15 @@ struct HIWGamePageView:View {
     
     // tutorial
     @Binding var sectionFrames: [Int: CGRect]?
-    init(sectionFrames: Binding<[Int: CGRect]?> = .constant(nil)) {
-        _sectionFrames = sectionFrames
-    }
+    @ObservedObject var webSocketManager: WebSocketManager
+     
+     init(webSocketManager: WebSocketManager, sectionFrames: Binding<[Int: CGRect]?> = .constant(nil)) {
+         self.webSocketManager = webSocketManager
+         _sectionFrames = sectionFrames
+     }
+     
+    
+    
     
     var body: some View {
         ZStack{
@@ -152,6 +158,6 @@ struct SectionFrameKey: PreferenceKey {
     }
 }
 
-#Preview {
-    HIWGamePageView()
-}
+//#Preview {
+//    HIWGamePageView()
+//}

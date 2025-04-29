@@ -28,11 +28,15 @@ struct HIWGameLobbyView: View {
     @State private var levelImageMap: [Int: [String]] = [:]
     @State private var checkCollisionOn: String!
     
+    
+    
     //Mute stuff
     @State private var audioPlayer: AVAudioPlayer?
     @State private var isMuted = false
 
-
+    @ObservedObject var userViewModel: UserViewModel
+    @ObservedObject var webSocketManager: WebSocketManager
+    
     //Loading audio
     func loadAudio() {
         //getting royalty free song lol
@@ -110,7 +114,7 @@ struct HIWGameLobbyView: View {
                             .padding(.trailing, 10)
                         }
                         .sheet(isPresented: $showTutorial) {
-                            HIWTutorialPageView()
+                            HIWTutorialPageView(userViewModel: userViewModel)
                         }
 
                         Button(action: {
@@ -149,7 +153,7 @@ struct HIWGameLobbyView: View {
                             // Spacer to push VStack below the pause button
                             Spacer().frame(height: 20)  // Adjust the height as needed for spacing
 
-                            //score,health,level
+                            //score, health, progress, and websocket players
                             VStack {
                                 // Score Section
                                 HStack {
@@ -179,10 +183,9 @@ struct HIWGameLobbyView: View {
                                     .font(.headline)
                                     .bold()
                                     Spacer()
-                                    
+
                                     // Hearts for Health
                                     HStack(spacing: 5) {
-
                                         ForEach(0..<Int(maxHealth), id: \.self) { index in
                                             if index < Int(health) {
                                                 Image(systemName: "heart.fill")
@@ -195,16 +198,7 @@ struct HIWGameLobbyView: View {
                                             }
                                         }
                                     }
-
-//                                    CustomText(
-//                                        config: CustomTextConfig(
-//                                            text: "5",
-//                                            titleColor: .darkBlue, fontSize: 18)
-//                                    )
-                                    .font(.body)
                                 }
-
-
 
                                 // Progress Section
                                 HStack {
@@ -223,12 +217,38 @@ struct HIWGameLobbyView: View {
                                     )
                                     .font(.body)
                                 }
+
+                                // Players' Scores Section (WebSocket Data)
+                                
                             }
                             .padding()
                             .background(Color(UIColor.systemGray6).opacity(0.7))
                             .cornerRadius(10)
                             .padding(.horizontal)
+                            VStack(alignment: .leading, spacing: 4) {  // Reduced spacing between player scores
+                                            ForEach(webSocketManager.lobbyPlayers) { player in
+                                                HStack {
+                                                    Text(player.username)
+                                                        .font(.caption)
+                                                        .bold()
+                                                        .foregroundColor(.white)
+                                                    Spacer()
+                                                    Text("\(player.score)")
+                                                        .font(.caption2)
+                                                        .foregroundColor(.white)
+                                                }
+                                                .padding(.horizontal, 8)
+                                                .frame(maxHeight: 20)  // Limit the height of each player's row
+                                            }
+                                        }
+                                        .padding(8)
+                                        .background(Color.black.opacity(0.5))
+                                        .cornerRadius(10)
+                                        .padding()
+                                        .frame(maxWidth: 200, alignment: .topLeading)
+                                        .fixedSize(horizontal: false, vertical: true)
                         }
+                    
 
                     } else {
                         //OFFICIAL exit button

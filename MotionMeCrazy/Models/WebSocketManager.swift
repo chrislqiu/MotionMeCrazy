@@ -113,6 +113,25 @@ class WebSocketManager: ObservableObject {
                         DispatchQueue.main.async {
                                                    self.gameStarted = true
                                                }
+                        
+                    case "SCORE_UPDATED":
+                        if let payload = jsonResponse["payload"] as? [String: Any],
+                           let userId = payload["userId"] as? Int,
+                           let newScore = payload["score"] as? Int {
+
+                            DispatchQueue.main.async {
+                                if let index = self.lobbyPlayers.firstIndex(where: { $0.userId == userId }) {
+                                    let player = self.lobbyPlayers[index]
+                                    self.lobbyPlayers[index] = LobbyPlayer(
+                                        userId: player.userId,
+                                        username: player.username,
+                                        score: newScore,
+                                        eliminated: player.eliminated
+                                    )
+                                }
+                            }
+                        }
+
                     default:
                         DispatchQueue.main.async {
                             self.receivedMessage = "Unhandled message type: \(type)"

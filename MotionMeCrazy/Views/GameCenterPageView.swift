@@ -265,7 +265,7 @@ struct GameCenterPageView: View {
         }
         .onAppear {
             games = [
-                (gameId: 1, name: "Hole In Wall", icon: "figure.run", buttonColor: .darkBlue, sessionCount: 0, destination: AnyView(HIWGameLobbyView(userId: userViewModel.userid, gameId: 1))),
+                (gameId: 1, name: "Hole In Wall", icon: "figure.run", buttonColor: .darkBlue, sessionCount: 0, destination: AnyView(HIWGameLobbyView(userViewModel: userViewModel, webSocketManager: webSocketManager, userId: userViewModel.userid, gameId: 1))),
                 (gameId: 2, name: "Game 2", icon: "gamecontroller.fill", buttonColor: .darkBlue, sessionCount: 0, destination: AnyView(Text("Game 2 Coming Soon!")))
             ]
             fetchGameData()

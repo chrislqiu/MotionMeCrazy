@@ -92,7 +92,7 @@ struct LobbyView: View {
                     }
                     .padding()
                     
-                    NavigationLink(destination: AnyView(HIWGameLobbyView(userId: userViewModel.userid, gameId: 1)), isActive: $webSocketManager.gameStarted) {
+                    NavigationLink(destination: AnyView(HIWGameLobbyView(userViewModel: userViewModel, webSocketManager: webSocketManager, userId: userViewModel.userid, gameId: 1)), isActive: $webSocketManager.gameStarted) {
                         EmptyView()
                     }
                 }

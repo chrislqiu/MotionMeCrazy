@@ -13,19 +13,24 @@ struct HIWTutorialPageView: View {
     @State private var tutorialStep = 0  // track tutorial step
     @State private var showTutorial = true  // toggle tutorial visibility
     @State private var sectionFrames: [Int: CGRect] = [:]
+    @ObservedObject var userViewModel: UserViewModel
 
-    
+    @StateObject private var webSocketManager: WebSocketManager
+
+    init(userViewModel: UserViewModel) {
+        self.userViewModel = userViewModel
+        _webSocketManager = StateObject(wrappedValue: WebSocketManager(userViewModel: userViewModel))
+    }
     
     var body: some View {
-        ZStack{
+        ZStack {
             
             // main HIW game play
-            HIWGamePageView(sectionFrames: Binding($sectionFrames))
+            HIWGamePageView(webSocketManager: webSocketManager, sectionFrames: Binding($sectionFrames))
             
             if showTutorial {
                 Color.black.opacity(0.5)  // dim background
                     .edgesIgnoringSafeArea(.all)
-                
                 
                 // highlight game sections
                 if let highlightRect = sectionFrames[tutorialStep] {
@@ -35,7 +40,6 @@ struct HIWTutorialPageView: View {
                 // highlight pause button
                 if tutorialStep == 3 {
                     highlightPauseButton()
-                    
                 }
                 
                 VStack {
@@ -52,27 +56,27 @@ struct HIWTutorialPageView: View {
                     HStack {
                         // skip tutorial Button
                         CustomButton(config: CustomButtonConfig(title: "Skip", width: 70, buttonColor: .darkBlue, action: {
-                                showTutorial = false
+                            showTutorial = false
                         }))
 
                         Spacer()
                         
                         // back tutorial button
                         CustomButton(config: CustomButtonConfig(title: "Back", width: 70, buttonColor: .darkBlue, action: {
-                                if tutorialStep > 0 {
-                                    tutorialStep -= 1
-                                }
+                            if tutorialStep > 0 {
+                                tutorialStep -= 1
+                            }
                         }))
                         
                         Spacer()
                         
                         // next tutorial button
                         CustomButton(config: CustomButtonConfig(title: "Next", width: 70, buttonColor: .darkBlue, action: {
-                                if tutorialStep < 4 {
-                                    tutorialStep += 1
-                                } else {
-                                    showTutorial = false  // end tutorial
-                                }
+                            if tutorialStep < 4 {
+                                tutorialStep += 1
+                            } else {
+                                showTutorial = false  // end tutorial
+                            }
                         }))
                     }
                     .frame(width: 300)
@@ -93,7 +97,6 @@ struct HIWTutorialPageView: View {
                         .foregroundColor(.darkBlue)
                 }
                 .accessibilityIdentifier("playButton")
-                                
             }
             
             if isPlaying {
@@ -104,32 +107,32 @@ struct HIWTutorialPageView: View {
     }
     
     func tutorialText(for step: Int) -> String {
-            switch step {
-            case 0: return "This is your score. It increases as you progress in the game!"
-            case 1: return "This is your health. If it reaches zero, you lose!"
-            case 2: return "This is your progress. It shows what level you’re on."
-            case 3: return "Tap the pause button to pause the game."
-            case 4: return "That's the tutorial! Press play to start the game!"
-            default: return "Welcome to the game!"
-            }
+        switch step {
+        case 0: return "This is your score. It increases as you progress in the game!"
+        case 1: return "This is your health. If it reaches zero, you lose!"
+        case 2: return "This is your progress. It shows what level you’re on."
+        case 3: return "Tap the pause button to pause the game."
+        case 4: return "That's the tutorial! Press play to start the game!"
+        default: return "Welcome to the game!"
+        }
     }
     
     @ViewBuilder
-        func highlightSection(rect: CGRect) -> some View {
-            GeometryReader { _ in
-                Color.black.opacity(0.7)
-                    .mask(
-                        Rectangle()
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .frame(width: rect.width + 18, height: rect.height + 10)
-                                    .position(x: rect.midX + 10, y: rect.midY - 70)
-                                    .blendMode(.destinationOut)
-                            )
-                    )
-                    .edgesIgnoringSafeArea(.all)
-            }
+    func highlightSection(rect: CGRect) -> some View {
+        GeometryReader { _ in
+            Color.black.opacity(0.7)
+                .mask(
+                    Rectangle()
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .frame(width: rect.width + 18, height: rect.height + 10)
+                                .position(x: rect.midX + 10, y: rect.midY - 70)
+                                .blendMode(.destinationOut)
+                        )
+                )
+                .edgesIgnoringSafeArea(.all)
         }
+    }
     
     // adds a highlight effect for pause step
     @ViewBuilder
@@ -153,6 +156,6 @@ struct HIWTutorialPageView: View {
     }
 }
 
-#Preview {
-    HIWTutorialPageView()
-}
+//#Preview {
+//    HIWTutorialPageView(userViewModel: UserViewModel())
+//}
