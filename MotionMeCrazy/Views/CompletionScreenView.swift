@@ -76,14 +76,17 @@ struct CompletionScreenView: View {
                     
                     // social media
                     CustomButton(config: CustomButtonConfig(title: appState.localized("Share Score"), width: 140, buttonColor: .darkBlue, action: {
-                        showShareScoreSheet = true
                         let image = ShareScoreContent(levelNumber: levelNumber, totalLevels: totalLevels, score: score, health: health).screenshot(size: CGSize(width: 250, height: 300))
-                        print(image.size)
+                       
                         screenshotScore = image
+                       
+                        showShareScoreSheet = true
                     }))
                     .sheet(isPresented: $showShareScoreSheet) {
                         if let image = screenshotScore {
                             ShareScoreView(message: "I just scored \(score) points in Motion Me Crazy: Hole in the Wall! Do you think you can beat me?", image: image)
+                        } else {
+                            CustomText(config: CustomTextConfig(text: "We are still generating your shareable score..please try again later!", fontSize:20))
                         }
                     }
                 }
