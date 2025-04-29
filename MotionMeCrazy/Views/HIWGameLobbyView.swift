@@ -11,6 +11,7 @@ struct HIWGameLobbyView: View {
     @State private var openedFromPauseMenu = false
     @State private var selectedDifficulty: SettingsView.Difficulty = .normal
     @State private var selectedTheme: SettingsView.Theme = .basic
+    @State private var selectedMode: SettingsView.GameMode = .normal
     @State private var fetchingError: Bool = false
     @State private var obstacleIndex = 0
     @State private var timer: Timer? = nil
@@ -292,6 +293,7 @@ struct HIWGameLobbyView: View {
                     showSettings: $showSettings, userId: userId, gameId: gameId,
                     selectedDifficulty: $selectedDifficulty,
                     selectedTheme: $selectedTheme,
+                    selectedMode: $selectedMode,
                     showPauseMenu: $showPauseMenu,
                     openedFromPauseMenu: $openedFromPauseMenu,
                     isMuted: $isMuted,
@@ -426,31 +428,40 @@ struct HIWGameLobbyView: View {
         // Determine the difficulty suffix
         let difficultySuffix = selectedDifficulty == .easy ? "e" : "h"
         
-        // Load images based on difficulty
-        for level in 1...5 {
-            var imageNames: [String] = []
-            for wall in 1...wallsPerLevel {
-
-                let suffix: String
-
-                switch selectedTheme {
-                case .basic:
-                    suffix = ""
-                case .light:
-                    suffix = "_lm"
-                case .dark:
-                    suffix = "_dm"
-                default:
-                    suffix = ""
+        if selectedMode == .normal {
+            
+            // Load images based on difficulty
+            for level in 1...5 {
+                var imageNames: [String] = []
+                for wall in 1...wallsPerLevel {
+                    
+                    let suffix: String
+                    
+                    switch selectedTheme {
+                    case .basic:
+                        suffix = ""
+                    case .light:
+                        suffix = "_lm"
+                    case .dark:
+                        suffix = "_dm"
+                    default:
+                        suffix = ""
+                    }
+                    
+                    let imageName = "level\(level)_wall\(wall)\(difficultySuffix)\(suffix)"
+                    
+                    imageNames.append(imageName)
+                    
                 }
-
-                let imageName = "level\(level)_wall\(wall)\(difficultySuffix)\(suffix)"
-
-                imageNames.append(imageName)
-
+                
+                levelImageMap[level] = imageNames
+                
             }
-            levelImageMap[level] = imageNames
-
+        } else if selectedMode == .accessibility {
+            //TODO: LOAD ACCESSIBILITY IMAGES
+            
+        } else if selectedMode == .random {
+            //TODO: LOAD RANDOM IMAGES
         }
     }
 
@@ -592,6 +603,16 @@ struct HIWGameLobbyView: View {
                             self.selectedTheme = .basic
                             print("Invalid theme stored in server")
                         }
+                        
+                        // fetching game mode
+                        if let mode = SettingsView.GameMode(rawValue: settings.mode) {
+                            self.selectedMode = mode
+                            print(self.selectedMode)
+                        } else {
+                            self.selectedMode = .normal
+                            print("Invalid mode stored in server")
+                        }
+                        
                     } catch {
                         print(
                             "Failed to decode JSON: \(error.localizedDescription)"
@@ -608,7 +629,7 @@ struct HIWGameLobbyView: View {
     }
 }
 
-func updateGameSettings(userId: Int, gameId: Int, diff: String, theme: String) {
+func updateGameSettings(userId: Int, gameId: Int, diff: String, theme: String, mode: String) {
     guard let url = URL(string: APIHelper.getBaseURL() + "/gameSettings") else {
         print("Invalid URL")
         return
@@ -618,7 +639,8 @@ func updateGameSettings(userId: Int, gameId: Int, diff: String, theme: String) {
         "userId": String(userId),
         "gameId": String(gameId),
         "difficulty": diff,
-        "theme": theme
+        "theme": theme,
+        "mode": mode
     ]
 
     guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
@@ -663,6 +685,7 @@ struct SettingsView: View {
     var gameId: Int
     @Binding var selectedDifficulty: Difficulty
     @Binding var selectedTheme: Theme
+    @Binding var selectedMode: GameMode
     @Binding var showPauseMenu: Bool
     @Binding var openedFromPauseMenu: Bool
     
@@ -694,131 +717,160 @@ struct SettingsView: View {
         var id: String { self.rawValue }
     }
     
+    enum GameMode: String, CaseIterable, Identifiable {
+        case normal = "Normal"
+        case accessibility = "Accessibility"
+        case random = "Random"
+
+        var id: String { self.rawValue }
+    }
+    
+    
     var body: some View {
-        VStack(spacing: 15) {
-            CustomHeader(config: .init(title: appState.localized("Game Settings")))
-                .accessibilityLabel("modeSelectionTitle")
-
-            VStack {
-                // Difficulty Picker
-                CustomText(config: .init(text: appState.localized("Difficulty")))
-
-                Picker("Difficulty", selection: $selectedDifficulty) {
-                    ForEach(Difficulty.allCases) { difficulty in
-                        Text(difficulty.rawValue).tag(difficulty)
+        ScrollView {
+            VStack(spacing: 15) {
+                CustomHeader(config: .init(title: appState.localized("Game Settings")))
+                    .accessibilityLabel("modeSelectionTitle")
+                
+                VStack {
+                    // Difficulty Picker
+                    CustomText(config: .init(text: appState.localized("Difficulty")))
+                    
+                    Picker("Difficulty", selection: $selectedDifficulty) {
+                        ForEach(Difficulty.allCases) { difficulty in
+                            Text(difficulty.rawValue).tag(difficulty)
+                        }
                     }
-                }
-                .pickerStyle(MenuPickerStyle())
-                .frame(width: 150)
-                .background(Color.lightBlue)
-                .cornerRadius(8)
-                .accessibilityIdentifier("difficultyPicker")
-                .onChange(of: selectedDifficulty) { newValue in
-                    updateGameSettings(
-                        userId: userId, gameId: gameId, diff: newValue.rawValue, theme: selectedTheme.rawValue)
-
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 150)
+                    .background(Color.lightBlue)
+                    .cornerRadius(8)
+                    .accessibilityIdentifier("difficultyPicker")
+                    .onChange(of: selectedDifficulty) { newValue in
+                        updateGameSettings(
+                            userId: userId, gameId: gameId, diff: newValue.rawValue, theme: selectedTheme.rawValue, mode: selectedMode.rawValue)
+                        
+                    }
+                    
+                    // Theme Picker
+                    CustomText(config: .init(text: appState.localized("Themes")))
+                    
+                    Picker("Theme", selection: $selectedTheme) {
+                        ForEach(Theme.allCases) { theme in
+                            Text(theme.rawValue).tag(theme)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 150)
+                    .background(Color.lightBlue)
+                    .cornerRadius(8)
+                    .accessibilityIdentifier("themePicker")
+                    .onChange(of: selectedTheme) { newValue in
+                        updateGameSettings(
+                            userId: userId, gameId: gameId, diff: selectedDifficulty.rawValue, theme: newValue.rawValue, mode: selectedMode.rawValue)
+                    }
+                    
+                    // Mode Picker
+                    CustomText(config: .init(text: appState.localized("Modes")))
+                    
+                    Picker("Mode", selection: $selectedMode) {
+                        ForEach(GameMode.allCases) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 150)
+                    .background(Color.lightBlue)
+                    .cornerRadius(8)
+                    .accessibilityIdentifier("modePicker")
+                    .onChange(of: selectedMode) { newValue in
+                        updateGameSettings(
+                            userId: userId, gameId: gameId, diff: selectedDifficulty.rawValue, theme: newValue.rawValue, mode: selectedMode.rawValue)
+                    }
                 }
                 
-                // Theme Picker
-                CustomText(config: .init(text: appState.localized("Themes")))
-
-                Picker("Theme", selection: $selectedTheme) {
-                    ForEach(Theme.allCases) { theme in
-                        Text(theme.rawValue).tag(theme)
-                    }
+                
+                // mute
+                VStack(spacing: 15) {
+                    
+                    CustomButton(
+                        config: CustomButtonConfig(
+                            title: " ", //blank bc we have the mute symbols
+                            width: 150,
+                            buttonColor: .lightBlue,
+                            action: {
+                                // mute game from in game settings
+                                toggleMusicMute(isMuted: isMuted, audioPlayer: audioPlayer)
+                                isMuted.toggle()
+                            })
+                    )
+                    .accessibilityIdentifier("muteMusicButton")
+                    .overlay(
+                        HStack {
+                            Image(
+                                systemName: isMuted
+                                ? "speaker.slash.fill" : "speaker.2.fill"
+                            )
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 25, height: 20)
+                            .foregroundColor(.white)
+                            Text(appState.localized("Music"))
+                                .foregroundColor(.white)
+                                .font(.body)
+                                .font(.system(size: 16))
+                        }
+                            .padding(.horizontal)
+                    )
+                    
+                    // TODO: (temporarily removed sound effect button bc we dont need it rn) but ADD SOUND EFFECTS BACK AT SOME POINT
+                    CustomButton(
+                        config: CustomButtonConfig(
+                            title: " ",
+                            width: 150,
+                            buttonColor: .lightBlue,
+                            action: {
+                                isSoundEffectsMuted.toggle()
+                                // actually will mute
+                                toggleSoundEffectsMute(isMuted: isSoundEffectsMuted)
+                                
+                            })
+                    )
+                    .accessibilityIdentifier("muteSoundEffectsButton")
+                    .overlay(
+                        HStack {
+                            Image(
+                                systemName: isSoundEffectsMuted
+                                ? "speaker.slash.fill" : "speaker.2.fill"
+                            )
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 25, height: 22)
+                            .foregroundColor(.white)
+                            Text(appState.localized("Sound Effects"))
+                                .foregroundColor(.white)
+                                .font(.body)
+                                .font(.system(size: 16))
+                        }
+                            .padding(.horizontal)
+                    )
                 }
-                .pickerStyle(MenuPickerStyle())
-                .frame(width: 150)
-                .background(Color.lightBlue)
-                .cornerRadius(8)
-                .accessibilityIdentifier("themePicker")
-                .onChange(of: selectedTheme) { newValue in
-                    updateGameSettings(
-                        userId: userId, gameId: gameId, diff: selectedDifficulty.rawValue, theme: newValue.rawValue)
-                }
-            }
-            
-
-            // mute
-            VStack(spacing: 15) {
-
+                
+                // Close Button
                 CustomButton(
                     config: CustomButtonConfig(
-                        title: " ", //blank bc we have the mute symbols
-                        width: 150,
-                        buttonColor: .lightBlue,
+                        title: appState.localized("Close"), width: 150, buttonColor: .darkBlue,
                         action: {
-                            // mute game from in game settings
-                            toggleMusicMute(isMuted: isMuted, audioPlayer: audioPlayer)
-                            isMuted.toggle()
+                            showSettings = false
+                            if openedFromPauseMenu {
+                                showPauseMenu = true  // only reopen pause menu if settings were opened from it
+                            }  // Reopen pause menu
                         })
                 )
-                .accessibilityIdentifier("muteMusicButton")
-                .overlay(
-                    HStack {
-                        Image(
-                            systemName: isMuted
-                                ? "speaker.slash.fill" : "speaker.2.fill"
-                        )
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 25, height: 20)
-                        .foregroundColor(.white)
-                        Text(appState.localized("Music"))
-                            .foregroundColor(.white)
-                            .font(.body)
-                            .font(.system(size: 16))
-                    }
-                    .padding(.horizontal)
-                )
-
-                // TODO: (temporarily removed sound effect button bc we dont need it rn) but ADD SOUND EFFECTS BACK AT SOME POINT
-               CustomButton(
-                    config: CustomButtonConfig(
-                        title: " ",
-                        width: 150,
-                        buttonColor: .lightBlue,
-                        action: {
-                            isSoundEffectsMuted.toggle()
-                            // actually will mute
-                            toggleSoundEffectsMute(isMuted: isSoundEffectsMuted)
-
-                        })
-                )
-                .accessibilityIdentifier("muteSoundEffectsButton")
-                .overlay(
-                    HStack {
-                        Image(
-                            systemName: isSoundEffectsMuted
-                                ? "speaker.slash.fill" : "speaker.2.fill"
-                        )
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 25, height: 22)
-                        .foregroundColor(.white)
-                        Text(appState.localized("Sound Effects"))
-                            .foregroundColor(.white)
-                            .font(.body)
-                            .font(.system(size: 16))
-                    }
-                    .padding(.horizontal)
-                )
+                .accessibilityIdentifier("closeButton")
+                
+                Spacer()
             }
-
-            // Close Button
-            CustomButton(
-                config: CustomButtonConfig(
-                    title: appState.localized("Close"), width: 150, buttonColor: .darkBlue,
-                    action: {
-                        showSettings = false
-                        if openedFromPauseMenu {
-                            showPauseMenu = true  // only reopen pause menu if settings were opened from it
-                        }  // Reopen pause menu
-                    })
-            )
-            .accessibilityIdentifier("closeButton")
-
-            Spacer()
         }
         .padding()
        
@@ -937,6 +989,7 @@ struct GameSettings: Codable {
     let game_id: Int
     let difficulty: String
     let theme: String
+    let mode: String
 }
 
 struct HIWObstacleView: View {
