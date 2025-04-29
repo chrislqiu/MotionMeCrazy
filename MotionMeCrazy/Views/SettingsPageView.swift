@@ -79,45 +79,17 @@ struct SettingsPageView: View {
         VStack(spacing: 20) {
             CustomHeader(config: .init(title: appState.localized("Settings")))
             
-
-            VStack(alignment: .leading) {
-                CustomText(config: .init(text: "Audio Level"))
-                Slider(
-                    value: $selectedAudioLevel,
-                    in: 0...100,
-                    step: 1,
-                    onEditingChanged: { editing in
-                        if !editing  && !appState.offlineMode {
-                            updateAppSettings(userId: userViewModel.userid, audio: selectedAudioLevel, lan: selectedLanguage.rawValue, theme: selectedTheme.rawValue, mode: selectedGameMode.rawValue)
-                        }
-                    },
-                    minimumValueLabel: Text("0"),
-                    maximumValueLabel: Text("100"),
-                    label: {
-                        Text("Values from 0 to 100")
-                    }
-                )
-                .accentColor(appState.darkMode ? .white : .darkBlue)
-                Text("\(selectedAudioLevel, specifier: "%.0f")")
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-            .padding()
-            
-            
             CustomButton(config: .init(title: appState.darkMode ? appState.localized("Light mode") : appState.localized("Dark mode"), width: 200, buttonColor: .darkBlue, action: { appState.darkMode = !appState.darkMode }))
-            
+                        
             CustomButton(config: .init(title: appState.localized("Change Theme"), width: 200, buttonColor: .darkBlue) {
                 showThemePopup = true
             })
             
-            CustomButton(config: .init(title: "Change Game Mode", width: 200, buttonColor: .darkBlue) {
+            CustomButton(config: .init(title: appState.localized("Change Mode"), width: 200, buttonColor: .darkBlue) {
                 showGameModePopup = true
             })
             
-            CustomButton(config: .init(title: "Change Language", width: 200, buttonColor: .darkBlue) {
-
             CustomButton(config: .init(title: appState.localized("Change Language"), width: 200, buttonColor: .darkBlue) {
-
                 showLanguagePopup = true
             })
         }
