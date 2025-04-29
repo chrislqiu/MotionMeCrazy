@@ -33,12 +33,12 @@ struct LeaderboardView: View {
                     .ignoresSafeArea()
 
                 VStack {
-                    CustomHeader(config: .init(title: "Leaderboard"))
+                    CustomHeader(config: .init(title: appState.localized("Leaderboard")))
 
                     HStack {
                         //CustomSelectedButton(config: .init(title: "Public", width: 100, action: { withAnimation { publicLeaderboardVisible = true }}))
-                        CustomButton(config: .init(title: "Public", width: 100, buttonColor: publicLeaderboardVisible ? .darkBlue : .white.opacity(0.25), action: { withAnimation { publicLeaderboardVisible = true }}))
-                        CustomButton(config: .init(title: "Friends", width: 100, buttonColor: !publicLeaderboardVisible ? .darkBlue : .white.opacity(0.5), action: { withAnimation { publicLeaderboardVisible = false }}))
+                        CustomButton(config: .init(title: appState.localized("Public"), width: 100, buttonColor: publicLeaderboardVisible ? .darkBlue : .white.opacity(0.25), action: { withAnimation { publicLeaderboardVisible = true }}))
+                        CustomButton(config: .init(title: appState.localized("Friends"), width: 100, buttonColor: !publicLeaderboardVisible ? .darkBlue : .white.opacity(0.5), action: { withAnimation { publicLeaderboardVisible = false }}))
 
                         /*Button(action: {
                             withAnimation { publicLeaderboardVisible = true }
@@ -67,7 +67,7 @@ struct LeaderboardView: View {
                     ZStack {
                         if publicLeaderboardVisible {
                             VStack {
-                                CustomHeader(config: .init(title: "Public Leaderboard", fontSize: 26))
+                                CustomHeader(config: .init(title: appState.localized("Public Leaderboard"), fontSize: 26))
 
                                 ScrollView {
                                     VStack(spacing: 10) {
@@ -82,7 +82,7 @@ struct LeaderboardView: View {
 
                                                 VStack(alignment: .leading) {
                                                     CustomText(config: .init(text: entry.username))
-                                                    CustomText(config: .init(text: "Score: \(entry.score)", fontSize: 18))
+                                                    CustomText(config: .init(text: String(format: appState.localized("Score: %d"), entry.score), fontSize: 18))
 
                                                     /*Text(entry.username)
                                                         .font(.headline)
@@ -105,7 +105,7 @@ struct LeaderboardView: View {
                             .transition(.move(edge: .leading))
                         } else {
                             VStack {
-                                CustomHeader(config: .init(title: "Friends Leaderboard", fontSize: 26))
+                                CustomHeader(config: .init(title: appState.localized("Friends Leaderboard"), fontSize: 26))
 
                                 ScrollView {
                                     VStack(spacing: 10) {
@@ -120,7 +120,7 @@ struct LeaderboardView: View {
 
                                                 VStack(alignment: .leading) {
                                                     CustomText(config: .init(text: entry.username))
-                                                    CustomText(config: .init(text: "Score: \(entry.score)", fontSize: 18))
+                                                    CustomText(config: .init(text: String(format: appState.localized("Score: %d"), entry.score), fontSize: 18))
                                                     /*Text(entry.username)
                                                         .font(.headline)
                                                         .foregroundColor(.white)

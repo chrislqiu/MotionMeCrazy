@@ -23,10 +23,15 @@ struct HIWGameLobbyView: View {
     @State private var isPaused = false
     @State private var savedObstacleIndex = 0
     @State private var countdownWasActive = false
+    @State private var showEndGameScreen = false
     
     //Mute stuff
     @State private var audioPlayer: AVAudioPlayer?
     @State private var isMuted = false
+    
+    @State private var soundEffectPlayer: AVAudioPlayer?
+    @State private var isSoundEffectMuted = false
+
 
     @EnvironmentObject var appState: AppState
 
@@ -45,6 +50,24 @@ struct HIWGameLobbyView: View {
             audioPlayer?.volume = 0.5
             audioPlayer?.play()
             print("Playing audio!!")
+        } catch {
+            print("audio file loading fail: \(error)")
+        }
+    }
+    
+    //Loading audio
+    func loadSoundEffect() {
+        //getting royalty free song lol
+        guard let url = Bundle.main.url(forResource: "vine-boom", withExtension: "mp3") else {
+            print("sound not found.")
+            return
+        }
+        
+        do {
+            soundEffectPlayer = try AVAudioPlayer(contentsOf: url)
+            soundEffectPlayer?.prepareToPlay()
+            print("sound effect loaded")
+
         } catch {
             print("audio file loading fail: \(error)")
         }
@@ -80,7 +103,7 @@ struct HIWGameLobbyView: View {
             // 3. Start/Play Button
             VStack(spacing: 50) {
                 if !isPlaying {
-                    CustomHeader(config: .init(title: "Hole in the Wall"))
+                    CustomHeader(config: .init(title: appState.localized("Hole in the Wall")))
                         .accessibilityIdentifier("holeInTheWallTitle")
                 }
 
@@ -98,6 +121,12 @@ struct HIWGameLobbyView: View {
                         }
                         .accessibilityIdentifier("playButton")
                     }
+                }
+            }
+            .onChange(of: isPlaying) { checkIsPlaying in
+                // When isPlaying state changes to false, stop the obstacle cycle
+                if !checkIsPlaying {
+                    stopObstacleCycle()
                 }
             }
 
@@ -124,6 +153,7 @@ struct HIWGameLobbyView: View {
                         Button(action: {
                             openedFromPauseMenu = false
                             showSettings = true
+                            stopObstacleCycle() //added
                         }) {
                             Image(systemName: "gearshape.fill")
                                 .resizable()
@@ -162,7 +192,7 @@ struct HIWGameLobbyView: View {
                                 HStack {
                                     CustomText(
                                         config: CustomTextConfig(
-                                            text: "Score",
+                                            text: appState.localized("Score"),
                                             titleColor: .darkBlue, fontSize: 20)
                                     )
                                     .font(.headline)
@@ -179,7 +209,7 @@ struct HIWGameLobbyView: View {
                                 HStack {
                                     CustomText(
                                         config: CustomTextConfig(
-                                            text: "Health",
+                                            text: appState.localized("Health"),
                                             titleColor: .darkBlue, fontSize: 20)
                                     )
                                     .font(.headline)
@@ -205,7 +235,7 @@ struct HIWGameLobbyView: View {
                                 HStack {
                                     CustomText(
                                         config: CustomTextConfig(
-                                            text: "Progress",
+                                            text: appState.localized("Progress"),
                                             titleColor: .darkBlue, fontSize: 20)
                                     )
                                     .font(.headline)
@@ -227,6 +257,8 @@ struct HIWGameLobbyView: View {
                     } else {
                         Button(action: {
                             isMuted = true
+                            isSoundEffectMuted = true
+                            soundEffectPlayer?.stop()
                             audioPlayer?.stop()
                             presentationMode.wrappedValue.dismiss()
                         }) {
@@ -263,9 +295,10 @@ struct HIWGameLobbyView: View {
                     showPauseMenu: $showPauseMenu,
                     openedFromPauseMenu: $openedFromPauseMenu,
                     isMuted: $isMuted,
-                    audioPlayer: $audioPlayer
+                    audioPlayer: $audioPlayer,
+                    isSoundEffectsMuted: $isSoundEffectMuted
                 )
-                .frame(width: 300, height: 350)
+                .frame(width: 300, height: 450)
                 .background(appState.darkMode ? .darkBlue : Color.white)
                 .cornerRadius(20)
                 .shadow(radius: 20)
@@ -274,6 +307,14 @@ struct HIWGameLobbyView: View {
                     loadLevelImageMap()
                     obstacles = levelImageMap[currentLevel] ?? []
                     fetchGameSettings(userId: userId, gameId: gameId)
+                }
+                .onChange(of: showSettings) { updatedShowSettings in
+                    if updatedShowSettings {
+                        stopObstacleCycle()
+                        if openedFromPauseMenu {
+                            savedObstacleIndex = obstacleIndex
+                        }
+                    }
                 }
             }
 
@@ -291,7 +332,11 @@ struct HIWGameLobbyView: View {
                     showQuitConfirmation: $showQuitConfirmation,
                     openedFromPauseMenu: $openedFromPauseMenu,
                     isMuted: $isMuted,
-                    audioPlayer: $audioPlayer
+                    audioPlayer: $audioPlayer,
+                    soundEffectPlayer: $soundEffectPlayer,
+                    isSoundEffectMuted: $isSoundEffectMuted,
+                    startObstacleCycle: startObstacleCycle
+                    
                 )
                 .frame(width: 300, height: 300)
                 .background(appState.darkMode ? .darkBlue : Color.white)
@@ -299,15 +344,20 @@ struct HIWGameLobbyView: View {
                 .shadow(radius: 20)
                 .accessibilityIdentifier("pauseMenuView")
                 .onDisappear {
-                    if isPlaying && isPaused {
+                    if isPlaying && isPaused  {
                         isPaused = false
-                        startObstacleCycle(resumeFromPause: true)
+                        print("showSettings: \(showSettings)")
+                        print("openedFromPauseSettings: \(openedFromPauseMenu)")
+                        if !showSettings && !openedFromPauseMenu {
+                            startObstacleCycle(resumeFromPause: true)
+                        }
                     }
                 }
             }
 
             // 8. Completion Screen
             if showCompletionScreen {
+                
                 CompletionScreenView(
                     levelNumber: currentLevel,
                     totalLevels: 5,
@@ -321,8 +371,26 @@ struct HIWGameLobbyView: View {
                         showCompletionScreen = false
                         isPlaying = false
                         stopObstacleCycle()
-                        startObstacleCycle()
+                        //startObstacleCycle()
                     },
+                    onQuitGame: {
+                        stopObstacleCycle()
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                )
+            }
+            
+            // 9. End Game Screen
+            if showEndGameScreen {
+                EndGameScreenView(
+                    levelNumber: 5,  // Final level
+                    totalLevels: 5,  // Total levels
+                    score: 100,      // TODO: replace with actual score
+                    health: 100,       // TODO: replace with actua health
+                    userId: userId,
+                    isMuted: $isMuted,
+                    audioPlayer: $audioPlayer,
+                    onNextLevel: { },
                     onQuitGame: {
                         stopObstacleCycle()
                         presentationMode.wrappedValue.dismiss()
@@ -335,12 +403,13 @@ struct HIWGameLobbyView: View {
             loadLevelImageMap()
             obstacles = levelImageMap[currentLevel] ?? []
             fetchGameSettings(userId: userId, gameId: gameId)
+            loadSoundEffect()
             loadAudio()
         }
         .onChange(of: currentLevel) { newLevel in
             obstacles = levelImageMap[newLevel] ?? []
             stopObstacleCycle()
-            startObstacleCycle()
+            //startObstacleCycle()
         }
         .onChange(of: selectedDifficulty) { newDifficulty in
             loadLevelImageMap()
@@ -378,8 +447,10 @@ struct HIWGameLobbyView: View {
                 let imageName = "level\(level)_wall\(wall)\(difficultySuffix)\(suffix)"
 
                 imageNames.append(imageName)
+
             }
             levelImageMap[level] = imageNames
+
         }
     }
 
@@ -387,6 +458,7 @@ struct HIWGameLobbyView: View {
         stopObstacleCycle()  // Ensure no previous timers are running
         
         if resumeFromPause && !countdownWasActive {
+            print("resume countdown")
             // Resume from where we left off (skip countdown if it wasn't active)
             obstacleIndex = savedObstacleIndex
             
@@ -394,6 +466,7 @@ struct HIWGameLobbyView: View {
             scheduleNextObstacle()
         } else {
             // Normal start (with countdown)
+            print("Start countdown")
             obstacleIndex = 0
             
             // Start the countdown
@@ -410,16 +483,49 @@ struct HIWGameLobbyView: View {
         if obstacleIndex < 0 || obstacleIndex >= obstacles.count {
             // Safety check: ensure we stop any running timers
             stopObstacleCycle()
-            showCompletionScreen = true
+            if currentLevel >= 5 {
+                showEndGameScreen = true
+            } else {
+                showCompletionScreen = true
+            }
             return
         }
         
         // Show current obstacle
         checkCollisionOn = obstacles[obstacleIndex]
+        if !isSoundEffectMuted {
+                self.soundEffectPlayer?.stop()
+                self.soundEffectPlayer?.currentTime = 0
+                self.soundEffectPlayer?.prepareToPlay()
+                
+                self.soundEffectPlayer?.play()
+
+                Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+                    self.soundEffectPlayer?.stop()  // Stop the audio after 1 second
+                }
+            } else {
+                self.soundEffectPlayer?.stop()
+            }
         
         // Schedule the next one after a delay
         let difficultyTimer = selectedDifficulty == .easy ? 3.0 : 1.0
         timer = Timer.scheduledTimer(withTimeInterval: difficultyTimer, repeats: false) { _ in
+            print(self.obstacleIndex)
+            if !isSoundEffectMuted {
+                    self.soundEffectPlayer?.stop()
+                    self.soundEffectPlayer?.currentTime = 0
+                    self.soundEffectPlayer?.prepareToPlay()
+                    
+                    self.soundEffectPlayer?.play()
+
+                    Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+                        self.soundEffectPlayer?.stop()  // Stop the audio after 1 second
+                    }
+                } else {
+                    self.soundEffectPlayer?.stop()
+                }
+
+            print(isSoundEffectMuted)
             self.obstacleIndex += 1
             self.scheduleNextObstacle()
         }
@@ -432,6 +538,7 @@ struct HIWGameLobbyView: View {
         
         // Stop countdown if active
         countdownManager.stop()
+        print("timer stopped")
     }
 
     func fetchGameSettings(userId: Int, gameId: Int) {
@@ -562,11 +669,14 @@ struct SettingsView: View {
     //audio stuff
     @Binding var isMuted: Bool
     @Binding var audioPlayer: AVAudioPlayer?
+    @Binding var isSoundEffectsMuted: Bool
     
     //@State private var showThemeDialog = false
     //@State private var selectedTheme: String? = nil
     @State private var isMusicMuted: Bool = false
-//    @State private var isSoundEffectsMuted: Bool = false
+
+    
+    @EnvironmentObject var appState: AppState
 
     enum Difficulty: String, CaseIterable, Identifiable {
         case easy = "Easy"
@@ -586,12 +696,12 @@ struct SettingsView: View {
     
     var body: some View {
         VStack(spacing: 15) {
-            CustomHeader(config: .init(title: "Game Settings"))
+            CustomHeader(config: .init(title: appState.localized("Game Settings")))
                 .accessibilityLabel("modeSelectionTitle")
 
             VStack {
                 // Difficulty Picker
-                CustomText(config: .init(text: "Difficulty"))
+                CustomText(config: .init(text: appState.localized("Difficulty")))
 
                 Picker("Difficulty", selection: $selectedDifficulty) {
                     ForEach(Difficulty.allCases) { difficulty in
@@ -610,7 +720,7 @@ struct SettingsView: View {
                 }
                 
                 // Theme Picker
-                CustomText(config: .init(text: "Themes"))
+                CustomText(config: .init(text: appState.localized("Themes")))
 
                 Picker("Theme", selection: $selectedTheme) {
                     ForEach(Theme.allCases) { theme in
@@ -654,7 +764,7 @@ struct SettingsView: View {
                         .scaledToFit()
                         .frame(width: 25, height: 20)
                         .foregroundColor(.white)
-                        Text("Music")
+                        Text(appState.localized("Music"))
                             .foregroundColor(.white)
                             .font(.body)
                             .font(.system(size: 16))
@@ -663,7 +773,7 @@ struct SettingsView: View {
                 )
 
                 // TODO: (temporarily removed sound effect button bc we dont need it rn) but ADD SOUND EFFECTS BACK AT SOME POINT
-/*                CustomButton(
+               CustomButton(
                     config: CustomButtonConfig(
                         title: " ",
                         width: 150,
@@ -672,6 +782,7 @@ struct SettingsView: View {
                             isSoundEffectsMuted.toggle()
                             // actually will mute
                             toggleSoundEffectsMute(isMuted: isSoundEffectsMuted)
+
                         })
                 )
                 .accessibilityIdentifier("muteSoundEffectsButton")
@@ -685,19 +796,19 @@ struct SettingsView: View {
                         .scaledToFit()
                         .frame(width: 25, height: 22)
                         .foregroundColor(.white)
-                        Text("Sound Effects")
+                        Text(appState.localized("Sound Effects"))
                             .foregroundColor(.white)
                             .font(.body)
                             .font(.system(size: 16))
                     }
                     .padding(.horizontal)
-                ) */
+                )
             }
 
             // Close Button
             CustomButton(
                 config: CustomButtonConfig(
-                    title: "Close", width: 150, buttonColor: .darkBlue,
+                    title: appState.localized("Close"), width: 150, buttonColor: .darkBlue,
                     action: {
                         showSettings = false
                         if openedFromPauseMenu {
@@ -726,10 +837,10 @@ struct SettingsView: View {
         }
     }
 
-//    // TODO: add sound effects
-//    private func toggleSoundEffectsMute(isMuted: Bool) {
-//        print("sound effect \(isMuted ? "muted" : "unmuted")")
-//    }
+    // TODO: add sound effects
+    private func toggleSoundEffectsMute(isMuted: Bool) {
+        print("sound effect \(isMuted ? "muted" : "unmuted")")
+    }
 }
 
 // pause menu
@@ -744,52 +855,62 @@ struct PauseMenuView: View {
     //muting audio
     @Binding var isMuted: Bool
     @Binding var audioPlayer: AVAudioPlayer?
+    @Binding var soundEffectPlayer: AVAudioPlayer?
+    @Binding var isSoundEffectMuted: Bool
+    var startObstacleCycle: (Bool) -> Void
+    @EnvironmentObject var appState: AppState
 
     var body: some View {
         VStack(spacing: 15) {
 
-            CustomHeader(config: .init(title: "Game Paused"))
+            CustomHeader(config: .init(title: appState.localized("Game Paused")))
                 .accessibilityIdentifier("pauseMenuTitle")
 
             CustomButton(
                 config: CustomButtonConfig(
-                    title: "Resume", width: 175, buttonColor: .lightBlue,
+                    title: appState.localized("Resume"), width: 175, buttonColor: .lightBlue,
                     action: {
+                        showSettings = false
+                        openedFromPauseMenu = false
                         showPauseMenu = false
+                        startObstacleCycle(true) 
                     })
             )
             .accessibilityIdentifier("resumeButton")
 
             CustomButton(
                 config: CustomButtonConfig(
-                    title: "Game Settings", width: 175, buttonColor: .lightBlue,
+                    title: appState.localized("Game Settings"), width: 175, buttonColor: .lightBlue,
                     action: {
                         openedFromPauseMenu = true
                         showSettings = true
                         showPauseMenu = false
-                        
                     })
             )
             .accessibilityIdentifier("gameSettingsButton")
 
             CustomButton(
                 config: CustomButtonConfig(
-                    title: "Quit Game", width: 175, buttonColor: .darkBlue,
+                    title: appState.localized("Quit Game"), width: 175, buttonColor: .darkBlue,
                     action: {
                         showQuitConfirmation = true
                     })
             )
             .accessibilityIdentifier("quitGameButton")
             .alert(
-                "Are you sure you want to quit?",
+                appState.localized("Are you sure you want to quit?"),
                 isPresented: $showQuitConfirmation
             ) {
-                Button("No", role: .cancel) {}
-                Button("Yes", role: .destructive) {
+                Button(appState.localized("No"), role: .cancel) {}
+                Button(appState.localized("Yes"), role: .destructive) {
                     presentationMode.wrappedValue.dismiss()
                     isPlaying = false
                     showPauseMenu = false
+                    showSettings = false
+                    openedFromPauseMenu = false
                     isMuted = true
+                    isSoundEffectMuted = true
+                    soundEffectPlayer?.stop()
                     audioPlayer?.stop()
                 }
             }
@@ -821,7 +942,9 @@ struct GameSettings: Codable {
 struct HIWObstacleView: View {
     let imageName: String
 
+
     var body: some View {
+
         Image(imageName)
             .resizable()
             .aspectRatio(contentMode: .fit) // Maintain aspect ratio and fit within the screen

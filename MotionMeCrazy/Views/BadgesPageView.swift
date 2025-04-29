@@ -20,7 +20,7 @@ struct BadgesPageView: View {
                     .resizable()
                     .ignoresSafeArea()
                 VStack(alignment: .center, spacing: 10) {
-                    CustomHeader(config: CustomHeaderConfig(title: "Badges"))
+                    CustomHeader(config: CustomHeaderConfig(title: appState.localized("Badges")))
                         .frame(maxWidth: .infinity, alignment: .center)
                     if !appState.offlineMode {
                         LazyVStack(alignment: .center, spacing: 10) {
