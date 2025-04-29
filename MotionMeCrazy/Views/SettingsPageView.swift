@@ -24,7 +24,7 @@ enum Language: String, CaseIterable, Identifiable {
 enum GameMode: String, CaseIterable, Identifiable {
     case normal = "Normal"
     case accessibility = "Accessibility"
-    case timer = "Timer"
+    case random = "Random"
     
     var id: String {self.rawValue}
 }
@@ -335,8 +335,8 @@ struct GameModeSelectionPopup: View {
                 }
             })
             
-            CustomButton(config: .init(title: "Timer", width: 200, buttonColor: .darkBlue) {
-                mode = .timer
+            CustomButton(config: .init(title: "Random", width: 200, buttonColor: .darkBlue) {
+                mode = .random
                 
                 if !appState.offlineMode{
                     updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue, mode: mode.rawValue)
