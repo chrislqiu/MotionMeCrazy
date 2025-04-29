@@ -52,16 +52,16 @@ struct SettingsPageView: View {
             .padding()
             
             if showThemePopup {
-                ThemeSelectionPopup(showThemeOpt: $showThemePopup, userId: userViewModel.userid, audioLevel: selectedAudioLevel, theme: $selectedTheme, language: selectedLanguage)
+                ThemeSelectionPopup(showThemeOpt: $showThemePopup, userId: userViewModel.userid, audioLevel: selectedAudioLevel, theme: $selectedTheme, language: selectedLanguage, mode: selectedGameMode)
                     .transition(.scale)
             }
             if showLanguagePopup {
-                LanguageSelectionPopup(showLangOpt: $showLanguagePopup, userId: userViewModel.userid, audioLevel: selectedAudioLevel, theme: selectedTheme, language: $selectedLanguage)
+                LanguageSelectionPopup(showLangOpt: $showLanguagePopup, userId: userViewModel.userid, audioLevel: selectedAudioLevel, theme: selectedTheme, mode: selectedGameMode, language: $selectedLanguage)
                     .transition(.scale)
             }
             
             if showGameModePopup {
-                GameModeSelectionPopup(showGameModeOpts: $showGameModePopup, userId: userViewModel.userid, audioLevel: selectedAudioLevel, theme: selectedTheme, language: selectedLanguage, gameMode: $selectedGameMode)
+                GameModeSelectionPopup(showGameModeOpts: $showGameModePopup, userId: userViewModel.userid, audioLevel: selectedAudioLevel, theme: selectedTheme, language: selectedLanguage, mode: $selectedGameMode)
                     .transition(.scale)
             }
         }
@@ -87,7 +87,7 @@ struct SettingsPageView: View {
                     step: 1,
                     onEditingChanged: { editing in
                         if !editing  && !appState.offlineMode {
-                            updateAppSettings(userId: userViewModel.userid, audio: selectedAudioLevel, lan: selectedLanguage.rawValue, theme: selectedTheme.rawValue)
+                            updateAppSettings(userId: userViewModel.userid, audio: selectedAudioLevel, lan: selectedLanguage.rawValue, theme: selectedTheme.rawValue, mode: selectedGameMode.rawValue)
                         }
                     },
                     minimumValueLabel: Text("0"),
@@ -166,7 +166,7 @@ struct SettingsPageView: View {
     }
 }
 
-func updateAppSettings(userId: Int, audio: Double, lan: String, theme: String) {
+func updateAppSettings(userId: Int, audio: Double, lan: String, theme: String, mode: String) {
     guard let url = URL(string: APIHelper.getBaseURL() + "/appSettings") else {
         print("Invalid URL")
         return
@@ -177,6 +177,7 @@ func updateAppSettings(userId: Int, audio: Double, lan: String, theme: String) {
         "audioLevel": audio,
         "language": lan,
         "theme": theme,
+        "mode": mode,
     ]
 
     guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
@@ -218,6 +219,7 @@ struct ThemeSelectionPopup: View {
     var audioLevel: Double
     @Binding var theme: Theme
     var language: Language
+    var mode: GameMode
     @EnvironmentObject var appState: AppState
     
     var body: some View {
@@ -250,7 +252,7 @@ struct ThemeSelectionPopup: View {
                 CustomButton(config: .init(title: "Default", width:150, buttonColor: .darkBlue) {
                     theme = .light
                     if !appState.offlineMode {
-                        updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue)
+                        updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue, mode: mode.rawValue)
                     }
                 })
             }
@@ -273,6 +275,7 @@ struct LanguageSelectionPopup: View {
     var userId: Int
     var audioLevel: Double
     var theme: Theme
+    var mode: GameMode
     @Binding var language: Language
     @EnvironmentObject var appState: AppState
     
@@ -293,7 +296,7 @@ struct LanguageSelectionPopup: View {
             CustomButton(config: .init(title: "English", width: 100, buttonColor: .darkBlue) {
                 language = .en
                 if !appState.offlineMode{
-                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue)
+                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue, mode: mode.rawValue)
                 }
             })
         }
@@ -312,7 +315,7 @@ struct GameModeSelectionPopup: View {
     var audioLevel: Double
     var theme: Theme
     var language: Language
-    @Binding var gameMode: GameMode
+    @Binding var mode: GameMode
     @EnvironmentObject var appState: AppState
     
     var body: some View {
@@ -330,30 +333,27 @@ struct GameModeSelectionPopup: View {
             CustomText(config: .init(text: "Game Mode Options:"))
             
             CustomButton(config: .init(title: "Normal", width: 200, buttonColor: .darkBlue) {
-                gameMode = .normal
+                mode = .normal
                 
-                //TODO: update this to work with game mode
-                /*if !appState.offlineMode{
-                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue)
-                }*/
+                if !appState.offlineMode{
+                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue, mode: mode.rawValue)
+                }
             })
             
             CustomButton(config: .init(title: "Accessibility", width: 200, buttonColor: .darkBlue) {
-                gameMode = .accessibility
+                mode = .accessibility
                 
-                //TODO: update this to work with game mode
-                /*if !appState.offlineMode{
-                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue)
-                }*/
+                if !appState.offlineMode{
+                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue, mode: mode.rawValue)
+                }
             })
             
             CustomButton(config: .init(title: "Timer", width: 200, buttonColor: .darkBlue) {
-                gameMode = .timer
+                mode = .timer
                 
-                //TODO: update this to work with game mode
-                /*if !appState.offlineMode{
-                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue)
-                }*/
+                if !appState.offlineMode{
+                    updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue , theme: theme.rawValue, mode: mode.rawValue)
+                }
             })
         }
         .padding()
@@ -368,6 +368,7 @@ struct AppSettings: Codable {
     let audio_level: Double
     let theme: String
     let language: String
+    let mode: String
 }
 
 #Preview {
