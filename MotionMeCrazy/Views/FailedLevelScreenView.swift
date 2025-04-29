@@ -36,7 +36,7 @@ struct FailedLevelScreenView: View {
                     
                     VStack(spacing: 10) {
                         CustomText(config: CustomTextConfig(text: String(format: appState.localized("Score: %d"),score), fontSize:20))
-                        CustomText(config: CustomTextConfig(text: String(format: appState.localized("Remaining Health: %d"),health), fontSize:20))
+                        CustomText(config: CustomTextConfig(text: String(format: appState.localized("Remaining Health: %d"),Int(health)), fontSize:20))
                     }
 
                     HStack(spacing: 30) {

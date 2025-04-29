@@ -42,7 +42,7 @@ struct EndGameScreenView: View {
 
                     VStack(spacing: 10) {
                         CustomText(config: CustomTextConfig(text: String(format: appState.localized("Score: %d"),score), fontSize:20))
-                        CustomText(config:CustomTextConfig(text: String(format: appState.localized("Remaining Lives: %d"),health), fontSize:20))
+                        CustomText(config:CustomTextConfig(text: String(format: appState.localized("Remaining Lives: %d"),Int(health)), fontSize:20))
                     }
                    
 

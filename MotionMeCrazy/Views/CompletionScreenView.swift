@@ -39,7 +39,7 @@ struct CompletionScreenView: View {
                     CustomHeader(config: .init(title: String(format: appState.localized("Level %d/%d Completed!"), levelNumber, totalLevels), fontSize: 26))
                     VStack(spacing: 10) {
                         CustomText(config: CustomTextConfig(text: String(format: appState.localized("Score: %d"),score), fontSize:20))
-                        CustomText(config: CustomTextConfig(text: String(format: appState.localized("Remaining Lives: %d"),health), fontSize:20))
+                        CustomText(config: CustomTextConfig(text: String(format: appState.localized("Remaining Lives: %d"),Int(health)), fontSize:20))
                     }
                    
 
