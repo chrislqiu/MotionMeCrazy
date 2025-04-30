@@ -49,6 +49,7 @@ struct HIWGameLobbyView: View {
 
     @EnvironmentObject var appState: AppState
 
+
     //Loading audio
     func loadAudio() {
         //getting royalty free song lol
@@ -142,6 +143,8 @@ struct HIWGameLobbyView: View {
                             self.scoredImages.removeAll()
                         }
                         print("score after calc \(self.score)")
+                    updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
+                    getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
                    // }
                  
                 }
@@ -1215,4 +1218,77 @@ struct HIWObstacleView: View {
             .clipped() // Ensure the image doesn't overflow outside its bounds
             .opacity(0.75) // Lower opacity
     }
+}
+
+
+func updateScore(lobbyCode: String, userId: Int, score: Int, health: Int) {
+    guard let url = URL(string: APIHelper.getBaseURL() + "/update-score") else {
+        print("Invalid URL")
+        return
+    }
+
+    let body: [String: Any] = [
+        "code": lobbyCode,
+        "userId": userId,
+        "score": score,
+        "health": health
+    ]
+
+    guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
+        print("Failed to encode JSON")
+        return
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = jsonData
+
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        DispatchQueue.main.async {
+            if error != nil {
+                return
+            }
+
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    print("Score successfully updated!")
+                } else {
+                    print("Score failed")
+
+                }
+            }
+        }
+    }.resume()
+}
+
+
+func getAllScores(lobbyCode: String, webSocketManager: WebSocketManager) {
+
+    guard let url = URL(string: APIHelper.getBaseURL() + "/get-scores/\(lobbyCode)") else {
+        print("Invalid URL")
+        return
+    }
+
+    URLSession.shared.dataTask(with: url) { data, response, error in
+        DispatchQueue.main.async {
+            if error != nil {
+                return
+            }
+
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    if let data = data {
+                        do {
+                            let players = try JSONDecoder().decode([LobbyPlayer].self, from: data)
+                            webSocketManager.lobbyPlayers = players
+                        } catch {
+                            print(error)
+                        }
+                    }
+                } else {
+                }
+            }
+        }
+    }.resume()
 }

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-struct LobbyPlayer: Identifiable {
+struct LobbyPlayer: Identifiable, Decodable {
     let id = UUID()
     let userId: Int
     let username: String
