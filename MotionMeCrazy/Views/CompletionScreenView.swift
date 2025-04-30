@@ -23,10 +23,12 @@ struct CompletionScreenView: View {
     @Binding var audioPlayer: AVAudioPlayer?
     var onNextLevel: () -> Void
     var onQuitGame: () -> Void
+    
+    // social media stuff
+    @State private var showShareScoreSheet = false
+    @State private var screenshotScore: UIImage?
 
-    
     //audio stuff
-    
     
         var body: some View {
             ZStack {
@@ -38,53 +40,58 @@ struct CompletionScreenView: View {
                     }
 
                 VStack(spacing: 20) {
-                    CustomText(config: CustomTextConfig(text: "Level \(levelNumber)/\(totalLevels) Completed!", titleColor: .darkBlue, fontSize: 30))
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                    
+                    CustomHeader(config: .init(title: String(format: appState.localized("Level %d/%d Completed!"), levelNumber, totalLevels), fontSize: 26))
                     VStack(spacing: 10) {
-                        CustomText(config: CustomTextConfig(text: "Score: \(score)", titleColor: .white, fontSize:20))
-                            .font(.title2)
-                            .foregroundColor(.white)
-                        
-                        CustomText(config: CustomTextConfig(text: "Remaining Lives: \(Int(health))", titleColor: .white, fontSize:20))
-                            .font(.title2)
-                            .foregroundColor(.white)
+                        CustomText(config: CustomTextConfig(text: String(format: appState.localized("Score: %d"),score), fontSize:20))
+                        CustomText(config: CustomTextConfig(text: String(format: appState.localized("Remaining Lives: %d"),Int(health)), fontSize:20))
                     }
-                    .padding()
-                    .background(Color.darkBlue.opacity(0.8))
-                    .cornerRadius(15)
+                   
 
                     HStack(spacing: 30) {
                         // next level button
-                        CustomButton(config: CustomButtonConfig(title: "Next Level", width: 140, buttonColor: .darkBlue, action: {
+                        CustomButton(config: CustomButtonConfig(title: appState.localized("Next Level"), width: 140, buttonColor: .darkBlue, action: {
                                 onNextLevel() // TODO: add logic for moving onto next level
                             }
                        ))
                         
                         // quit game button
-                        CustomButton(config: CustomButtonConfig(title: "Quit Game", width: 140, buttonColor: .darkBlue, action: {
+                        CustomButton(config: CustomButtonConfig(title: appState.localized("Quit Game"), width: 140, buttonColor: .darkBlue, action: {
                                 //TODO: add logic for going back to home screen
                                 //onQuitGame()
                                 showQuitConfirmation = true
                             }
                        ))
                         .accessibilityIdentifier("quitGameButton")
-                        .alert("Are you sure you want to quit?", isPresented: $showQuitConfirmation) {
-                                    Button("No", role: .cancel) { }
-                                    Button("Yes", role: .destructive) {
-                                        //isMuted.toggle()
-                                        //audioPlayer?.stop()
+                        .alert(appState.localized("Are you sure you want to quit?"), isPresented: $showQuitConfirmation) {
+                            Button(appState.localized("No"), role: .cancel) { }
+                            Button(appState.localized("Yes"), role: .destructive) {
+                                        isMuted.toggle()
+                                        audioPlayer?.stop()
                                         presentationMode.wrappedValue.dismiss()
                                         
                                     }
                                 }
                     }
                     .padding(.top, 10)
+                    
+                    // social media
+                    CustomButton(config: CustomButtonConfig(title: appState.localized("Share Score"), width: 140, buttonColor: .darkBlue, action: {
+                        let image = ShareScoreContent(levelNumber: levelNumber, totalLevels: totalLevels, score: score, health: health).screenshot(size: CGSize(width: 250, height: 300))
+                       
+                        screenshotScore = image
+                       
+                        showShareScoreSheet = true
+                    }))
+                    .sheet(isPresented: $showShareScoreSheet) {
+                        if let image = screenshotScore {
+                            ShareScoreView(message: "I just scored \(score) points in Motion Me Crazy: Hole in the Wall! Do you think you can beat me?", image: image)
+                        } else {
+                            CustomText(config: CustomTextConfig(text: "We are still generating your shareable score..please try again later!", fontSize:20))
+                        }
+                    }
                 }
                 .padding()
-                .background(Color.white.opacity(0.9))
+                .background(appState.darkMode ? .darkBlue.opacity(0.9) : Color.white.opacity(0.9))
                 .cornerRadius(20)
                 .shadow(radius: 10)
             }.onAppear {
@@ -134,6 +141,47 @@ struct CompletionScreenView: View {
             }
         }.resume()
     }
+    
+    
+}
+
+// social media stuff
+struct ShareScoreContent: View {
+    var levelNumber: Int
+    var totalLevels: Int
+    var score: Int
+    var health: Double
+    
+    var body: some View {
+        
+        ZStack {
+            Image("background")
+                .resizable()
+                .ignoresSafeArea()
+            
+            VStack(alignment: .center, spacing: 10) {
+                Text("Motion Me Crazy")
+                    .font(.system(size: 30, weight: .bold))
+                    .foregroundStyle(.darkBlue)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                
+                Text(String(format: ("Level %d/%d Completed!"), levelNumber, totalLevels))
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(.darkBlue)
+                
+                Text(String(format: ("Score: %d"),score))
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.darkBlue)
+                
+                Text(String(format: ("Remaining Lives: %d"), health))
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.darkBlue)
+            }
+            
+        }
+        .frame(width: 250, height: 300, alignment: .center)
+    }
+    
 }
 //
 //#Preview {

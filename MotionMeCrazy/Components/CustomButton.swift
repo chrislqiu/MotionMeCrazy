@@ -19,7 +19,8 @@ struct CustomButtonConfig {
 
 struct CustomButton: View {
     let config: CustomButtonConfig
-    
+    @EnvironmentObject var appState: AppState
+
     var body: some View {
         if let destination = config.destination {
             NavigationLink(destination: destination) {
@@ -33,16 +34,22 @@ struct CustomButton: View {
     }
     
     private var buttonView: some View {
-        Text(config.title)
-            .foregroundColor(config.titleColor)
-            .font(.system(size: config.fontSize, weight: .bold))
-            .frame(width: config.width, height: 50)
-            .background(config.buttonColor)
-            .overlay(
-                RoundedRectangle(cornerRadius: 15)
-                    .stroke(config.titleColor, lineWidth: 5)
-            )
-            .cornerRadius(15)
+        ZStack {
+            RoundedRectangle(cornerRadius: 15)
+                .fill(config.buttonColor)
+                .frame(width: config.width, height: 50)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 15)
+                        .stroke(config.titleColor, lineWidth: 3)
+                )
+                .shadow(color: .black.opacity(0.5), radius: 1, x: 1, y: 1)
+
+
+            Text(config.title)
+                .foregroundColor(config.titleColor)
+                .font(.system(size: config.fontSize, weight: .bold))
+                .shadow(color: .black.opacity(0.5), radius: 1, x: 1, y: 1)
+        }
     }
 }
 

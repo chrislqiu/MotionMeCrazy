@@ -114,13 +114,13 @@ struct DailyMissionsView: View {
                 .ignoresSafeArea()
 
             VStack {
-                CustomHeader(config: CustomHeaderConfig(title: "Daily Missions"))
+                CustomHeader(config: CustomHeaderConfig(title: appState.localized("Daily Missions")))
 
                 if !appState.offlineMode {
                 List {
                     ForEach(viewModel.missions.indices, id: \.self) { index in
                         HStack {
-                            CustomText(config: CustomTextConfig(text: viewModel.missions[index].title, titleColor: .darkBlue, fontSize: 18))
+                            CustomText(config: CustomTextConfig(text: appState.localized(viewModel.missions[index].title), titleColor: .darkBlue, fontSize: 18))
                             Spacer()
                             if viewModel.missions[index].isCompleted {
                                 Image(systemName: "checkmark.circle.fill")
@@ -141,7 +141,7 @@ struct DailyMissionsView: View {
             } else {
                 Spacer()
                 
-                CustomText(config: .init(text: "This page is not available in offline mode", fontSize: 20))
+                CustomText(config: .init(text: appState.localized("This page is not available in offline mode"), fontSize: 20))
                     .accessibilityIdentifier("offlineMessage")
                 
                 /*Text("This page is not available in offline mode")

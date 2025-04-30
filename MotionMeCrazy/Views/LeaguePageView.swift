@@ -50,23 +50,23 @@ struct LeaguePageView: View {
                     .ignoresSafeArea()
                 
                 VStack(alignment: .center, spacing: 10) {
-                    CustomHeader(config: CustomHeaderConfig(title: "My Leagues"))
+                    CustomHeader(config: CustomHeaderConfig(title: appState.localized("My Leagues")))
                     
                     if !appState.offlineMode {
                         
                         if myLeagues.isEmpty {
-                            CustomText(config: .init(text: "You are not in any leagues", fontSize: 20))
+                            CustomText(config: .init(text: appState.localized("You are not in any leagues"), fontSize: 20))
                         } else {
                             ScrollView {
                                 VStack {
                                     ForEach(myLeagues, id: \.id) { league in
-                                        CustomText(config: .init(text: "\(league.name) (Code: \(league.code))"))
+                                        CustomText(config: .init(text: String(format: "%@ (Code: %@)", league.name, league.code)))
                                     }
                                 }
                             }
                         }
                         
-                        CustomHeader(config: CustomHeaderConfig(title: "Other Leagues"))
+                        CustomHeader(config: CustomHeaderConfig(title: appState.localized("Other Leagues")))
                         
                         
                         if otherLeagues.isEmpty {
@@ -75,7 +75,7 @@ struct LeaguePageView: View {
                             ScrollView {
                                 VStack {
                                     ForEach(otherLeagues, id: \.id) { league in
-                                        CustomText(config: .init(text: "\(league.name) (Code: \(league.code))"))
+                                        CustomText(config: .init(text: String(format: "%@ (Code: %@)", league.name, league.code)))
                                             .onTapGesture {
                                                 joinLeague(leagueCode: league.code) // Handle join league action
                                             }
@@ -84,7 +84,7 @@ struct LeaguePageView: View {
                             }
                         }
                         
-                        CustomButton(config: .init(title: "Create League", width: 250, buttonColor: .darkBlue) {
+                        CustomButton(config: .init(title: appState.localized("Create League"), width: 250, buttonColor: .darkBlue) {
                             // action for create league
                             isCreatingLeague.toggle()
                         })
@@ -93,7 +93,7 @@ struct LeaguePageView: View {
                             LeaguePopupView(isCreatingLeague: $isCreatingLeague, leagueName: $leagueName, userId: $userViewModel.userid, onCreateLeague: fetchLeagues)
                         }
                         
-                        CustomButton(config: .init(title: "Join League", width: 250, buttonColor: .darkBlue) {
+                        CustomButton(config: .init(title: appState.localized("Join League"), width: 250, buttonColor: .darkBlue) {
                             // action for join league
                             isJoiningLeague.toggle()
                         })
@@ -105,27 +105,27 @@ struct LeaguePageView: View {
                                         .ignoresSafeArea()
                                     
                                     VStack(spacing: 20) {
-                                        CustomHeader(config: .init(title: "Enter League Code"))
+                                        CustomHeader(config: .init(title: appState.localized("Enter League Code")))
 
-                                        CustomTextField(config: .init(text: $inputJoinLeagueCode, placeholder: "Type here..."))
+                                        CustomTextField(config: .init(text: $inputJoinLeagueCode, placeholder: appState.localized("Type here...")))
                                             .onChange(of: inputJoinLeagueCode) { newValue in
                                                 inputJoinLeagueCode = newValue.uppercased()
                                             }
 
                                         HStack {
-                                            CustomButton(config: .init(title: "Submit", width: 100, buttonColor: .darkBlue,
+                                            CustomButton(config: .init(title: appState.localized("Submit"), width: 100, buttonColor: .darkBlue,
                                                                        action: {
                                                 joinLeague(leagueCode: inputJoinLeagueCode)
                                                 isJoiningLeague = false
                                             }))
 
-                                            CustomButton(config: .init(title: "Cancel", width: 100, buttonColor: .lightBlue,
+                                            CustomButton(config: .init(title: appState.localized("Cancel"), width: 100, buttonColor: .lightBlue,
                                                                        action: { isJoiningLeague = false }))
                                         }
                                     }
                                     .padding()
                                 }
-                                .navigationBarItems(trailing: Button("Close") {
+                                .navigationBarItems(trailing: Button(appState.localized("Close")) {
                                     isJoiningLeague = false
                                 })
                             }
@@ -134,7 +134,7 @@ struct LeaguePageView: View {
                         Spacer()
                     } else {
                         Spacer()
-                        CustomText(config: .init(text: "This page is not available in offline mode", fontSize: 20))
+                        CustomText(config: .init(text: appState.localized("This page is not available in offline mode"), fontSize: 20))
                             .accessibilityIdentifier("offlineMessage")
                         
                         /*Text("This page is not available in offline mode")

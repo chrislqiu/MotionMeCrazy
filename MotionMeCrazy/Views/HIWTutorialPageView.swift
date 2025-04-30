@@ -14,7 +14,8 @@ struct HIWTutorialPageView: View {
     @State private var showTutorial = true  // toggle tutorial visibility
     @State private var sectionFrames: [Int: CGRect] = [:]
 
-    
+    @EnvironmentObject var appState: AppState
+
     
     var body: some View {
         ZStack{
@@ -23,7 +24,7 @@ struct HIWTutorialPageView: View {
             HIWGamePageView(sectionFrames: Binding($sectionFrames))
             
             if showTutorial {
-                Color.black.opacity(0.5)  // dim background
+                Color.black.opacity(0.25)  // dim background
                     .edgesIgnoringSafeArea(.all)
                 
                 
@@ -44,21 +45,21 @@ struct HIWTutorialPageView: View {
                     // tutorial textbox
                     CustomText(config: CustomTextConfig(text: tutorialText(for: tutorialStep), titleColor: .darkBlue, fontSize: 18))
                         .frame(width: 350, height: 60)
-                        .background(Color.white)
+                        .background(appState.darkMode ? .darkBlue : .white)
                         .cornerRadius(10)
                         .shadow(radius: 5)
                         .padding()
 
                     HStack {
                         // skip tutorial Button
-                        CustomButton(config: CustomButtonConfig(title: "Skip", width: 70, buttonColor: .darkBlue, action: {
+                        CustomButton(config: CustomButtonConfig(title: appState.localized("Skip"), width: 70, buttonColor: .darkBlue, action: {
                                 showTutorial = false
                         }))
 
                         Spacer()
                         
                         // back tutorial button
-                        CustomButton(config: CustomButtonConfig(title: "Back", width: 70, buttonColor: .darkBlue, action: {
+                        CustomButton(config: CustomButtonConfig(title: appState.localized("Back"), width: 70, buttonColor: .darkBlue, action: {
                                 if tutorialStep > 0 {
                                     tutorialStep -= 1
                                 }
@@ -67,7 +68,7 @@ struct HIWTutorialPageView: View {
                         Spacer()
                         
                         // next tutorial button
-                        CustomButton(config: CustomButtonConfig(title: "Next", width: 70, buttonColor: .darkBlue, action: {
+                        CustomButton(config: CustomButtonConfig(title: appState.localized("Next"), width: 70, buttonColor: .darkBlue, action: {
                                 if tutorialStep < 4 {
                                     tutorialStep += 1
                                 } else {
@@ -105,12 +106,12 @@ struct HIWTutorialPageView: View {
     
     func tutorialText(for step: Int) -> String {
             switch step {
-            case 0: return "This is your score. It increases as you progress in the game!"
-            case 1: return "This is your health. If it reaches zero, you lose!"
-            case 2: return "This is your progress. It shows what level you’re on."
-            case 3: return "Tap the pause button to pause the game."
-            case 4: return "That's the tutorial! Press play to start the game!"
-            default: return "Welcome to the game!"
+            case 0: return appState.localized("This is your score. It increases as you progress in the game!")
+            case 1: return appState.localized("This is your health. If it reaches zero, you lose!")
+            case 2: return appState.localized("This is your progress. It shows what level you’re on.")
+            case 3: return appState.localized("Tap the pause button to pause the game.")
+            case 4: return appState.localized("That's the tutorial! Press play to start the game!")
+            default: return appState.localized("Welcome to the game!")
             }
     }
     

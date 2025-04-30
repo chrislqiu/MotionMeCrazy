@@ -56,15 +56,15 @@ struct GameCenterPageView: View {
                             .padding(.trailing, 20)
                             
                             Menu {
-                                Button("Most Popular") {
+                                Button(appState.localized("Most Popular")) {
                                     sortOption = .mostPopular
                                     fetchGameData()
                                 }
-                                Button("Least Popular") {
+                                Button(appState.localized("Least Popular")) {
                                     sortOption = .leastPopular
                                     fetchGameData()
                                 }
-                                Button("Revert to Default") {
+                                Button(appState.localized("Revert to Default")) {
                                     sortOption = .default
                                     fetchGameData()
                                 }
@@ -78,11 +78,11 @@ struct GameCenterPageView: View {
                             .padding(.trailing, 20)
                             
                             Menu {
-                                Button("Personal") {
+                                Button(appState.localized("Personal")) {
                                     playCountType = .me
                                     fetchGameData()
                                 }
-                                Button("Everyone") {
+                                Button(appState.localized("Everyone")) {
                                     playCountType = .everyone
                                     fetchGameData()
                                 }
@@ -96,7 +96,7 @@ struct GameCenterPageView: View {
                             .padding(.trailing, 20)
                         }
                         
-                        CustomHeader(config: .init(title: "Game Center"))
+                        CustomHeader(config: .init(title: appState.localized("Game Center")))
                             .padding(.top, 10)
                     }
                     
@@ -121,7 +121,7 @@ struct GameCenterPageView: View {
                             HStack(spacing: 6) {
                                 Image(systemName: "list.number")
                                     .font(.title2)
-                                Text("Leaderboard")
+                                Text(appState.localized("Leaderboard"))
                                     .font(.headline)
                             }
                             .foregroundColor(.white)
@@ -242,9 +242,9 @@ struct SelectGame: View {
     private var playCountText: String {
         switch playCountType {
         case .everyone:
-            return "Played \(game.sessionCount) times"
+            return String(format: appState.localized("Played %d times"), game.sessionCount)
         case .me:
-            return "You played this \(game.sessionCount) times"
+            return String(format: appState.localized("You played this %d times"), game.sessionCount) 
         }
     }
 }

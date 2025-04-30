@@ -19,6 +19,8 @@ struct HIWGamePageView:View {
     @State private var openedFromPauseMenu = false // to show where the game settings was closed from (pause or lobby) - tea
     @State private var isMuted = false
     @State private var audioPlayer: AVAudioPlayer?
+    @State private var soundEffectPlayer: AVAudioPlayer?
+    @State private var isSoundEffectMuted = true
     
     // game stats
     @State private var score: Int = 1000
@@ -26,6 +28,10 @@ struct HIWGamePageView:View {
     @State private var maxHealth: Double = 100
     @State private var progress: String = "Level 1/10"
     
+    
+    private func startObstacleCycle(resumeFromPause: Bool = false) {
+        print("filler")
+    }
     // tutorial
     @Binding var sectionFrames: [Int: CGRect]?
     init(sectionFrames: Binding<[Int: CGRect]?> = .constant(nil)) {
@@ -63,7 +69,7 @@ struct HIWGamePageView:View {
                 VStack() {
                     // Score Section
                     HStack {
-                        CustomText(config: CustomTextConfig(text: "Score", titleColor: .darkBlue, fontSize: 20))
+                        CustomText(config: CustomTextConfig(text: appState.localized("Score"), titleColor: .darkBlue, fontSize: 20))
                             .font(.headline)
                             .bold()
                         Spacer()
@@ -76,7 +82,7 @@ struct HIWGamePageView:View {
                     
                     // Health Section
                     HStack {
-                        CustomText(config: CustomTextConfig(text: "Health", titleColor: .darkBlue, fontSize: 20))
+                        CustomText(config: CustomTextConfig(text: appState.localized("Health"), titleColor: .darkBlue, fontSize: 20))
                             .font(.headline)
                             .bold()
                         Spacer()
@@ -95,7 +101,7 @@ struct HIWGamePageView:View {
                     
                     // Progress Section
                     HStack {
-                        CustomText(config: CustomTextConfig(text: "Progress", titleColor: .darkBlue, fontSize: 20))
+                        CustomText(config: CustomTextConfig(text: appState.localized("Progress"), titleColor: .darkBlue, fontSize: 20))
                             .font(.headline)
                             .bold()
                         Spacer()
@@ -107,7 +113,7 @@ struct HIWGamePageView:View {
                     })
                 }
                 .padding()
-                .background(Color(UIColor.systemGray6))
+                .background(appState.darkMode ? .darkBlue : Color(UIColor.systemGray6))
                 .cornerRadius(10)
                 .padding(.horizontal)
                 .onPreferenceChange(SectionFrameKey.self) { newValues in
@@ -134,7 +140,10 @@ struct HIWGamePageView:View {
                     showQuitConfirmation: $showQuitConfirmation,
                     openedFromPauseMenu: $openedFromPauseMenu, // tea change
                     isMuted: $isMuted,
-                    audioPlayer: $audioPlayer
+                    audioPlayer: $audioPlayer,
+                    soundEffectPlayer: $soundEffectPlayer,
+                    isSoundEffectMuted: $isSoundEffectMuted,
+                    startObstacleCycle: startObstacleCycle
                 )
                 .frame(width: 300, height: 300)
                 .background(Color.white)
