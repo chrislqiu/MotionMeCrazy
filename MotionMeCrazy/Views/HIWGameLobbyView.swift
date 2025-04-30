@@ -1008,7 +1008,7 @@ struct PauseMenuView: View {
 
             CustomButton(
                 config: CustomButtonConfig(
-                    title: appState.localized("Game Settings"), width: 175, buttonColor: .lightBlue,
+                    title: appState.localized("Game Settings"), width: appState.currentLanguage == "ES" ? 250 : 175, buttonColor: .lightBlue,
                     action: {
                         openedFromPauseMenu = true
                         showSettings = true
@@ -1067,9 +1067,9 @@ struct ScoringInfoPopupView: View {
     @State private var selectedInfoIndex: Int = 0
 
     private let scoringMessages = [
-        "Each ❌ shows where you 'hit' the wall. Each hit is -50 points.",
-        "Every time you clear a wall with less than 20 hits, +1000 points",
-        "For every level where you hit all walls less than 20 times total, you get a bonus of 1000 × the level number"
+        "Each ❌ shows where you 'hit' the wall. The total number of hits you have per wall will determine if you get 50, 75, or 100 points for that wall.",
+        "Every time you clear a wall (having 0 hits or ❌), you get +100 points",
+        "For every level where you go through each wall with 0 hits in total, you get a level bonus of 100 points!"
     ]
 
     var body: some View {
