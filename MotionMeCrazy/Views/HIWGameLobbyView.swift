@@ -142,6 +142,9 @@ struct HIWGameLobbyView: View {
                             totalLevelCollisions = 0
                             self.scoredImages.removeAll()
                         }
+                    updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
+                    getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
+
                         print("score after calc \(self.score)")
                     
                    // }
@@ -699,6 +702,7 @@ struct HIWGameLobbyView: View {
                 } else {
                     self.soundEffectPlayer?.stop()
                 }
+            getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
 
             //print(isSoundEffectMuted)
             self.obstacleIndex += 1
@@ -714,7 +718,6 @@ struct HIWGameLobbyView: View {
         // Stop countdown if active
         countdownManager.stop()
         print("timer stopped")
-        getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
     }
 
     func fetchGameSettings(userId: Int, gameId: Int) {

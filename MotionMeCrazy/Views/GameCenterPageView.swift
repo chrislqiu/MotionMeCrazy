@@ -366,25 +366,35 @@ struct JoinGamePopup: View {
     @Binding var showPopup: Bool
 
     var body: some View {
-        VStack {
+        VStack(spacing: 16) {
             Text("Enter join code")
                 .font(.headline)
+            
             TextField("Code", text: $codeInput)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+                .padding(.horizontal)
+            
             Button("Join") {
+                webSocketManager.connect()
                 let message: [String: Any] = [
                     "type": "JOIN_LOBBY",
                     "payload": [
                         "userId": userViewModel.userid,
                         "username": userViewModel.username,
-                        "lobbyCode": codeInput
+                        "code": codeInput
                     ]
                 ]
+                print("trying to join")
+                webSocketManager.lobbyCode = codeInput
                 webSocketManager.send(message: message)
                 showPopup = false
             }
             .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+            .padding(.horizontal)
         }
         .padding()
     }
