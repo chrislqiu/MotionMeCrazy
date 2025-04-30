@@ -15,11 +15,10 @@ struct HIWTutorialPageView: View {
     @State private var sectionFrames: [Int: CGRect] = [:]
     @ObservedObject var userViewModel: UserViewModel
 
-    @StateObject private var webSocketManager: WebSocketManager
+    @EnvironmentObject private var webSocketManager: WebSocketManager
 
     init(userViewModel: UserViewModel) {
         self.userViewModel = userViewModel
-        _webSocketManager = StateObject(wrappedValue: WebSocketManager(userViewModel: userViewModel))
     }
     @EnvironmentObject var appState: AppState
 
@@ -28,7 +27,7 @@ struct HIWTutorialPageView: View {
         ZStack {
             
             // main HIW game play
-            HIWGamePageView(webSocketManager: webSocketManager, sectionFrames: Binding($sectionFrames))
+            HIWGamePageView(sectionFrames: Binding($sectionFrames))
             
             if showTutorial {
                 Color.black.opacity(0.25)  // dim background

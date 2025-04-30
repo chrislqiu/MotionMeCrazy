@@ -11,7 +11,7 @@ struct LandingPageView: View {
     @EnvironmentObject var appState: AppState
     
     @StateObject private var userViewModel = UserViewModel(userid: 0, username: "", profilePicId: "")
-    
+
     @State private var selectedImage: String = "pfp1"  // Initial profile image
     @State private var showSelector = false  // Controls modal visibility
     @State private var showCopiedMessage = false

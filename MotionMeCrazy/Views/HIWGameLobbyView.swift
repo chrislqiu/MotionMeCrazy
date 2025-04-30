@@ -44,7 +44,7 @@ struct HIWGameLobbyView: View {
     @State private var isSoundEffectMuted = false
 
     @ObservedObject var userViewModel: UserViewModel
-    @ObservedObject var webSocketManager: WebSocketManager
+    @EnvironmentObject var webSocketManager: WebSocketManager
     
 
     @EnvironmentObject var appState: AppState
@@ -332,26 +332,37 @@ struct HIWGameLobbyView: View {
                             .cornerRadius(10)
                             .padding(.horizontal)
                             VStack(alignment: .leading, spacing: 4) {  // Reduced spacing between player scores
-                                            ForEach(webSocketManager.lobbyPlayers) { player in
-                                                HStack {
-                                                    Text(player.username)
-                                                        .font(.caption)
-                                                        .bold()
-                                                        .foregroundColor(.white)
-                                                    Spacer()
-                                                    Text("\(player.score)")
-                                                        .font(.caption2)
-                                                        .foregroundColor(.white)
-                                                }
-                                                .padding(.horizontal, 8)
-                                                .frame(maxHeight: 20)  // Limit the height of each player's row
-                                            }
+                                ForEach(webSocketManager.lobbyPlayers) { player in
+                                    HStack {
+                                        Text(player.username)
+                                            .font(.caption)
+                                            .bold()
+                                            .foregroundColor(.white)
+
+                                        Spacer()
+
+                                        HStack(spacing: 4) {
+                                            Text("⭐️ \(player.score)")
+                                                .font(.caption2)
+                                                .foregroundColor(.white)
+                                            Text("❤️ \(player.health)")
+                                                .font(.caption2)
+                                                .foregroundColor(.white)
+
+                                           
+                                        }
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .frame(maxHeight: 20)
+                                }
+
+                                            
                                         }
                                         .padding(8)
                                         .background(Color.black.opacity(0.5))
                                         .cornerRadius(10)
                                         .padding()
-                                        .frame(maxWidth: 200, alignment: .topLeading)
+                                        .frame(maxWidth: 400, alignment: .topLeading)
                                         .fixedSize(horizontal: false, vertical: true)
                         }
                     } else {

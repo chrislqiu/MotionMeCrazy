@@ -6,7 +6,7 @@ struct LobbyPlayer: Identifiable, Decodable {
     let userId: Int
     let username: String
     let score: Int
-    let eliminated: Bool
+    let health: Int
 }
 
 class WebSocketManager: ObservableObject {
@@ -18,11 +18,6 @@ class WebSocketManager: ObservableObject {
     @Published var lobbyCode: String = ""
     @Published var onJoinLobby: Bool = false
     @Published var gameStarted: Bool = false
-    @ObservedObject var userViewModel: UserViewModel
-     
-     init(userViewModel: UserViewModel) {
-         self.userViewModel = userViewModel
-     }
 
     func connect() {
         guard let url = URL(string: "ws://localhost:3000") else {
@@ -52,20 +47,22 @@ class WebSocketManager: ObservableObject {
 
     private func listenForMessages() {
         webSocketTask?.receive { [weak self] result in
+            // Always listen again immediately
+            self?.listenForMessages()
+
             switch result {
             case .failure(let error):
                 print("Error receiving WebSocket message: \(error.localizedDescription)")
             case .success(.string(let message)):
                 self?.handleMessage(message)
-                self?.listenForMessages() // continue listening
             case .success(.data(let data)):
                 print("Received data: \(data)")
-                self?.listenForMessages()
             @unknown default:
                 break
             }
         }
     }
+
 
     private func handleMessage(_ message: String) {
         if let data = message.data(using: .utf8) {
@@ -76,10 +73,13 @@ class WebSocketManager: ObservableObject {
                     switch type {
                     case "LOBBY_CREATED":
                         if let payload = jsonResponse["payload"] as? [String: Any],
-                           let code = payload["code"] as? String {
+                           let code = payload["code"] as? String,
+                            let userId = payload["userId"] as? Int,
+                            let username = payload["username"] as? String {
+
                             
                             let players: [LobbyPlayer] = [
-                                LobbyPlayer(userId: userViewModel.userid, username: userViewModel.username, score: 0, eliminated: false)
+                                LobbyPlayer(userId: userId, username: username, score: 0, health: 5)
                             ]
 
                             
@@ -94,14 +94,15 @@ class WebSocketManager: ObservableObject {
 
                     case "PLAYER_JOINED":
                         if let playersArray = jsonResponse["payload"] as? [[String: Any]] {
+                            print("Received players array:", playersArray)
                             let players: [LobbyPlayer] = playersArray.compactMap { playerDict in
                                 guard let userId = playerDict["userId"] as? Int,
                                       let username = playerDict["username"] as? String,
                                       let score = playerDict["score"] as? Int,
-                                      let eliminated = playerDict["eliminated"] as? Bool else {
+                                      let health = playerDict["health"] as? Int else {
                                     return nil
                                 }
-                                return LobbyPlayer(userId: userId, username: username, score: score, eliminated: eliminated)
+                                return LobbyPlayer(userId: userId, username: username, score: score, health: health)
                             }
 
                             DispatchQueue.main.async {
@@ -114,21 +115,22 @@ class WebSocketManager: ObservableObject {
                                                    self.gameStarted = true
                                                }
                         
-                    case "SCORE_UPDATED":
-                        if let payload = jsonResponse["payload"] as? [String: Any],
-                           let userId = payload["userId"] as? Int,
-                           let newScore = payload["score"] as? Int {
+                    case "USER_UPDATED":
+                        if let playersArray = jsonResponse["payload"] as? [[String: Any]] {
+                            print("Received players array:", playersArray)
+                            let players: [LobbyPlayer] = playersArray.compactMap { playerDict in
+                                guard let userId = playerDict["userId"] as? Int,
+                                      let username = playerDict["username"] as? String,
+                                      let score = playerDict["score"] as? Int,
+                                      let health = playerDict["health"] as? Int else {
+                                    return nil
+                                }
+                                return LobbyPlayer(userId: userId, username: username, score: score, health: health)
+                            }
 
                             DispatchQueue.main.async {
-                                if let index = self.lobbyPlayers.firstIndex(where: { $0.userId == userId }) {
-                                    let player = self.lobbyPlayers[index]
-                                    self.lobbyPlayers[index] = LobbyPlayer(
-                                        userId: player.userId,
-                                        username: player.username,
-                                        score: newScore,
-                                        eliminated: player.eliminated
-                                    )
-                                }
+                                self.lobbyPlayers = players
+                                self.onJoinLobby = true
                             }
                         }
 

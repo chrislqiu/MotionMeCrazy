@@ -1,5 +1,7 @@
 import SwiftUI
 
+// MARK: - Models and Enums
+
 struct GameData: Decodable {
     let game_id: Int
     let session_count: Int
@@ -8,6 +10,8 @@ struct GameData: Decodable {
 enum PlayCountType {
     case everyone, me
 }
+
+// MARK: - Main View
 
 struct GameCenterPageView: View {
     @State private var selectedGame: Int = 0
@@ -23,11 +27,10 @@ struct GameCenterPageView: View {
     @State private var nameInput = ""
     @State private var codeInput = ""
     
-    @StateObject private var webSocketManager: WebSocketManager
+    @EnvironmentObject var webSocketManager: WebSocketManager
 
       init(userViewModel: UserViewModel) {
           self.userViewModel = userViewModel
-          _webSocketManager = StateObject(wrappedValue: WebSocketManager(userViewModel: userViewModel))
       }
     enum SortOption {
         case `default`, leastPopular, mostPopular
@@ -41,139 +44,35 @@ struct GameCenterPageView: View {
                     .ignoresSafeArea()
 
                 VStack {
-                    VStack {
-                        HStack {
-                            Spacer()
-                            NavigationLink(destination: DailyMissionsView(userId: userViewModel.userid)) {
-                                Image(systemName: "checkmark.seal.text.page.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 30, height: 30)
-                                    .foregroundColor(.white)
-                            }
-                            .padding(.trailing, 20)
-
-                            Menu {
-                                Button(appState.localized("Most Popular")) {
-                                    sortOption = .mostPopular
-                                    fetchGameData()
-                                }
-                                Button(appState.localized("Least Popular")) {
-                                    sortOption = .leastPopular
-                                    fetchGameData()
-                                }
-                                Button(appState.localized("Revert to Default")) {
-                                    sortOption = .default
-                                    fetchGameData()
-                                }
-                            } label: {
-                                Image(systemName: "arrow.up.arrow.down.circle.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 30, height: 30)
-                                    .foregroundColor(.white)
-                            }
-                            .padding(.trailing, 20)
-
-                            Menu {
-                                Button(appState.localized("Personal")) {
-                                    playCountType = .me
-                                    fetchGameData()
-                                }
-                                Button(appState.localized("Everyone")) {
-                                    playCountType = .everyone
-                                    fetchGameData()
-                                }
-                            } label: {
-                                Image(systemName: "number.circle.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 30, height: 30)
-                                    .foregroundColor(.white)
-                            }
-                            .padding(.trailing, 20)
-                        }
-                        
-                        CustomHeader(config: .init(title: appState.localized("Game Center")))
-                            .padding(.top, 10)
-                    }
+                    GameCenterHeader(
+                        sortOption: $sortOption,
+                        playCountType: $playCountType,
+                        fetchGameData: fetchGameData,
+                        userViewModel: userViewModel
+                    )
 
                     Spacer()
 
-                    TabView(selection: $selectedGame) {
-                        ForEach(Array(games.indices), id: \.self) { index in
-                            VStack {
-                                SelectGame(game: games[index], playCountType: playCountType)
-
-                                if games[index].gameId == 1 { // Hole In Wall
-                                    HStack(spacing: 5) {
-                                        Spacer()
-                                        
-                                        Button("Create Game") {
-                                            webSocketManager.connect()
-                                            let message: [String: Any] = [
-                                                "type": "CREATE_LOBBY",
-                                                "payload": [
-                                                    "userId": userViewModel.userid,
-                                                    "username": userViewModel.username
-                                                ]
-                                            ]
-                                            webSocketManager.send(message: message)
-                                        }
-                                        .buttonStyle(DefaultButtonStyle())
-                                        .padding()
-                                        .frame(width: 150, height: 50, alignment: .center)
-                                        .background(Color.darkBlue)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(10)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.white, lineWidth: 2)
-                                        )
-
-                                        Spacer()
-                                        
-                                        Button("Join Game") {
-                                            showJoinGamePopup = true
-                                        }
-                                        .buttonStyle(DefaultButtonStyle())
-                                        .padding()
-                                        .frame(width: 150, height: 50, alignment: .center)
-                                        .background(Color.darkBlue)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(10)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.white, lineWidth: 2)
-                                        )
-                                        
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal, 40)
-                                    .padding(.top, 20)
-                                    .padding(.bottom, 20)
-                                }
-                            }
-                            .scaleEffect(selectedGame == index ? 1.2 : 1.0)
-                            .tag(index)
-                        }
-                    }
-                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
-                    .frame(height: 375)
+                    GameTabView(
+                        selectedGame: $selectedGame,
+                        games: games,
+                        playCountType: playCountType,
+                        userViewModel: userViewModel,
+                        webSocketManager: webSocketManager,
+                        showJoinGamePopup: $showJoinGamePopup
+                    )
 
                     Spacer()
 
-                    // Show WebSocket response message
                     if let responseMessage = webSocketManager.receivedMessage {
                         Text(responseMessage)
                             .font(.headline)
                             .foregroundColor(responseMessage.contains("success") ? .green : .red)
                             .padding()
                     }
-                    .frame(height: 325)
-            
+
                     Spacer()
-                    //leaderboard button
+
                     HStack {
                         Spacer()
                         NavigationLink(destination: LeaderboardView(userViewModel: userViewModel)) {
@@ -195,107 +94,38 @@ struct GameCenterPageView: View {
                     .padding(.bottom, 20)
                 }
 
-                // Create Lobby Popup
                 .sheet(isPresented: $showCreateLobbyPopup) {
-                    VStack {
-                        Text("Enter Your Name")
-                            .font(.title)
-                            .padding()
-
-                        TextField("Nickname", text: $nameInput)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding()
-
-                        Button("Create") {
-                            webSocketManager.connect()
-                            let message: [String: Any] = [
-                                "type": "CREATE_LOBBY",
-                                "payload": [
-                                    "userId": userViewModel.userid,
-                                    "username": userViewModel.username
-                                ]
-                            ]
-                            webSocketManager.send(message: message)
-                            showCreateLobbyPopup = false
-                        }
-                        .padding()
-                        .background(Color.darkBlue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .padding()
-
-                        Button("Cancel") {
-                            showCreateLobbyPopup = false
-                        }
-                        .padding()
-                        .background(Color.red)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    }
-                    .padding()
+                    CreateLobbyPopup(
+                        nameInput: $nameInput,
+                        webSocketManager: webSocketManager,
+                        userViewModel: userViewModel,
+                        showPopup: $showCreateLobbyPopup
+                    )
                 }
 
-                // Join Game Popup
                 .sheet(isPresented: $showJoinGamePopup) {
-                    VStack {
-                        Text("Enter Lobby Code and Your Name")
-                            .font(.title)
-                            .padding()
-
-                        TextField("Lobby Code", text: $codeInput)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding()
-
-                   
-
-                        Button("Join") {
-                            // Handle join game logic
-                            webSocketManager.connect()
-                            let message: [String: Any] = [
-                                "type": "JOIN_LOBBY",
-                                "payload": [
-                                    "code": codeInput,
-                                    "userId": userViewModel.userid,
-                                    "username": userViewModel.userid
-                                ]
-                            ]
-                            webSocketManager.send(message: message)
-                            webSocketManager.lobbyCode = codeInput
-                            showJoinGamePopup = false
-                        }
-                        .padding()
-                        .background(Color.darkBlue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .padding()
-
-                        Button("Cancel") {
-                            showJoinGamePopup = false
-                        }
-                        .padding()
-                        .background(Color.red)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    }
-                    .padding()
+                    JoinGamePopup(
+                        codeInput: $codeInput,
+                        webSocketManager: webSocketManager,
+                        userViewModel: userViewModel,
+                        showPopup: $showJoinGamePopup
+                    )
                 }
-                
-                NavigationLink(destination: LobbyView(userViewModel: userViewModel, webSocketManager: webSocketManager), isActive: $webSocketManager.onJoinLobby) {
-                                    EmptyView()
-                                }
 
+                NavigationLink(destination: LobbyView(userViewModel: userViewModel), isActive: $webSocketManager.onJoinLobby) {
+                    EmptyView()
+                }
             }
         }
         .onAppear {
             games = [
-                (gameId: 1, name: "Hole In Wall", icon: "figure.run", buttonColor: .darkBlue, sessionCount: 0, destination: AnyView(HIWGameLobbyView(userViewModel: userViewModel, webSocketManager: webSocketManager, userId: userViewModel.userid, gameId: 1))),
+                (gameId: 1, name: "Hole In Wall", icon: "figure.run", buttonColor: .darkBlue, sessionCount: 0, destination: AnyView(HIWGameLobbyView(userViewModel: userViewModel, userId: userViewModel.userid, gameId: 1))),
                 (gameId: 2, name: "Game 2", icon: "gamecontroller.fill", buttonColor: .darkBlue, sessionCount: 0, destination: AnyView(Text("Game 2 Coming Soon!")))
             ]
             fetchGameData()
         }
     }
-    
-    // Fetch Game Data (for game sessions and play counts)
+
     private func fetchGameData() {
         let playCountQuery: String
         switch playCountType {
@@ -340,51 +170,222 @@ struct GameCenterPageView: View {
     }
 }
 
-struct SelectGame: View {
-    @EnvironmentObject var appState: AppState
-    let game: (gameId: Int, name: String, icon: String, buttonColor: Color, sessionCount: Int, destination: AnyView)
+// MARK: - Game Tab View
+
+struct GameTabView: View {
+    @Binding var selectedGame: Int
+    let games: [(gameId: Int, name: String, icon: String, buttonColor: Color, sessionCount: Int, destination: AnyView)]
     let playCountType: PlayCountType
+    @ObservedObject var userViewModel: UserViewModel
+    @ObservedObject var webSocketManager: WebSocketManager
+    @Binding var showJoinGamePopup: Bool
+
+    var body: some View {
+        TabView(selection: $selectedGame) {
+            ForEach(Array(games.indices), id: \.self) { index in
+                VStack {
+                    SelectGame(game: games[index], playCountType: playCountType)
+
+                    if games[index].gameId == 1 {
+                        HStack(spacing: 5) {
+                            Spacer()
+                            Button("Create Game") {
+                                webSocketManager.connect()
+                                let message: [String: Any] = [
+                                    "type": "CREATE_LOBBY",
+                                    "payload": [
+                                        "userId": userViewModel.userid,
+                                        "username": userViewModel.username
+                                    ]
+                                ]
+                                webSocketManager.send(message: message)
+                            }
+                            .frame(width: 150, height: 50)
+                            .background(Color.darkBlue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+
+                            Spacer()
+
+                            Button("Join Game") {
+                                showJoinGamePopup = true
+                            }
+                            .frame(width: 150, height: 50)
+                            .background(Color.darkBlue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+
+                            Spacer()
+                        }
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 20)
+                    }
+                }
+                .scaleEffect(selectedGame == index ? 1.2 : 1.0)
+                .tag(index)
+            }
+        }
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+        .frame(height: 375)
+    }
+}
+
+// MARK: - Game Center Header
+
+struct GameCenterHeader: View {
+    @Binding var sortOption: GameCenterPageView.SortOption
+    @Binding var playCountType: PlayCountType
+    let fetchGameData: () -> Void
+    let userViewModel: UserViewModel
+    @EnvironmentObject var appState: AppState
 
     var body: some View {
         VStack {
-            Image(systemName: game.icon)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 100, height: 100)
-                .foregroundColor(game.buttonColor)
-                .padding(.bottom, 10)
+            HStack {
+                Spacer()
+                NavigationLink(destination: DailyMissionsView(userId: userViewModel.userid)) {
+                    Image(systemName: "checkmark.seal.text.page.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.white)
+                }
+                .padding(.trailing, 20)
 
-            if !appState.offlineMode {
-                        HStack {
-                            if playCountType == .everyone {
-                                Image(systemName: "person.3.fill") // Icon for everyone
-                                    .foregroundColor(appState.darkMode ? .white  : .darkBlue)
-                            }
-                            else {
-                                Image(systemName: "person.fill") // Icon for everyone
-                                    .foregroundColor(appState.darkMode ? .white : .darkBlue)
-                            }
-                            Text(playCountText)
-                                .font(.headline)
-                                .foregroundColor(appState.darkMode ? Color.white : .darkBlue)
-                        }
+                Menu {
+                    Button(appState.localized("Most Popular")) {
+                        sortOption = .mostPopular
+                        fetchGameData()
                     }
-            
-            CustomButton(config: .init(title: game.name, width: 250, buttonColor: game.buttonColor, destination: game.destination))
-        }
-        .frame(width: 250, height: 150)
-    }
+                    Button(appState.localized("Least Popular")) {
+                        sortOption = .leastPopular
+                        fetchGameData()
+                    }
+                    Button(appState.localized("Revert to Default")) {
+                        sortOption = .default
+                        fetchGameData()
+                    }
+                } label: {
+                    Image(systemName: "arrow.up.arrow.down.circle.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.white)
+                }
+                .padding(.trailing, 20)
 
-    private var playCountText: String {
-        switch playCountType {
-        case .everyone:
-            return String(format: appState.localized("Played %d times"), game.sessionCount)
-        case .me:
-            return String(format: appState.localized("You played this %d times"), game.sessionCount) 
+                Menu {
+                    Button(appState.localized("Personal")) {
+                        playCountType = .me
+                        fetchGameData()
+                    }
+                    Button(appState.localized("Everyone")) {
+                        playCountType = .everyone
+                        fetchGameData()
+                    }
+                } label: {
+                    Image(systemName: "number.circle.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.white)
+                }
+                .padding(.trailing, 20)
+            }
+
+            CustomHeader(config: .init(title: appState.localized("Game Center")))
+                .padding(.top, 10)
         }
     }
 }
 
-#Preview {
-    GameCenterPageView(userViewModel: UserViewModel(userid: 421, username: "JazzyLegend633", profilePicId: "pfp2"))
+// MARK: - SelectGame View
+
+struct SelectGame: View {
+    let game: (gameId: Int, name: String, icon: String, buttonColor: Color, sessionCount: Int, destination: AnyView)
+    let playCountType: PlayCountType
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: game.icon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 60, height: 60)
+                .padding()
+                .foregroundColor(.white)
+
+            Text(game.name)
+                .font(.title)
+                .foregroundColor(.white)
+
+            Text(playCountType == .me ? "Your Plays: \(game.sessionCount)" : "Plays: \(game.sessionCount)")
+                .font(.subheadline)
+                .foregroundColor(.white)
+        }
+        .padding()
+        .background(game.buttonColor)
+        .cornerRadius(20)
+    }
+}
+
+// MARK: - CreateLobbyPopup
+
+struct CreateLobbyPopup: View {
+    @Binding var nameInput: String
+    @ObservedObject var webSocketManager: WebSocketManager
+    @ObservedObject var userViewModel: UserViewModel
+    @Binding var showPopup: Bool
+
+    var body: some View {
+        VStack {
+            Text("Enter your name")
+                .font(.headline)
+            TextField("Name", text: $nameInput)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+            Button("Create") {
+                let message: [String: Any] = [
+                    "type": "CREATE_LOBBY",
+                    "payload": [
+                        "userId": userViewModel.userid,
+                        "username": nameInput
+                    ]
+                ]
+                webSocketManager.send(message: message)
+                showPopup = false
+            }
+            .padding()
+        }
+        .padding()
+    }
+}
+
+// MARK: - JoinGamePopup
+
+struct JoinGamePopup: View {
+    @Binding var codeInput: String
+    @ObservedObject var webSocketManager: WebSocketManager
+    @ObservedObject var userViewModel: UserViewModel
+    @Binding var showPopup: Bool
+
+    var body: some View {
+        VStack {
+            Text("Enter join code")
+                .font(.headline)
+            TextField("Code", text: $codeInput)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+            Button("Join") {
+                let message: [String: Any] = [
+                    "type": "JOIN_LOBBY",
+                    "payload": [
+                        "userId": userViewModel.userid,
+                        "username": userViewModel.username,
+                        "lobbyCode": codeInput
+                    ]
+                ]
+                webSocketManager.send(message: message)
+                showPopup = false
+            }
+            .padding()
+        }
+        .padding()
+    }
 }

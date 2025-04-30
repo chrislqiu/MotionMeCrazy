@@ -34,10 +34,9 @@ struct HIWGamePageView:View {
     }
     // tutorial
     @Binding var sectionFrames: [Int: CGRect]?
-    @ObservedObject var webSocketManager: WebSocketManager
+    @EnvironmentObject var webSocketManager: WebSocketManager
      
-     init(webSocketManager: WebSocketManager, sectionFrames: Binding<[Int: CGRect]?> = .constant(nil)) {
-         self.webSocketManager = webSocketManager
+     init(sectionFrames: Binding<[Int: CGRect]?> = .constant(nil)) {
          _sectionFrames = sectionFrames
      }
      

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct LobbyView: View {
     @ObservedObject var userViewModel: UserViewModel
-    @ObservedObject var webSocketManager: WebSocketManager
+    @EnvironmentObject var webSocketManager: WebSocketManager
 
     @State private var errorMessage: String?
 
@@ -92,7 +92,7 @@ struct LobbyView: View {
                     }
                     .padding()
                     
-                    NavigationLink(destination: AnyView(HIWGameLobbyView(userViewModel: userViewModel, webSocketManager: webSocketManager, userId: userViewModel.userid, gameId: 1)), isActive: $webSocketManager.gameStarted) {
+                    NavigationLink(destination: AnyView(HIWGameLobbyView(userViewModel: userViewModel, userId: userViewModel.userid, gameId: 1)), isActive: $webSocketManager.gameStarted) {
                         EmptyView()
                     }
                 }
