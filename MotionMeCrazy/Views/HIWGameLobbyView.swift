@@ -143,8 +143,7 @@ struct HIWGameLobbyView: View {
                             self.scoredImages.removeAll()
                         }
                         print("score after calc \(self.score)")
-                    updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
-                    getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
+                    
                    // }
                  
                 }
@@ -685,6 +684,7 @@ struct HIWGameLobbyView: View {
             difficultyTimer = selectedDifficulty == .easy ? 3.0 : 1.0
         }
         timer = Timer.scheduledTimer(withTimeInterval: difficultyTimer, repeats: false) { _ in
+            updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
             print(self.obstacleIndex)
             if !isSoundEffectMuted {
                     self.soundEffectPlayer?.stop()
@@ -714,6 +714,7 @@ struct HIWGameLobbyView: View {
         // Stop countdown if active
         countdownManager.stop()
         print("timer stopped")
+        getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
     }
 
     func fetchGameSettings(userId: Int, gameId: Int) {
@@ -1293,6 +1294,7 @@ func getAllScores(lobbyCode: String, webSocketManager: WebSocketManager) {
                         do {
                             let players = try JSONDecoder().decode([LobbyPlayer].self, from: data)
                             webSocketManager.lobbyPlayers = players
+                            print(players)
                         } catch {
                             print(error)
                         }

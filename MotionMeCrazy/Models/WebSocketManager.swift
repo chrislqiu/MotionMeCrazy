@@ -20,7 +20,7 @@ class WebSocketManager: ObservableObject {
     @Published var gameStarted: Bool = false
 
     func connect() {
-        guard let url = URL(string: "ws://localhost:3000") else {
+        guard let url = URL(string: "ws://192.168.1.29:3000") else {
             print("Invalid WebSocket URL")
             return
         }
