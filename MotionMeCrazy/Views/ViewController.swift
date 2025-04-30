@@ -23,13 +23,12 @@ import UIKit
 
 struct ViewControllerView: UIViewControllerRepresentable {
     @Binding var obstacleImageName: String!
-    
-    //for calculating score in HIWGameLobbyView
-    var onCollisionReport: (_ imageName: String, _ collisionCount: Int) -> Void
+    @ObservedObject var gameState: GameState
     
     func makeUIViewController(context: Context) -> ViewController {
         let vc = ViewController()
-        vc.onCollisionReport = onCollisionReport
+        //need this thing to stop having the view controller representable and ui view controller to stop tweaking
+        vc.delegate = context.coordinator //if using gamestate, cant directly update it
         return vc
     }
     
@@ -37,8 +36,64 @@ struct ViewControllerView: UIViewControllerRepresentable {
         guard obstacleImageName != nil else { return }
         uiViewController.detectCollisions(imageName: obstacleImageName)
     }
+    
+    //this basically allows us to actually access and use the gameState object in the View controller without causing unpredictable behavior (that one purple warning)
+    func makeCoordinator() -> Coordinator {
+        return Coordinator(gameState: gameState)
+    }
+    
+    //this is how we can update the gameState data from inside the view controller
+    class Coordinator: NSObject {
+        var gameState: GameState
+        
+        init(gameState: GameState) {
+            self.gameState = gameState
+        }
+        
+        // update score
+        func updateScore(with collisionCount: Int) {
+            DispatchQueue.main.async {
+                print("current game level: \(self.gameState.currentLevel)")
+                if collisionCount > 8 {
+                    self.gameState.health = max(self.gameState.health - 1, 0)
+                    self.gameState.healthLostInLevel += 1
+                    print("Health when collision is greater than 8: \(self.gameState.health)")
+                    print("Health  lost when collision is greater than 8: \(self.gameState.healthLostInLevel)")
+                } else if collisionCount > 4 && collisionCount <= 8 {
+                    self.gameState.score += 50
+                    self.gameState.scoreGainedInLevel += 50
+                    print("Score when 4 < collision <= 8: \(self.gameState.score)")
+                    print("score gained when 4 < collision <= 8: \(self.gameState.scoreGainedInLevel)")
+                } else if collisionCount > 0 && collisionCount <= 4{
+                    self.gameState.score += 75
+                    self.gameState.scoreGainedInLevel += 75
+                    print("Score when 0 < collision count <= 4: \(self.gameState.score)")
+                    print("score gained when 0 < collision <= 4: \(self.gameState.scoreGainedInLevel)")
+                } else {
+                    self.gameState.score += 100
+                    self.gameState.scoreGainedInLevel += 100
+                    print("Score when 0 collisions: \(self.gameState.score)")
+                    print("score gained when 0 collisions: \(self.gameState.scoreGainedInLevel)")
+                }
+                
+                //  total collisions for level
+                self.gameState.collisionsInLevel += collisionCount
+                
+                // end of level sheesh
+                if self.gameState.endOfLevel {
+                    if self.gameState.collisionsInLevel == 0 {
+                        self.gameState.score += 100
+                        self.gameState.scoreGainedInLevel += 100
+                        print("Score of end of level bonus: \(self.gameState.score)")
+                        print("Score gained from end of level bonus: \(self.gameState.scoreGainedInLevel)")
+                    }
+                    self.gameState.collisionsInLevel = 0
+                }
+                
+            }
+        }
+    }
 }
-
 class ViewController: UIViewController {
     @IBOutlet private var previewLayer: AVCaptureVideoPreviewLayer!
     @IBOutlet private var overlayView: OverlayView!
@@ -47,12 +102,14 @@ class ViewController: UIViewController {
     var skeleton: [KeyPoint]?
     var collisionPoints: [CGPoint] = []
     var isRunning = false
+    var delegate: ViewControllerView.Coordinator?
     
     let queue = DispatchQueue(label: "serial_queue")
     let minimumScore: Float32 = 0.3
     
-    //collision report for calculating score in HIWGameLobbyView
-    var onCollisionReport: ((_ imageName: String, _ collisionCount: Int) -> Void)?
+    //keeps track of image (the obstacles) that have been scored already
+    var scoredImages: [String] = []
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -117,6 +174,7 @@ class ViewController: UIViewController {
             print("Image not loaded correctly")
             return
         }
+        
         guard let pixelData = getPixelData(from: obstacleImage) else { return }
         
         checkCollision(keypoints: keypoints, pixelData: pixelData, imageWidth: obstacleImage.width, imageHeight: obstacleImage.height, tolerance: 10)
@@ -127,8 +185,12 @@ class ViewController: UIViewController {
             print("No collisions detected on obstacle \(imageName)!")
         }
         
-        //for calculating score based on obstacle in HIWGameLobbyView
-        onCollisionReport?(imageName, collisionPoints.count)
+        //checks if image has been scored already, if it hasn't update the score
+        if !scoredImages.contains(imageName) {
+            scoredImages.append(imageName)
+            delegate?.updateScore(with: collisionPoints.count)
+        }
+        
         
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
             self.collisionPoints.removeAll()
@@ -192,7 +254,7 @@ class ViewController: UIViewController {
                     let checkAlpha = pixelData[checkIndex + 3]
                     
                     if checkAlpha < 50 { // Transparent pixel found!
-                        print("Keypoint at (\(x), \(y)) is near transparency, ignoring collision.")
+                       // print("Keypoint at (\(x), \(y)) is near transparency, ignoring collision.")
                     }
                 }
             }
