@@ -102,8 +102,8 @@ struct HIWGameLobbyView: View {
         ZStack {
             // 1. Game Background
 
-                    updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
-                    getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
+//                    updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
+//                    getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
 
 
             //pass in gameState so we can update and use the gameState variables in HIWGameLobbyView and the viewcontroller with the detection
@@ -642,7 +642,7 @@ struct HIWGameLobbyView: View {
             difficultyTimer = selectedDifficulty == .easy ? 3.0 : 1.0
         }
         timer = Timer.scheduledTimer(withTimeInterval: difficultyTimer, repeats: false) { _ in
-            updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
+//            updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
             print(self.obstacleIndex)
 
             if !isSoundEffectMuted {
@@ -656,7 +656,7 @@ struct HIWGameLobbyView: View {
                 } else {
                     self.soundEffectPlayer?.stop()
                 }
-            getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
+//            getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
 
             //print(isSoundEffectMuted)
             // Show current obstacle

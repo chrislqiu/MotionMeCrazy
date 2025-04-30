@@ -114,7 +114,7 @@ struct FriendsPageView: View {
                             self.friends = users.map { user in
                                 UserViewModel(userid: user.userid,
                                               username: user.username,
-                                              profilePicId: user.profilepicid)
+                                              profilePicId: user.profilepicid!)
                             }
                             self.errorMessage = nil
                         } catch {
@@ -225,7 +225,7 @@ struct SearchBar: View {
                         if let data = data {
                             do {
                                 let user = try JSONDecoder().decode(UserResponse.self, from: data)
-                                self.result = UserViewModel(userid: user.userid, username: user.username, profilePicId: user.profilepicid)
+                                self.result = UserViewModel(userid: user.userid, username: user.username, profilePicId: user.profilepicid!)
                                 if let userResult = self.result {
                                     print(userResult.userid)
                                 } else {

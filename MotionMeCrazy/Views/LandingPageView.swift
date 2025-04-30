@@ -88,7 +88,7 @@ struct LandingPageView: View {
                             
                             Text("Username")
                                 .font(.headline)
-                                .foregroundColor(.white)
+                                .foregroundColor(.black)
                             TextField("Enter your username", text: $username)
                                 .font(.title2)
                                 .padding()
@@ -120,7 +120,7 @@ struct LandingPageView: View {
                             if isLoginMode {
                                 Text("Password")
                                     .font(.headline)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.black)
                                 SecureField("Enter your password", text: $password)
                                     .font(.title2)
                                     .padding()
@@ -162,7 +162,7 @@ struct LandingPageView: View {
                             } else {
                                 Text("Password")
                                     .font(.headline)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.black)
                                 SecureField("Enter your password", text: $password)
                                     .font(.title2)
                                     .padding()
@@ -298,7 +298,7 @@ struct LandingPageView: View {
                                 let userResponse = try JSONDecoder().decode(UserResponse.self, from: data)
                                 userViewModel.userid = userResponse.userid
                                 userViewModel.username = userResponse.username
-                                userViewModel.profilePicId = userResponse.profilepicid
+                                userViewModel.profilePicId = "pfp1"
                                 self.errorMessage = nil
                             } catch {
                                 self.errorMessage = "Failed to parse response"
@@ -349,9 +349,10 @@ struct LandingPageView: View {
                         if let data = data {
                             do {
                                 let userResponse = try JSONDecoder().decode(UserResponse.self, from: data)
+                                print(userResponse)
                                 userViewModel.userid = userResponse.userid
                                 userViewModel.username = userResponse.username
-                                userViewModel.profilePicId = userResponse.profilepicid
+                                userViewModel.profilePicId = "pfp1"
                                 self.errorMessage = nil
                             } catch {
                                 self.errorMessage = "Failed to parse response"
@@ -375,7 +376,7 @@ struct LandingPageView: View {
 struct UserResponse: Codable {
     let userid: Int
     let username: String
-    let profilepicid: String
+    let profilepicid: String?
 }
 
 #Preview {
