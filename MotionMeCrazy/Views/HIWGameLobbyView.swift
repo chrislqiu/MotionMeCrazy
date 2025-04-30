@@ -587,9 +587,9 @@ struct HIWGameLobbyView: View {
                 
                 self.soundEffectPlayer?.play()
 
-                Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
-                    self.soundEffectPlayer?.stop()  // Stop the audio after 1 second
-                }
+//                Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+//                    self.soundEffectPlayer?.stop()  // Stop the audio after 1 second
+//                }
             } else {
                 self.soundEffectPlayer?.stop()
             }
@@ -608,9 +608,9 @@ struct HIWGameLobbyView: View {
                     
                     self.soundEffectPlayer?.play()
 
-                    Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
-                        self.soundEffectPlayer?.stop()  // Stop the audio after 1 second
-                    }
+//                    Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+//                        self.soundEffectPlayer?.stop()  // Stop the audio after 1 second
+//                    }
                 } else {
                     self.soundEffectPlayer?.stop()
                 }
