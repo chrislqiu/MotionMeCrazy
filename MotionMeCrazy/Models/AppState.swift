@@ -131,11 +131,12 @@ class AppState: ObservableObject {
                 "Play 5 levels": "Play 5 levels",
                "Sound Effects":"Sound Effects",
                "Change Mode":"Change Mode",
-               "Each ❌ shows where you 'hit' the wall. Each hit is -50 points.": "Each ❌ shows where you 'hit' the wall. Each hit is -50 points.",
-               "Every time you clear a wall with less than 20 hits, +1000 points": "Every time you clear a wall with less than 20 hits, +1000 points",
-               "For every level where you hit all walls less than 20 times total, you get a bonus of 1000 × the level number":
-                "For every level where you hit all walls less than 20 times total, you get a bonus of 1000 × the level number",
-               "Scoring":"Scoring"
+               "Each ❌ shows where you 'hit' the wall. The total number of hits you have per wall will determine if you get 50, 75, or 100 points for that wall.": "Each ❌ shows where you 'hit' the wall. The total number of hits you have per wall will determine if you get 50, 75, or 100 points for that wall.",
+                  "Every time you clear a wall (having 0 hits or ❌), you get +100 points": "Every time you clear a wall (having 0 hits or ❌), you get +100 points",
+                  "For every level where you go through each wall with 0 hits in total, you get a level bonus of 100 points!": "For every level where you go through each wall with 0 hits in total, you get a level bonus of 100 points!",
+               "Scoring":"Scoring",
+               "Modes": "Modes",
+               "Themes":"Themes"
                
            ],
         "ES": [
@@ -255,11 +256,12 @@ class AppState: ObservableObject {
             "Play 5 levels": "Juega 5 niveles",
             "Sound Effects": "Efectos de sonido",
             "Change Mode": "Cambiar modo",
-            "Each ❌ shows where you 'hit' the wall. Each hit is -50 points.": "Cada ❌ muestra dónde 'golpeaste' la pared. Cada golpe resta 50 puntos.",
-                "Every time you clear a wall with less than 20 hits, +1000 points": "Cada vez que superas una pared con menos de 20 golpes, +1000 puntos.",
-            "For every level where you hit all walls less than 20 times total, you get a bonus of 1000 × the level number":
-                "Por cada nivel en el que golpees todas las paredes menos de 20 veces en total, obtienes un bono de 1000 × el número del nivel.",
-            "Scoring": "Puntuación"
+            "Each ❌ shows where you 'hit' the wall. The total number of hits you have per wall will determine if you get 50, 75, or 100 points for that wall.": "Cada ❌ muestra dónde chocaste con el muro. El número total de golpes por muro determinará si obtienes 50, 75 o 100 puntos por ese muro.",
+            "Every time you clear a wall (having 0 hits or ❌), you get +100 points": "Cada vez que pasas un muro sin ❌ (sin golpes), obtienes +100 puntos",
+            "For every level where you go through each wall with 0 hits in total, you get a level bonus of 100 points!": "Por cada nivel en el que pasas todos los muros sin ningún ❌, obtienes un bono de nivel de 100 puntos.",
+            "Scoring": "Puntuación",
+            "Modes": "Modos",
+            "Themes": "Temas"
             
         ]
     ]
