@@ -327,7 +327,7 @@ struct HIWGameLobbyView: View {
                                 
                             }
                             .padding()
-                            .background(appState.darkMode ? .darkBlue.opacity(0.7) : Color(UIColor.systemGray6).opacity(0.7))
+                            .background(.white)
                             .cornerRadius(10)
                             .padding(.horizontal)
                             VStack(alignment: .leading, spacing: 4) {  // Reduced spacing between player scores

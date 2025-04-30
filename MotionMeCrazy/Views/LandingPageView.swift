@@ -11,50 +11,26 @@ struct LandingPageView: View {
     @EnvironmentObject var appState: AppState
     
     @StateObject private var userViewModel = UserViewModel(userid: 0, username: "", profilePicId: "")
-
-    @State private var selectedImage: String = "pfp1"  // Initial profile image
-    @State private var showSelector = false  // Controls modal visibility
+    
+    @State private var selectedImage: String = "pfp1"
+    @State private var showSelector = false
     @State private var showCopiedMessage = false
     @State private var username: String = ""
-    @State private var errorMessage: String?  // For displaying errors
+    @State private var password: String = ""
+    @State private var confirmPassword: String = ""
+    @State private var isLoginMode: Bool = true
+    @State private var errorMessage: String?
     @State private var navigateToMainPage = false
 
-    let adjectives = [
-        "Swift", "Crazy", "Fast", "Brave", "Happy", "Funky", "Epic", "Chill",
-        "Mighty", "Wild",
-        "Zany", "Jolly", "Clever", "Hyper", "Radical", "Witty", "Snazzy",
-        "Perky", "Bold",
-        "Spunky", "Cheery", "Peppy", "Snappy", "Zesty", "Quirky", "Jumpy",
-        "Jazzy", "Nifty", "Zippy", "Speedy", "Daring", "Bouncy", "Peppy",
-        "Lively", "Snuggly",
-        "Sporty", "Chirpy", "Sassy", "Perky", "Rowdy", "Playful", "Bubbly",
-        "Jumpy",
-        "Giddy", "Sunny", "Zippy", "Twisty", "Hasty", "Breezy", "Dandy",
-        "Wacky",
-        "Goofy", "Zesty",
-    ]
-    let nouns = [
-        "Coder", "Runner", "Gamer", "Explorer", "Ninja", "Pioneer", "Warrior",
-        "Champion", "Wizard", "Legend",
-        "Jester", "Rebel", "Rogue", "Hero", "Voyager", "Nomad", "Seeker",
-        "Racer", "Sprinter", "Inventor",
-        "Tinkerer", "Hacker", "Pilot", "Rider", "Samurai", "Gladiator",
-        "Guardian", "Smasher", "Drifter", "Ranger",
-        "Adventurer", "Scholar", "Artist", "Dreamer", "Wanderer", "Builder",
-        "Sculptor", "Creator", "Visionary", "Captain",
-        "Magician", "Specter", "Phantom", "Alchemist", "Sniper", "Hunter",
-        "Beast", "Viking", "Knight", "Titan",
-    ]
     let images = ["pfp1", "pfp2", "pfp3", "pfp4", "pfp5", "pfp6"]
 
     var body: some View {
-        NavigationView {
-            //Forces the background to be in the very back
+        NavigationStack {
             ZStack {
                 Image("background")
                     .resizable()
                     .ignoresSafeArea()
-                //Vertically stack the text
+                
                 if !appState.loading {
                     VStack {
                         Text("Motion Me\nCrazy")
@@ -65,6 +41,15 @@ struct LandingPageView: View {
                             .padding(.top, 35)
                             .accessibilityIdentifier("appTitle")
                         
+                        NavigationLink(
+                            destination: MainPageView()
+                                .environmentObject(userViewModel)
+                                .navigationBarBackButtonHidden(true),
+                            isActive: $navigateToMainPage
+                        ) {
+                            EmptyView()
+                        }
+
                         if appState.offlineMode {
                             NavigationLink(
                                 destination: MainPageView()
@@ -87,9 +72,9 @@ struct LandingPageView: View {
                                 .padding(.top, 20)
                                 .accessibilityIdentifier("playOfflineButton")
                             }
+                            .padding(.top, 20)
+                            .accessibilityIdentifier("playOfflineButton")
                         } else {
-                            
-                            // Profile Image Display (Now Opens Selector When Tapped)
                             Image(selectedImage)
                                 .resizable()
                                 .scaledToFit()
@@ -97,57 +82,24 @@ struct LandingPageView: View {
                                 .clipShape(Circle())
                                 .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
                                 .onTapGesture {
-                                    showSelector.toggle()  // Open selector when tapped
+                                    showSelector.toggle()
                                 }
                                 .accessibilityIdentifier("profilePicture")
                             
-                            HStack {
-                                TextField(appState.localized("Enter your username"), text: $username)
-                                    .font(.title2)
-                                    .padding()
-                                    .frame(width: 250)
-                                    .background(Color.white.opacity(0.2))
-                                    .cornerRadius(10)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10).stroke(
-                                            Color.gray, lineWidth: 1)
-                                    )
-                                    .multilineTextAlignment(.center)
-                                    .onAppear {
-                                        username = generateRandomUsername()
-                                    }
-                                    .accessibilityLabel("usernameField")
-                                
-                                // Copy to Clipboard Button
-                                Button(action: {
-                                    UIPasteboard.general.string = username
-                                    showCopiedMessage = true
-                                    
-                                    // Hide message after 2 seconds
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                        showCopiedMessage = false
-                                    }
-                                }) {
-                                    Image(systemName: "doc.on.doc")  // Clipboard icon
-                                        .font(.title)
-                                        .foregroundColor(.black)
-                                }
-                                .padding(.leading, 5)
-                                .accessibilityIdentifier("copyButton")
-                                
-                                // Refresh Button
-                                Button(action: {
-                                    username = generateRandomUsername()
-                                }) {
-                                    Image(systemName: "arrow.clockwise")  // Refresh icon
-                                        .font(.title2.bold())
-                                        .foregroundColor(.black)
-                                }
-                            }
-                            .padding(.top, 10)
-                            .accessibilityIdentifier("generateUsernameButton")
-                            
-                            // Show confirmation message
+                            Text("Username")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            TextField("Enter your username", text: $username)
+                                .font(.title2)
+                                .padding()
+                                .frame(width: 250)
+                                .background(Color.white.opacity(0.8))
+                                .cornerRadius(10)
+                                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                .multilineTextAlignment(.leading)
+                                .accessibilityLabel("usernameField")
+                                .foregroundColor(.black)
+
                             if showCopiedMessage {
                                 Text(appState.localized("Copied to clipboard!"))
                                     .font(.caption)
@@ -164,17 +116,26 @@ struct LandingPageView: View {
                                     .padding(.top, 5)
                                     .accessibilityIdentifier("errorMessage")
                             }
-                            
-                            NavigationLink(
-                                destination: MainPageView()
-                                    .environmentObject(userViewModel)
-                                    .navigationBarBackButtonHidden(true),
-                                isActive: $navigateToMainPage
-                            ) {
+
+                            if isLoginMode {
+                                Text("Password")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                SecureField("Enter your password", text: $password)
+                                    .font(.title2)
+                                    .padding()
+                                    .frame(width: 250)
+                                    .background(Color.white.opacity(0.8))
+                                    .cornerRadius(10)
+                                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                    .multilineTextAlignment(.leading)
+                                    .foregroundColor(.black)
+
+                                
                                 Button(action: {
-                                    createUser()
+                                    loginUser()
                                 }) {
-                                    Text(appState.localized("Start"))
+                                    Text("Login")
                                         .font(.title2)
                                         .fontWeight(.bold)
                                         .foregroundColor(.white)
@@ -184,8 +145,78 @@ struct LandingPageView: View {
                                         .shadow(radius: 5)
                                 }
                                 .padding(.top, 20)
-                                .accessibilityIdentifier("startButton")
+                                .accessibilityIdentifier("loginButton")
+                                
+                                Button(action: {
+                                    isLoginMode = false
+                                }) {
+                                    Text("Don't have an account? Sign up!")
+                                        .font(.footnote)
+                                        .foregroundColor(.blue)
+                                        .padding()
+                                        .background(Color.white.opacity(0.8))
+                                        .cornerRadius(10)
+                                        .shadow(radius: 5)
+                                        .padding(.top, 10)
+                                }
+                            } else {
+                                Text("Password")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                SecureField("Enter your password", text: $password)
+                                    .font(.title2)
+                                    .padding()
+                                    .frame(width: 250)
+                                    .background(Color.white.opacity(0.8))
+                                    .cornerRadius(10)
+                                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                    .multilineTextAlignment(.leading)
+                                    .foregroundColor(.black)
+
+
+                                Text("Confirm Password")
+                                    .font(.headline)
+                                    .foregroundColor(.black)
+                                SecureField("Confirm password", text: $confirmPassword)
+                                    .font(.title2)
+                                    .padding()
+                                    .frame(width: 250)
+                                    .background(Color.white.opacity(0.8))
+                                    .cornerRadius(10)
+                                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                    .multilineTextAlignment(.leading)
+                                    .foregroundColor(.black)
+
+
+                                Button(action: {
+                                    createUser()
+                                }) {
+                                    Text("Create Account")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.white)
+                                        .frame(width: 180, height: 50)
+                                        .background(Color.blue)
+                                        .cornerRadius(25)
+                                        .shadow(radius: 5)
+                                }
+                                .padding(.top, 20)
+                                .accessibilityIdentifier("createAccountButton")
+                                
+                                Button(action: {
+                                    isLoginMode = true
+                                }) {
+                                    Text("Already have an account? Log in!")
+                                        .font(.footnote)
+                                        .foregroundColor(.blue)
+                                        .padding()
+                                        .background(Color.white.opacity(0.8))
+                                        .cornerRadius(10)
+                                        .shadow(radius: 5)
+                                        .padding(.top, 10)
+                                }
                             }
+
                             Spacer()
                         }
                     }
@@ -200,10 +231,7 @@ struct LandingPageView: View {
                         .padding(.top, 20)
                         .accessibilityIdentifier("picSelectScreen")
                     
-                    LazyVGrid(
-                        columns: Array(repeating: .init(.flexible()), count: 3),
-                        spacing: 15
-                    ) {
+                    LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 15) {
                         ForEach(images, id: \.self) { imageName in
                             Image(imageName)
                                 .resizable()
@@ -211,39 +239,30 @@ struct LandingPageView: View {
                                 .frame(width: 80, height: 80)
                                 .clipShape(Circle())
                                 .overlay(
-                                    Circle()
-                                        .stroke(
-                                            selectedImage == imageName
-                                            ? Color.blue : Color.clear,
-                                            lineWidth: 4)
+                                    Circle().stroke(
+                                        selectedImage == imageName ? Color.blue : Color.clear,
+                                        lineWidth: 4
+                                    )
                                 )
                                 .onTapGesture {
                                     selectedImage = imageName
-                                    showSelector = false  // Close modal after selection
+                                    showSelector = false
                                 }
                                 .accessibilityIdentifier("picOption")
-                            
                         }
                     }
                     Spacer()
                 }
-                
             }
-            
         }
     }
 
-    //Generates random username
-    func generateRandomUsername() -> String {
-
-        let randomAdj = adjectives.randomElement() ?? "Cool"
-        let randomNoun = nouns.randomElement() ?? "User"
-        let randomNum = Int.random(in: 100...999)
-
-        return "\(randomAdj)\(randomNoun)\(randomNum)"
-    }
-    
     func createUser() {
+        if password != confirmPassword {
+            errorMessage = "Passwords do not match"
+            return
+        }
+        
         guard let url = URL(string: APIHelper.getBaseURL() + "/user") else {
             print("Invalid URL")
             return
@@ -252,10 +271,10 @@ struct LandingPageView: View {
         let body: [String: Any] = [
             "username": username,
             "profilePicId": selectedImage,
+            "password": password,
         ]
 
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
-        else {
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
             print("Failed to encode JSON")
             return
         }
@@ -290,14 +309,68 @@ struct LandingPageView: View {
                         self.errorMessage = nil
                         navigateToMainPage = true
                     } else {
-                        self.errorMessage =
-                            "Username already exists, please try again"
+                        self.errorMessage = "Username already exists, please try again"
+                    }
+                }
+            }
+        }.resume()
+    }
+
+    func loginUser() {
+        guard let url = URL(string: APIHelper.getBaseURL() + "/signin") else {
+            print("Invalid URL")
+            return
+        }
+
+        let body: [String: Any] = [
+            "username": username,
+            "password": password,
+        ]
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
+            print("Failed to encode JSON")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if error != nil {
+                    self.errorMessage = "Network error, please try again"
+                    return
+                }
+
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode == 200 {
+                        if let data = data {
+                            do {
+                                let userResponse = try JSONDecoder().decode(UserResponse.self, from: data)
+                                userViewModel.userid = userResponse.userid
+                                userViewModel.username = userResponse.username
+                                userViewModel.profilePicId = userResponse.profilepicid
+                                self.errorMessage = nil
+                            } catch {
+                                self.errorMessage = "Failed to parse response"
+                                print(error)
+                            }
+                        }
+                        print("Login successful!")
+                        self.errorMessage = nil
+                        navigateToMainPage = true
+                    } else {
+                        self.errorMessage = "Invalid credentials, please try again"
                     }
                 }
             }
         }.resume()
     }
 }
+
+
 
 struct UserResponse: Codable {
     let userid: Int
@@ -308,3 +381,5 @@ struct UserResponse: Codable {
 #Preview {
     LandingPageView()
 }
+
+
