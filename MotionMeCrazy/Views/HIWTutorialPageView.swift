@@ -13,12 +13,18 @@ struct HIWTutorialPageView: View {
     @State private var tutorialStep = 0  // track tutorial step
     @State private var showTutorial = true  // toggle tutorial visibility
     @State private var sectionFrames: [Int: CGRect] = [:]
+    @ObservedObject var userViewModel: UserViewModel
 
+    @EnvironmentObject private var webSocketManager: WebSocketManager
+
+    init(userViewModel: UserViewModel) {
+        self.userViewModel = userViewModel
+    }
     @EnvironmentObject var appState: AppState
 
     
     var body: some View {
-        ZStack{
+        ZStack {
             
             // main HIW game play
             HIWGamePageView(sectionFrames: Binding($sectionFrames))
@@ -26,7 +32,6 @@ struct HIWTutorialPageView: View {
             if showTutorial {
                 Color.black.opacity(0.25)  // dim background
                     .edgesIgnoringSafeArea(.all)
-                
                 
                 // highlight game sections
                 if let highlightRect = sectionFrames[tutorialStep] {
@@ -36,7 +41,6 @@ struct HIWTutorialPageView: View {
                 // highlight pause button
                 if tutorialStep == 3 {
                     highlightPauseButton()
-                    
                 }
                 
                 VStack {
@@ -94,7 +98,6 @@ struct HIWTutorialPageView: View {
                         .foregroundColor(.darkBlue)
                 }
                 .accessibilityIdentifier("playButton")
-                                
             }
             
             if isPlaying {
@@ -116,21 +119,21 @@ struct HIWTutorialPageView: View {
     }
     
     @ViewBuilder
-        func highlightSection(rect: CGRect) -> some View {
-            GeometryReader { _ in
-                Color.black.opacity(0.7)
-                    .mask(
-                        Rectangle()
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .frame(width: rect.width + 18, height: rect.height + 10)
-                                    .position(x: rect.midX + 10, y: rect.midY - 70)
-                                    .blendMode(.destinationOut)
-                            )
-                    )
-                    .edgesIgnoringSafeArea(.all)
-            }
+    func highlightSection(rect: CGRect) -> some View {
+        GeometryReader { _ in
+            Color.black.opacity(0.7)
+                .mask(
+                    Rectangle()
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .frame(width: rect.width + 18, height: rect.height + 10)
+                                .position(x: rect.midX + 10, y: rect.midY - 70)
+                                .blendMode(.destinationOut)
+                        )
+                )
+                .edgesIgnoringSafeArea(.all)
         }
+    }
     
     // adds a highlight effect for pause step
     @ViewBuilder
@@ -154,6 +157,6 @@ struct HIWTutorialPageView: View {
     }
 }
 
-#Preview {
-    HIWTutorialPageView()
-}
+//#Preview {
+//    HIWTutorialPageView(userViewModel: UserViewModel())
+//}

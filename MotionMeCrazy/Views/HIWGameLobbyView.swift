@@ -43,10 +43,14 @@ struct HIWGameLobbyView: View {
     @State private var soundEffectPlayer: AVAudioPlayer?
     @State private var isSoundEffectMuted = false
 
+    @ObservedObject var userViewModel: UserViewModel
+    @EnvironmentObject var webSocketManager: WebSocketManager
+    
 
     //observable object -- acts like the appstate except it stores the game variables (look at the Model folder to find it)
     @StateObject var gameState = GameState()
     @EnvironmentObject var appState: AppState
+
 
     //Loading audio
     func loadAudio() {
@@ -97,6 +101,11 @@ struct HIWGameLobbyView: View {
     var body: some View {
         ZStack {
             // 1. Game Background
+
+                    updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
+                    getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
+
+
             //pass in gameState so we can update and use the gameState variables in HIWGameLobbyView and the viewcontroller with the detection
             ViewControllerView(obstacleImageName: $checkCollisionOn, gameState: gameState)
                 .edgesIgnoringSafeArea(.all)
@@ -171,7 +180,7 @@ struct HIWGameLobbyView: View {
                                 .padding(.trailing, 10)
                         }
                         .sheet(isPresented: $showTutorial) {
-                            HIWTutorialPageView()
+                            HIWTutorialPageView(userViewModel: userViewModel)
                         }
 
                         Button(action: {
@@ -272,11 +281,47 @@ struct HIWGameLobbyView: View {
                                     )
                                     .font(.body)
                                 }
+
+                                // Players' Scores Section (WebSocket Data)
+                                
                             }
                             .padding()
-                            .background(appState.darkMode ? .darkBlue.opacity(0.7) : Color(UIColor.systemGray6).opacity(0.7))
+                            .background(.white)
                             .cornerRadius(10)
                             .padding(.horizontal)
+                            VStack(alignment: .leading, spacing: 4) {  // Reduced spacing between player scores
+                                ForEach(webSocketManager.lobbyPlayers) { player in
+                                    HStack {
+                                        Text(player.username)
+                                            .font(.caption)
+                                            .bold()
+                                            .foregroundColor(.white)
+
+                                        Spacer()
+
+                                        HStack(spacing: 4) {
+                                            Text("⭐️ \(player.score)")
+                                                .font(.caption2)
+                                                .foregroundColor(.white)
+                                            Text("❤️ \(player.health)")
+                                                .font(.caption2)
+                                                .foregroundColor(.white)
+
+                                           
+                                        }
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .frame(maxHeight: 20)
+                                }
+
+                                            
+                                        }
+                                        .padding(8)
+                                        .background(Color.black.opacity(0.5))
+                                        .cornerRadius(10)
+                                        .padding()
+                                        .frame(maxWidth: 400, alignment: .topLeading)
+                                        .fixedSize(horizontal: false, vertical: true)
                         }
                     } else {
                         Button(action: {
@@ -597,7 +642,9 @@ struct HIWGameLobbyView: View {
             difficultyTimer = selectedDifficulty == .easy ? 3.0 : 1.0
         }
         timer = Timer.scheduledTimer(withTimeInterval: difficultyTimer, repeats: false) { _ in
-            
+            updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
+            print(self.obstacleIndex)
+
             if !isSoundEffectMuted {
                     self.soundEffectPlayer?.stop()
                     self.soundEffectPlayer?.currentTime = 0
@@ -609,6 +656,7 @@ struct HIWGameLobbyView: View {
                 } else {
                     self.soundEffectPlayer?.stop()
                 }
+            getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
 
             //print(isSoundEffectMuted)
             // Show current obstacle
@@ -1141,4 +1189,78 @@ struct HIWObstacleView: View {
             .clipped() // Ensure the image doesn't overflow outside its bounds
             .opacity(0.75) // Lower opacity
     }
+}
+
+
+func updateScore(lobbyCode: String, userId: Int, score: Int, health: Int) {
+    guard let url = URL(string: APIHelper.getBaseURL() + "/update-score") else {
+        print("Invalid URL")
+        return
+    }
+
+    let body: [String: Any] = [
+        "code": lobbyCode,
+        "userId": userId,
+        "score": score,
+        "health": health
+    ]
+
+    guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
+        print("Failed to encode JSON")
+        return
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = jsonData
+
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        DispatchQueue.main.async {
+            if error != nil {
+                return
+            }
+
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    print("Score successfully updated!")
+                } else {
+                    print("Score failed")
+
+                }
+            }
+        }
+    }.resume()
+}
+
+
+func getAllScores(lobbyCode: String, webSocketManager: WebSocketManager) {
+
+    guard let url = URL(string: APIHelper.getBaseURL() + "/get-scores/\(lobbyCode)") else {
+        print("Invalid URL")
+        return
+    }
+
+    URLSession.shared.dataTask(with: url) { data, response, error in
+        DispatchQueue.main.async {
+            if error != nil {
+                return
+            }
+
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    if let data = data {
+                        do {
+                            let players = try JSONDecoder().decode([LobbyPlayer].self, from: data)
+                            webSocketManager.lobbyPlayers = players
+                            print(players)
+                        } catch {
+                            print(error)
+                        }
+                    }
+                } else {
+                }
+            }
+        }
+    }.resume()
 }

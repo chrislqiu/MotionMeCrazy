@@ -34,9 +34,14 @@ struct HIWGamePageView:View {
     }
     // tutorial
     @Binding var sectionFrames: [Int: CGRect]?
-    init(sectionFrames: Binding<[Int: CGRect]?> = .constant(nil)) {
-        _sectionFrames = sectionFrames
-    }
+    @EnvironmentObject var webSocketManager: WebSocketManager
+     
+     init(sectionFrames: Binding<[Int: CGRect]?> = .constant(nil)) {
+         _sectionFrames = sectionFrames
+     }
+     
+    
+    
     
     var body: some View {
         ZStack{
@@ -69,7 +74,7 @@ struct HIWGamePageView:View {
                 VStack() {
                     // Score Section
                     HStack {
-                        CustomText(config: CustomTextConfig(text: appState.localized("Score"), titleColor: .darkBlue, fontSize: 20))
+                        CustomText(config: CustomTextConfig(text: appState.localized("Sc1ore"), titleColor: .darkBlue, fontSize: 20))
                             .font(.headline)
                             .bold()
                         Spacer()
@@ -82,7 +87,7 @@ struct HIWGamePageView:View {
                     
                     // Health Section
                     HStack {
-                        CustomText(config: CustomTextConfig(text: appState.localized("Health"), titleColor: .darkBlue, fontSize: 20))
+                        CustomText(config: CustomTextConfig(text: appState.localized("Heal1th"), titleColor: .darkBlue, fontSize: 20))
                             .font(.headline)
                             .bold()
                         Spacer()
@@ -101,7 +106,7 @@ struct HIWGamePageView:View {
                     
                     // Progress Section
                     HStack {
-                        CustomText(config: CustomTextConfig(text: appState.localized("Progress"), titleColor: .darkBlue, fontSize: 20))
+                        CustomText(config: CustomTextConfig(text: appState.localized("Prog1ress"), titleColor: .darkBlue, fontSize: 20))
                             .font(.headline)
                             .bold()
                         Spacer()
@@ -113,7 +118,7 @@ struct HIWGamePageView:View {
                     })
                 }
                 .padding()
-                .background(appState.darkMode ? .darkBlue : Color(UIColor.systemGray6))
+                .foregroundColor(.white)
                 .cornerRadius(10)
                 .padding(.horizontal)
                 .onPreferenceChange(SectionFrameKey.self) { newValues in
@@ -163,6 +168,6 @@ struct SectionFrameKey: PreferenceKey {
     }
 }
 
-#Preview {
-    HIWGamePageView()
-}
+//#Preview {
+//    HIWGamePageView()
+//}

@@ -11,6 +11,7 @@ import UserNotifications
 @main
 struct MotionMeCrazyApp: App {
     @StateObject private var appState = AppState()
+    @StateObject var webSocketManager = WebSocketManager()
     
     init() {
         requestNotificationPermission()
@@ -21,6 +22,7 @@ struct MotionMeCrazyApp: App {
         WindowGroup {
             LandingPageView()
                 .environmentObject(appState)
+                .environmentObject(webSocketManager)
                 .onAppear {
                     checkServerStatus()
                 }
