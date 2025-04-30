@@ -12,21 +12,20 @@ struct LandingPageView: View {
     
     @StateObject private var userViewModel = UserViewModel(userid: 0, username: "", profilePicId: "")
     
-    @State private var selectedImage: String = "pfp1"  // Initial profile image
-    @State private var showSelector = false  // Controls modal visibility
+    @State private var selectedImage: String = "pfp1"
+    @State private var showSelector = false
     @State private var showCopiedMessage = false
     @State private var username: String = ""
     @State private var password: String = ""
     @State private var confirmPassword: String = ""
-    @State private var isLoginMode: Bool = true // Flag to switch between Login and Create Account forms
-    @State private var errorMessage: String?  // For displaying errors
+    @State private var isLoginMode: Bool = true
+    @State private var errorMessage: String?
     @State private var navigateToMainPage = false
 
     let images = ["pfp1", "pfp2", "pfp3", "pfp4", "pfp5", "pfp6"]
 
     var body: some View {
         NavigationStack {
-            //Forces the background to be in the very back
             ZStack {
                 Image("background")
                     .resizable()
@@ -76,7 +75,6 @@ struct LandingPageView: View {
                             .padding(.top, 20)
                             .accessibilityIdentifier("playOfflineButton")
                         } else {
-                            // Profile Image Display (Now Opens Selector When Tapped)
                             Image(selectedImage)
                                 .resizable()
                                 .scaledToFit()
@@ -84,25 +82,24 @@ struct LandingPageView: View {
                                 .clipShape(Circle())
                                 .overlay(Circle().stroke(.darkBlue, lineWidth: 3))
                                 .onTapGesture {
-                                    showSelector.toggle()  // Open selector when tapped
+                                    showSelector.toggle()
                                 }
                                 .accessibilityIdentifier("profilePicture")
                             
-                            // Username Field (no random generation now)
+                            Text("Username")
+                                .font(.headline)
+                                .foregroundColor(.white)
                             TextField("Enter your username", text: $username)
                                 .font(.title2)
                                 .padding()
                                 .frame(width: 250)
                                 .background(Color.white.opacity(0.8))
                                 .cornerRadius(10)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10).stroke(
-                                        Color.gray, lineWidth: 1)
-                                )
+                                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
                                 .multilineTextAlignment(.leading)
                                 .accessibilityLabel("usernameField")
-                            
-                            // Show confirmation message if copied
+                                .foregroundColor(.black)
+
                             if showCopiedMessage {
                                 Text(appState.localized("Copied to clipboard!"))
                                     .font(.caption)
@@ -111,7 +108,6 @@ struct LandingPageView: View {
                                     .accessibilityIdentifier("copyMessage")
                             }
                             
-                            // Show error message if there's one
                             if let errorMessage = errorMessage {
                                 Text(errorMessage)
                                     .font(.title3)
@@ -120,20 +116,21 @@ struct LandingPageView: View {
                                     .padding(.top, 5)
                                     .accessibilityIdentifier("errorMessage")
                             }
-                            
+
                             if isLoginMode {
-                                // Login Form
+                                Text("Password")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
                                 SecureField("Enter your password", text: $password)
                                     .font(.title2)
                                     .padding()
                                     .frame(width: 250)
                                     .background(Color.white.opacity(0.8))
                                     .cornerRadius(10)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10).stroke(
-                                            Color.gray, lineWidth: 1)
-                                    )
+                                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
                                     .multilineTextAlignment(.leading)
+                                    .foregroundColor(.black)
+
                                 
                                 Button(action: {
                                     loginUser()
@@ -151,42 +148,45 @@ struct LandingPageView: View {
                                 .accessibilityIdentifier("loginButton")
                                 
                                 Button(action: {
-                                    isLoginMode = false // Switch to create account form
+                                    isLoginMode = false
                                 }) {
                                     Text("Don't have an account? Sign up!")
                                         .font(.footnote)
                                         .foregroundColor(.blue)
                                         .padding()
-                                        .background(Color.white.opacity(0.8)) // Background color behind the text
-                                        .cornerRadius(10) // Rounded corners
-                                        .shadow(radius: 5) // Optional: shadow for better visibility
+                                        .background(Color.white.opacity(0.8))
+                                        .cornerRadius(10)
+                                        .shadow(radius: 5)
                                         .padding(.top, 10)
                                 }
                             } else {
-                                // Create Account Form
+                                Text("Password")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
                                 SecureField("Enter your password", text: $password)
                                     .font(.title2)
                                     .padding()
                                     .frame(width: 250)
                                     .background(Color.white.opacity(0.8))
                                     .cornerRadius(10)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10).stroke(
-                                            Color.gray, lineWidth: 1)
-                                    )
+                                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
                                     .multilineTextAlignment(.leading)
+                                    .foregroundColor(.black)
 
+
+                                Text("Confirm Password")
+                                    .font(.headline)
+                                    .foregroundColor(.black)
                                 SecureField("Confirm password", text: $confirmPassword)
                                     .font(.title2)
                                     .padding()
                                     .frame(width: 250)
                                     .background(Color.white.opacity(0.8))
                                     .cornerRadius(10)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10).stroke(
-                                            Color.gray, lineWidth: 1)
-                                    )
+                                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
                                     .multilineTextAlignment(.leading)
+                                    .foregroundColor(.black)
+
 
                                 Button(action: {
                                     createUser()
@@ -204,20 +204,19 @@ struct LandingPageView: View {
                                 .accessibilityIdentifier("createAccountButton")
                                 
                                 Button(action: {
-                                    isLoginMode = true // Switch to login form
+                                    isLoginMode = true
                                 }) {
                                     Text("Already have an account? Log in!")
                                         .font(.footnote)
                                         .foregroundColor(.blue)
                                         .padding()
-                                        .background(Color.white.opacity(0.8)) // Background color behind the text
-                                        .cornerRadius(10) // Rounded corners
-                                        .shadow(radius: 5) // Optional: shadow for better visibility
+                                        .background(Color.white.opacity(0.8))
+                                        .cornerRadius(10)
+                                        .shadow(radius: 5)
                                         .padding(.top, 10)
                                 }
-
                             }
-                            
+
                             Spacer()
                         }
                     }
@@ -232,10 +231,7 @@ struct LandingPageView: View {
                         .padding(.top, 20)
                         .accessibilityIdentifier("picSelectScreen")
                     
-                    LazyVGrid(
-                        columns: Array(repeating: .init(.flexible()), count: 3),
-                        spacing: 15
-                    ) {
+                    LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 15) {
                         ForEach(images, id: \.self) { imageName in
                             Image(imageName)
                                 .resizable()
@@ -243,18 +239,16 @@ struct LandingPageView: View {
                                 .frame(width: 80, height: 80)
                                 .clipShape(Circle())
                                 .overlay(
-                                    Circle()
-                                        .stroke(
-                                            selectedImage == imageName
-                                            ? Color.blue : Color.clear,
-                                            lineWidth: 4)
+                                    Circle().stroke(
+                                        selectedImage == imageName ? Color.blue : Color.clear,
+                                        lineWidth: 4
+                                    )
                                 )
                                 .onTapGesture {
                                     selectedImage = imageName
-                                    showSelector = false  // Close modal after selection
+                                    showSelector = false
                                 }
                                 .accessibilityIdentifier("picOption")
-                            
                         }
                     }
                     Spacer()
@@ -263,10 +257,7 @@ struct LandingPageView: View {
         }
     }
 
-    
-    
     func createUser() {
-        // Check if passwords match
         if password != confirmPassword {
             errorMessage = "Passwords do not match"
             return
@@ -280,11 +271,10 @@ struct LandingPageView: View {
         let body: [String: Any] = [
             "username": username,
             "profilePicId": selectedImage,
-            "password": password, // Add password to request
+            "password": password,
         ]
 
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
-        else {
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
             print("Failed to encode JSON")
             return
         }
@@ -319,14 +309,13 @@ struct LandingPageView: View {
                         self.errorMessage = nil
                         navigateToMainPage = true
                     } else {
-                        self.errorMessage =
-                            "Username already exists, please try again"
+                        self.errorMessage = "Username already exists, please try again"
                     }
                 }
             }
         }.resume()
     }
-    
+
     func loginUser() {
         guard let url = URL(string: APIHelper.getBaseURL() + "/signin") else {
             print("Invalid URL")
@@ -338,8 +327,7 @@ struct LandingPageView: View {
             "password": password,
         ]
 
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
-        else {
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
             print("Failed to encode JSON")
             return
         }
@@ -374,8 +362,7 @@ struct LandingPageView: View {
                         self.errorMessage = nil
                         navigateToMainPage = true
                     } else {
-                        self.errorMessage =
-                            "Invalid credentials, please try again"
+                        self.errorMessage = "Invalid credentials, please try again"
                     }
                 }
             }
@@ -383,13 +370,16 @@ struct LandingPageView: View {
     }
 }
 
+
+
 struct UserResponse: Codable {
     let userid: Int
     let username: String
     let profilepicid: String
 }
 
-
 #Preview {
     LandingPageView()
 }
+
+

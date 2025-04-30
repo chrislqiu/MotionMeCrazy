@@ -139,6 +139,7 @@ struct HIWGameLobbyView: View {
                             self.scoredImages.removeAll()
                         }
                         print("score after calc \(self.score)")
+                    updateScore(lobbyCode: , userId: <#T##Int#>, score: <#T##Int#>, eliminated: <#T##Bool#>)
                    // }
                  
                 }
@@ -319,7 +320,7 @@ struct HIWGameLobbyView: View {
                                 }
                             }
                             .padding()
-                            .background(appState.darkMode ? .darkBlue.opacity(0.7) : Color(UIColor.systemGray6).opacity(0.7))
+                            .background(.white)
                             .cornerRadius(10)
                             .padding(.horizontal)
                         }
