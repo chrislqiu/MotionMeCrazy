@@ -587,9 +587,6 @@ struct HIWGameLobbyView: View {
                 
                 self.soundEffectPlayer?.play()
 
-//                Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
-//                    self.soundEffectPlayer?.stop()  // Stop the audio after 1 second
-//                }
             } else {
                 self.soundEffectPlayer?.stop()
             }
@@ -608,14 +605,14 @@ struct HIWGameLobbyView: View {
                     
                     self.soundEffectPlayer?.play()
 
-//                    Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
-//                        self.soundEffectPlayer?.stop()  // Stop the audio after 1 second
-//                    }
+
                 } else {
                     self.soundEffectPlayer?.stop()
                 }
 
             //print(isSoundEffectMuted)
+            // Show current obstacle
+            checkCollisionOn = obstacles[obstacleIndex]
             self.obstacleIndex += 1
             self.scheduleNextObstacle()
         }
