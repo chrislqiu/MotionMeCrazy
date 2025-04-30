@@ -19,14 +19,14 @@ struct HIWGameLobbyView: View {
     @State private var showCompletionScreen = false
     @State private var showFailureScreen = false
     
-    //TODO: ADD FUNCTIONALITY game stats
-    @State private var endOfLevel = false
-    @State private var score: Int = 0  //TODO: Adjust
-    @State private var health: Double = 5  //TODO: Adjust
-    @State private var maxHealth: Double = 5  //TODO: Adjust
-    @State private var currentLevel = 1
-    @State private var totalLevelCollisions: Int = 0
-    @State private var scoredImages: Set<String> = []
+    //TODO: might not need these anymore bc using GameState observable object instead
+    //Replaced the use of all of these variables using gameState.variable
+//    @State private var endOfLevel = false
+//    @State private var score: Int = 0  //TODO: Adjust
+//    @State private var health: Double = 5  //TODO: Adjust
+//    @State private var maxHealth: Double = 5  //TODO: Adjust
+//    @State private var currentLevel = 1
+
     
     @State private var obstacles: [String] = []
     @State private var levelImageMap: [Int: [String]] = [:]
@@ -47,6 +47,8 @@ struct HIWGameLobbyView: View {
     @EnvironmentObject var webSocketManager: WebSocketManager
     
 
+    //observable object -- acts like the appstate except it stores the game variables (look at the Model folder to find it)
+    @StateObject var gameState = GameState()
     @EnvironmentObject var appState: AppState
 
 
@@ -99,59 +101,13 @@ struct HIWGameLobbyView: View {
     var body: some View {
         ZStack {
             // 1. Game Background
-            ViewControllerView(obstacleImageName: $checkCollisionOn) { imageName, collisionCount in
-                DispatchQueue.main.async {
-                   // if self.isPlaying && !self.countdownManager.isActive {
-                    print("imageName initial \(imageName)")
-                        guard !self.scoredImages.contains(imageName) else {
-                                return // already scored this image, skip
-                            }
-                    
-                       self.scoredImages.insert(imageName)
-                        // makes sure that score doesn't go in the negatives
-                        print("collisionCount \(collisionCount) for \(imageName)")
-                        if self.score > 0 {
-                            //if it exceeds 20, just subtract 1000 points
-                            if collisionCount >=  20 {
-                                self.score = max(self.score - 1000, 0)
-                            } else {
-                            //if its below 20, each collision deducts 50 points
-                                self.score = max(self.score - (collisionCount * 50), 0)
-                            }
-                        }
-                        // count total collisions for the level
-                        self.totalLevelCollisions += collisionCount
-                        
-                        //remember collision count is just for the image
-                        //if there are more than 20 collisions detected, deduct a health point
-                        if collisionCount >= 20 {
-                            self.health = max(self.health - 1, 0)
-                        } else {
-                            print("currentLevel \(self.currentLevel)")
-                            print("image \(imageName), score \(self.score)")
-                            self.score += 1000
-                        }
-                        
-                        // if there are less than 20 collisions in total on all obstacles in this level, give bonus which is the level number * 1000
-                        print("endOfLevel: \(self.endOfLevel)")
-                        if self.endOfLevel {
-                            if totalLevelCollisions < 20 {
-                                self.score += (self.currentLevel * 1000)
-                            }
-                            
-                            totalLevelCollisions = 0
-                            self.scoredImages.removeAll()
-                        }
+
                     updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
                     getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
 
-                        print("score after calc \(self.score)")
-                    
-                   // }
-                 
-                }
-                
-            }
+
+            //pass in gameState so we can update and use the gameState variables in HIWGameLobbyView and the viewcontroller with the detection
+            ViewControllerView(obstacleImageName: $checkCollisionOn, gameState: gameState)
                 .edgesIgnoringSafeArea(.all)
 
             // 2. Obstacle View
@@ -277,7 +233,7 @@ struct HIWGameLobbyView: View {
                                     Spacer()
                                     CustomText(
                                         config: CustomTextConfig(
-                                            text: "\(score)",
+                                            text: "\(gameState.score)",
                                             titleColor: .darkBlue, fontSize: 18)
                                     )
                                     .font(.body)
@@ -294,8 +250,8 @@ struct HIWGameLobbyView: View {
                                     Spacer()
 
                                     HStack(spacing: 5) {
-                                        ForEach(0..<Int(maxHealth), id: \.self) { index in
-                                            if index < Int(health) {
+                                        ForEach(0..<Int(gameState.maxHealth), id: \.self) { index in
+                                            if index < Int(gameState.health) {
                                                 Image(systemName: "heart.fill")
                                                     .foregroundColor(appState.darkMode ? .white : .darkBlue)
                                                     .font(.title2)
@@ -320,7 +276,7 @@ struct HIWGameLobbyView: View {
                                     Spacer()
                                     CustomText(
                                         config: CustomTextConfig(
-                                            text: "\(currentLevel)/\(5)",
+                                            text: "\(gameState.currentLevel)/\(5)",
                                             titleColor: .darkBlue, fontSize: 18)
                                     )
                                     .font(.body)
@@ -419,7 +375,7 @@ struct HIWGameLobbyView: View {
                 .accessibilityIdentifier("settingsView")
                 .onDisappear {
                     loadLevelImageMap()
-                    obstacles = levelImageMap[currentLevel] ?? []
+                    obstacles = levelImageMap[gameState.currentLevel] ?? []
                     fetchGameSettings(userId: userId, gameId: gameId)
                 }
                 .onChange(of: showSettings) { updatedShowSettings in
@@ -482,17 +438,19 @@ struct HIWGameLobbyView: View {
             // 8. Completion Screen
             if showCompletionScreen {
                 CompletionScreenView(
-                    levelNumber: currentLevel,
+                    levelNumber: gameState.currentLevel,
                     totalLevels: 5,
-                    score: score,
-                    health: health,
+                    score: gameState.score,
+                    health: gameState.health,
                     userId: userId,
                     isMuted: $isMuted,
                     audioPlayer: $audioPlayer,
                     onNextLevel: {
-                        currentLevel += 1
+                        gameState.currentLevel += 1
+                        gameState.scoreGainedInLevel = 0
+                        gameState.healthLostInLevel = 0
                         showCompletionScreen = false
-                        endOfLevel = false
+                        gameState.endOfLevel = false
                         isPlaying = false
                         stopObstacleCycle()
                         //startObstacleCycle()
@@ -507,15 +465,15 @@ struct HIWGameLobbyView: View {
             // 9. End Game Screen
             if showFailureScreen {
                 FailedLevelScreenView(
-                    levelNumber: currentLevel,
+                    levelNumber: gameState.currentLevel,
                     totalLevels: 5,
-                    score: score,
-                    health: health,
+                    score: gameState.score,
+                    health: gameState.health,
                     onRetryLevel: {
                         showFailureScreen = false
                         isPlaying = false
                         stopObstacleCycle()
-                        health += 3
+                        gameState.health += 3
                         //startObstacleCycle()
                     },
                     onQuitGame: {
@@ -533,8 +491,8 @@ struct HIWGameLobbyView: View {
                 EndGameScreenView(
                     levelNumber: 5,  // Final level
                     totalLevels: 5,  // Total levels
-                    score: score,
-                    health: health,
+                    score: gameState.score,
+                    health: gameState.health,
                     userId: userId,
                     isMuted: $isMuted,
                     audioPlayer: $audioPlayer,
@@ -549,19 +507,19 @@ struct HIWGameLobbyView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear {
             loadLevelImageMap()
-            obstacles = levelImageMap[currentLevel] ?? []
+            obstacles = levelImageMap[gameState.currentLevel] ?? []
             fetchGameSettings(userId: userId, gameId: gameId)
             loadSoundEffect()
             loadAudio()
         }
-        .onChange(of: currentLevel) { newLevel in
+        .onChange(of: gameState.currentLevel) { newLevel in
             obstacles = levelImageMap[newLevel] ?? []
             stopObstacleCycle()
             //startObstacleCycle()
         }
         .onChange(of: selectedDifficulty) { newDifficulty in
             loadLevelImageMap()
-            obstacles = levelImageMap[currentLevel] ?? []
+            obstacles = levelImageMap[gameState.currentLevel] ?? []
         }
     }
 
@@ -642,25 +600,25 @@ struct HIWGameLobbyView: View {
     
     private func scheduleNextObstacle() {
         //if health reaches 0 before level is over, show failure screen
-        if health == 0 {
+        if gameState.health == 0 {
           stopObstacleCycle()
           showFailureScreen = true
-            if self.score >= 4000 {
-                score -= 4000
-            }
           return
         }
         
+        gameState.scoreGainedInLevel = 0
+        gameState.healthLostInLevel = 0
+        
         // If we've gone through all obstacles or have an invalid index, show completion screen
-        if (obstacleIndex < 0 && health > 0) || (obstacleIndex >= obstacles.count) {
+        if (obstacleIndex < 0 && gameState.health > 0) || (obstacleIndex >= obstacles.count) {
             // Safety check: ensure we stop any running timers
             stopObstacleCycle()
             
-            if currentLevel >= 5 {
+            if gameState.currentLevel >= 5 {
                 showEndGameScreen = true
             } else {
                 showCompletionScreen = true
-                endOfLevel = true
+                gameState.endOfLevel = true
             }
             return
         }
@@ -674,9 +632,6 @@ struct HIWGameLobbyView: View {
                 
                 self.soundEffectPlayer?.play()
 
-                Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
-                    self.soundEffectPlayer?.stop()  // Stop the audio after 1 second
-                }
             } else {
                 self.soundEffectPlayer?.stop()
             }
@@ -689,6 +644,7 @@ struct HIWGameLobbyView: View {
         timer = Timer.scheduledTimer(withTimeInterval: difficultyTimer, repeats: false) { _ in
             updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
             print(self.obstacleIndex)
+
             if !isSoundEffectMuted {
                     self.soundEffectPlayer?.stop()
                     self.soundEffectPlayer?.currentTime = 0
@@ -696,15 +652,15 @@ struct HIWGameLobbyView: View {
                     
                     self.soundEffectPlayer?.play()
 
-                    Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
-                        self.soundEffectPlayer?.stop()  // Stop the audio after 1 second
-                    }
+
                 } else {
                     self.soundEffectPlayer?.stop()
                 }
             getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
 
             //print(isSoundEffectMuted)
+            // Show current obstacle
+            checkCollisionOn = obstacles[obstacleIndex]
             self.obstacleIndex += 1
             self.scheduleNextObstacle()
         }
@@ -756,7 +712,7 @@ struct HIWGameLobbyView: View {
                             self.selectedDifficulty = difficulty
                             // Reload level images when difficulty is set
                             self.loadLevelImageMap()
-                            self.obstacles = self.levelImageMap[self.currentLevel] ?? []
+                            self.obstacles = self.levelImageMap[gameState.currentLevel] ?? []
                         } else {
                             self.selectedDifficulty = .normal
                             print("Invalid difficulty stored in server")
@@ -1100,7 +1056,7 @@ struct PauseMenuView: View {
 
             CustomButton(
                 config: CustomButtonConfig(
-                    title: appState.localized("Game Settings"), width: 175, buttonColor: .lightBlue,
+                    title: appState.localized("Game Settings"), width: appState.currentLanguage == "ES" ? 250 : 175, buttonColor: .lightBlue,
                     action: {
                         openedFromPauseMenu = true
                         showSettings = true
@@ -1159,9 +1115,9 @@ struct ScoringInfoPopupView: View {
     @State private var selectedInfoIndex: Int = 0
 
     private let scoringMessages = [
-        "Each ❌ shows where you 'hit' the wall. Each hit is -50 points.",
-        "Every time you clear a wall with less than 20 hits, +1000 points",
-        "For every level where you hit all walls less than 20 times total, you get a bonus of 1000 × the level number"
+        "Each ❌ shows where you 'hit' the wall. The total number of hits you have per wall will determine if you get 50, 75, or 100 points for that wall.",
+        "Every time you clear a wall (having 0 hits or ❌), you get +100 points",
+        "For every level where you go through each wall with 0 hits in total, you get a level bonus of 100 points!"
     ]
 
     var body: some View {
