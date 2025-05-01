@@ -1,7 +1,5 @@
 import SwiftUI
 
-// MARK: - Models and Enums
-
 struct GameData: Decodable {
     let game_id: Int
     let session_count: Int
@@ -11,8 +9,6 @@ enum PlayCountType {
     case everyone, me
 }
 
-// MARK: - Main View
-
 struct GameCenterPageView: View {
     @State private var selectedGame: Int = 0
     @State private var sortOption: SortOption = .default
@@ -21,12 +17,12 @@ struct GameCenterPageView: View {
     @State private var showComingSoonPopup: Bool = false
     @ObservedObject var userViewModel: UserViewModel
     @EnvironmentObject var appState: AppState
-    
+
     @State private var showCreateLobbyPopup = false
     @State private var showJoinGamePopup = false
     @State private var nameInput = ""
     @State private var codeInput = ""
-    
+
     @EnvironmentObject var webSocketManager: WebSocketManager
 
       init(userViewModel: UserViewModel) {
@@ -170,8 +166,6 @@ struct GameCenterPageView: View {
     }
 }
 
-// MARK: - Game Tab View
-
 struct GameTabView: View {
     @Binding var selectedGame: Int
     let games: [(gameId: Int, name: String, icon: String, buttonColor: Color, sessionCount: Int, destination: AnyView)]
@@ -183,45 +177,47 @@ struct GameTabView: View {
     var body: some View {
         TabView(selection: $selectedGame) {
             ForEach(Array(games.indices), id: \.self) { index in
-                VStack {
-                    SelectGame(game: games[index], playCountType: playCountType)
+                NavigationLink(destination: games[index].destination) {
+                    VStack {
+                        SelectGame(game: games[index], playCountType: playCountType)
 
-                    if games[index].gameId == 1 {
-                        HStack(spacing: 5) {
-                            Spacer()
-                            Button("Create Game") {
-                                webSocketManager.connect()
-                                let message: [String: Any] = [
-                                    "type": "CREATE_LOBBY",
-                                    "payload": [
-                                        "userId": userViewModel.userid,
-                                        "username": userViewModel.username
+                        if games[index].gameId == 1 {
+                            HStack(spacing: 5) {
+                                Spacer()
+                                Button("Create Game") {
+                                    webSocketManager.connect()
+                                    let message: [String: Any] = [
+                                        "type": "CREATE_LOBBY",
+                                        "payload": [
+                                            "userId": userViewModel.userid,
+                                            "username": userViewModel.username
+                                        ]
                                     ]
-                                ]
-                                webSocketManager.send(message: message)
+                                    webSocketManager.send(message: message)
+                                }
+                                .frame(width: 150, height: 50)
+                                .background(Color.darkBlue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+
+                                Spacer()
+
+                                Button("Join Game") {
+                                    showJoinGamePopup = true
+                                }
+                                .frame(width: 150, height: 50)
+                                .background(Color.darkBlue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+
+                                Spacer()
                             }
-                            .frame(width: 150, height: 50)
-                            .background(Color.darkBlue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-
-                            Spacer()
-
-                            Button("Join Game") {
-                                showJoinGamePopup = true
-                            }
-                            .frame(width: 150, height: 50)
-                            .background(Color.darkBlue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-
-                            Spacer()
+                            .padding(.horizontal, 40)
+                            .padding(.vertical, 20)
                         }
-                        .padding(.horizontal, 40)
-                        .padding(.vertical, 20)
                     }
+                    .scaleEffect(selectedGame == index ? 1.2 : 1.0)
                 }
-                .scaleEffect(selectedGame == index ? 1.2 : 1.0)
                 .tag(index)
             }
         }
@@ -229,8 +225,6 @@ struct GameTabView: View {
         .frame(height: 375)
     }
 }
-
-// MARK: - Game Center Header
 
 struct GameCenterHeader: View {
     @Binding var sortOption: GameCenterPageView.SortOption
@@ -296,8 +290,6 @@ struct GameCenterHeader: View {
     }
 }
 
-// MARK: - SelectGame View
-
 struct SelectGame: View {
     let game: (gameId: Int, name: String, icon: String, buttonColor: Color, sessionCount: Int, destination: AnyView)
     let playCountType: PlayCountType
@@ -325,8 +317,6 @@ struct SelectGame: View {
         .cornerRadius(20)
     }
 }
-
-// MARK: - CreateLobbyPopup
 
 struct CreateLobbyPopup: View {
     @Binding var nameInput: String
@@ -359,8 +349,6 @@ struct CreateLobbyPopup: View {
     }
 }
 
-// MARK: - JoinGamePopup
-
 struct JoinGamePopup: View {
     @Binding var codeInput: String
     @EnvironmentObject var appState: AppState
@@ -372,11 +360,11 @@ struct JoinGamePopup: View {
         VStack(spacing: 16) {
             Text(appState.localized("Enter join code"))
                 .font(.headline)
-            
+
             TextField(appState.localized("Code"), text: $codeInput)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.horizontal)
-            
+
             Button("Join") {
                 webSocketManager.connect()
                 let message: [String: Any] = [
