@@ -50,6 +50,8 @@ struct HIWGameLobbyView: View {
     //observable object -- acts like the appstate except it stores the game variables (look at the Model folder to find it)
     @StateObject var gameState = GameState()
     @EnvironmentObject var appState: AppState
+    
+    @State private var startTime = Date()
 
 
     //Loading audio
@@ -488,12 +490,15 @@ struct HIWGameLobbyView: View {
             
             // 10. End Game Screen
             if showEndGameScreen {
+                let endTime = Date()
                 EndGameScreenView(
+                    userViewModel: userViewModel,
                     levelNumber: 5,  // Final level
                     totalLevels: 5,  // Total levels
                     score: gameState.score,
                     health: gameState.health,
                     userId: userId,
+                    timePlayed: endTime.timeIntervalSince(startTime),
                     isMuted: $isMuted,
                     audioPlayer: $audioPlayer,
                     onNextLevel: { },
@@ -752,6 +757,8 @@ struct HIWGameLobbyView: View {
         }.resume()
     }
 }
+
+
 
 func updateGameSettings(userId: Int, gameId: Int, diff: String, theme: String, mode: String) {
     guard let url = URL(string: APIHelper.getBaseURL() + "/gameSettings") else {

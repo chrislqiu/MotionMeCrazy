@@ -11,6 +11,8 @@ struct EndGameScreenView: View {
 
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var appState: AppState
+    @ObservedObject var userViewModel: UserViewModel
+
 
     //@State private var showQuitConfirmation = false // shows quit
     @State private var errorMessage: String?
@@ -19,6 +21,7 @@ struct EndGameScreenView: View {
     var score: Int
     var health: Double
     var userId: Int
+    var timePlayed: TimeInterval
     @Binding var isMuted: Bool
     @Binding var audioPlayer: AVAudioPlayer?
     var onNextLevel: () -> Void
@@ -71,6 +74,7 @@ struct EndGameScreenView: View {
                 if !appState.offlineMode {
                     updateBadge(levelNumber: levelNumber)
                 }
+                saveGameSession(userId: userViewModel.userid, score: score, timePlayed: timePlayed)
             }
         }
     
@@ -125,3 +129,53 @@ struct EndGameScreenView: View {
 
 
 
+func saveGameSession(userId: Int, score: Int, timePlayed: TimeInterval) {
+    guard let url = URL(string: APIHelper.getBaseURL() + "/stats/userGameSession") else {
+        print("Invalid URL")
+        return
+    }
+
+    let timePlayedMinutes = Int(timePlayed / 60)
+
+    let body: [String: Any] = [
+        "userId": String(userId),
+        "gameId": "1",
+        "score": score,
+        "timePlayed": timePlayedMinutes,
+    ]
+
+
+    guard let jsonData = try? JSONSerialization.data(withJSONObject: body)
+    else {
+        print("Failed to encode JSON")
+        return
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = jsonData
+
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        DispatchQueue.main.async {
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid response from server")
+                return
+            }
+
+            guard httpResponse.statusCode == 200 else {
+                print(
+                    "Failed to save game session. Status code: \(httpResponse.statusCode)"
+                )
+                return
+            }
+
+            print("Game session saved successfully!")
+        }
+    }.resume()
+}
