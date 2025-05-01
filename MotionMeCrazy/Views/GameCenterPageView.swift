@@ -173,6 +173,8 @@ struct GameTabView: View {
     @ObservedObject var userViewModel: UserViewModel
     @ObservedObject var webSocketManager: WebSocketManager
     @Binding var showJoinGamePopup: Bool
+    @EnvironmentObject var appState: AppState
+
 
     var body: some View {
         TabView(selection: $selectedGame) {
@@ -183,8 +185,7 @@ struct GameTabView: View {
 
                         if games[index].gameId == 1 {
                             HStack(spacing: 5) {
-                                Spacer()
-                                Button("Create Game") {
+                                CustomButton(config: CustomButtonConfig(title: appState.localized("Create Game"), width: 140, buttonColor: .darkBlue, action: {
                                     webSocketManager.connect()
                                     let message: [String: Any] = [
                                         "type": "CREATE_LOBBY",
@@ -194,25 +195,16 @@ struct GameTabView: View {
                                         ]
                                     ]
                                     webSocketManager.send(message: message)
-                                }
-                                .frame(width: 150, height: 50)
-                                .background(Color.darkBlue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
+                                }))
+                                
+                                                                Spacer()
 
-                                Spacer()
-
-                                Button("Join Game") {
+                                
+                                CustomButton(config: CustomButtonConfig(title: appState.localized("Join Game"), width: 140, buttonColor: .darkBlue, action: {
                                     showJoinGamePopup = true
-                                }
-                                .frame(width: 150, height: 50)
-                                .background(Color.darkBlue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-
-                                Spacer()
+                                }))
                             }
-                            .padding(.horizontal, 40)
+                            .padding(.horizontal, 60)
                             .padding(.vertical, 20)
                         }
                     }

@@ -274,7 +274,9 @@ class AppState: ObservableObject {
                     "Create": "Crear",
                     "Enter join code": "Ingresa el código",
                     "Code": "Código",
-                    "Join": "Unirse"
+                    "Join": "Unirse",
+            "Create Game": "Crear Partida",
+            "Join Game": "Unirse a la partida"
             
         ]
     ]
