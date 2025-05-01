@@ -151,7 +151,7 @@ struct ShareScoreContent: View {
     var totalLevels: Int
     var score: Int
     var health: Double
-    
+    @EnvironmentObject var appState: AppState
     var body: some View {
         
         ZStack {
@@ -165,15 +165,15 @@ struct ShareScoreContent: View {
                     .foregroundStyle(.darkBlue)
                     .frame(maxWidth: .infinity, alignment: .center)
                 
-                Text(String(format: ("Level %d/%d Completed!"), levelNumber, totalLevels))
+                Text(String(format: appState.localized("Level %d/%d Completed!"), levelNumber, totalLevels))
                     .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(.darkBlue)
                 
-                Text(String(format: ("Score: %d"),score))
+                Text(String(format: appState.localized("Score: %d"),score))
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(.darkBlue)
                 
-                Text(String(format: ("Remaining Lives: %d"), health))
+                Text(String(format: appState.localized("Remaining Lives: %d"), health))
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(.darkBlue)
             }

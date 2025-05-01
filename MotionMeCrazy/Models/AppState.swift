@@ -136,7 +136,15 @@ class AppState: ObservableObject {
                   "For every level where you go through each wall with 0 hits in total, you get a level bonus of 100 points!": "For every level where you go through each wall with 0 hits in total, you get a level bonus of 100 points!",
                "Scoring":"Scoring",
                "Modes": "Modes",
-               "Themes":"Themes"
+               "Themes":"Themes",
+               "Your Plays: %d": "Your Plays: %d",
+               "Plays: %d": "Plays: %d",
+               "Enter your name": "Enter your name",
+                       "Name": "Name",
+                       "Create": "Create",
+                       "Enter join code": "Enter join code",
+                       "Code": "Code",
+                       "Join": "Join"
                
            ],
         "ES": [
@@ -261,7 +269,14 @@ class AppState: ObservableObject {
             "For every level where you go through each wall with 0 hits in total, you get a level bonus of 100 points!": "Por cada nivel en el que pasas todos los muros sin ningún ❌, obtienes un bono de nivel de 100 puntos.",
             "Scoring": "Puntuación",
             "Modes": "Modos",
-            "Themes": "Temas"
+            "Themes": "Temas",
+            "Plays: %d": "Partidas: %d",
+            "Enter your name": "Ingresa tu nombre",
+                    "Name": "Nombre",
+                    "Create": "Crear",
+                    "Enter join code": "Ingresa el código",
+                    "Code": "Código",
+                    "Join": "Unirse"
             
         ]
     ]

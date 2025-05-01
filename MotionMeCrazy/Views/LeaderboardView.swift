@@ -148,13 +148,13 @@ struct LeaderboardView: View {
             .background(Color.black.ignoresSafeArea())
             .navigationBarBackButtonHidden(true)
             .navigationBarItems(
-//                leading: Button(action: {
-//                    presentationMode.wrappedValue.dismiss()
-//                }) {
-//                    Image(systemName: "arrow.left.circle.fill")
-//                        .font(.title)
-//                        .foregroundColor(appState.darkMode ? .white : .darkBlue)
-//                },
+                leading: Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Image(systemName: "arrow.left.circle.fill")
+                        .font(.title)
+                        .foregroundColor(appState.darkMode ? .white : .darkBlue)
+                },
                 trailing: Button(action: {
                     refreshLeaderboard()
                 }) {

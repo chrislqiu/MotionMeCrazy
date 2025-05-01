@@ -301,6 +301,7 @@ struct GameCenterHeader: View {
 struct SelectGame: View {
     let game: (gameId: Int, name: String, icon: String, buttonColor: Color, sessionCount: Int, destination: AnyView)
     let playCountType: PlayCountType
+    @EnvironmentObject var appState: AppState
 
     var body: some View {
         VStack(spacing: 12) {
@@ -315,7 +316,7 @@ struct SelectGame: View {
                 .font(.title)
                 .foregroundColor(.white)
 
-            Text(playCountType == .me ? "Your Plays: \(game.sessionCount)" : "Plays: \(game.sessionCount)")
+            Text(playCountType == .me ? String(format: appState.localized("Your Plays: %d"), game.sessionCount) : String(format: appState.localized("Plays: %d"), game.sessionCount))
                 .font(.subheadline)
                 .foregroundColor(.white)
         }
@@ -329,18 +330,19 @@ struct SelectGame: View {
 
 struct CreateLobbyPopup: View {
     @Binding var nameInput: String
+    @EnvironmentObject var appState: AppState
     @ObservedObject var webSocketManager: WebSocketManager
     @ObservedObject var userViewModel: UserViewModel
     @Binding var showPopup: Bool
 
     var body: some View {
         VStack {
-            Text("Enter your name")
+            Text(appState.localized("Enter your name"))
                 .font(.headline)
-            TextField("Name", text: $nameInput)
+            TextField(appState.localized("Name"), text: $nameInput)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
-            Button("Create") {
+            Button(appState.localized("Create")) {
                 let message: [String: Any] = [
                     "type": "CREATE_LOBBY",
                     "payload": [
@@ -361,16 +363,17 @@ struct CreateLobbyPopup: View {
 
 struct JoinGamePopup: View {
     @Binding var codeInput: String
+    @EnvironmentObject var appState: AppState
     @ObservedObject var webSocketManager: WebSocketManager
     @ObservedObject var userViewModel: UserViewModel
     @Binding var showPopup: Bool
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Enter join code")
+            Text(appState.localized("Enter join code"))
                 .font(.headline)
             
-            TextField("Code", text: $codeInput)
+            TextField(appState.localized("Code"), text: $codeInput)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.horizontal)
             
