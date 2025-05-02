@@ -43,6 +43,18 @@ class OverlayView: UIImageView {
 
   /// CGContext to draw the detection result.
   var context: CGContext!
+    
+    func clear(_ image: UIImage) {
+        if context == nil {
+          UIGraphicsBeginImageContext(image.size)
+          guard let context = UIGraphicsGetCurrentContext() else {
+            fatalError("set current context faild")
+          }
+          self.context = context
+        }
+        guard let newImage = UIGraphicsGetImageFromCurrentImageContext() else { fatalError() }
+        self.image = newImage
+    }
 
   /// Draw the detected keypoints on top of the input image.
   ///
@@ -66,7 +78,7 @@ class OverlayView: UIImageView {
     context.strokePath()
     drawCollisions(at: context, collisions: collisions)
     context.setStrokeColor(UIColor.red.cgColor)
-    context.setLineWidth(3.0)
+    context.setLineWidth(5.0)
     context.strokePath()
     guard let newImage = UIGraphicsGetImageFromCurrentImageContext() else { fatalError() }
     self.image = newImage
@@ -102,7 +114,7 @@ class OverlayView: UIImageView {
   }
 
   private func drawCollisions(at context: CGContext, collisions: [CGPoint]) {
-    let size: CGFloat = 20 // Size of the X
+    let size: CGFloat = 40 // Size of the X
     let halfSize = size / 2
     
     for point in collisions {
