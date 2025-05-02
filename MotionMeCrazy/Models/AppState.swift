@@ -143,7 +143,13 @@ class AppState: ObservableObject {
                        "Create": "Create",
                        "Enter join code": "Enter join code",
                        "Code": "Code",
-                       "Join": "Join"
+                       "Join": "Join",
+               "Normal": "Normal",
+                       "Hard": "Hard",
+                       "Easy": "Easy",
+                       "Random": "Random",
+                       "Accessibility": "Accessibility",
+                       "Game Mode Options:": "Game Mode Options:"
                
            ],
         "ES": [
@@ -276,7 +282,13 @@ class AppState: ObservableObject {
                     "Code": "Código",
                     "Join": "Unirse",
             "Create Game": "Crear Partida",
-            "Join Game": "Unirse a la partida"
+            "Join Game": "Unirse a la partida",
+            "Normal": "Normal",
+                    "Hard": "Difícil",
+                    "Easy": "Fácil",
+                    "Random": "Aleatorio",
+                    "Accessibility": "Accesibilidad",
+                    "Game Mode Options:": "Opciones de modo de juego:"
             
         ]
     ]

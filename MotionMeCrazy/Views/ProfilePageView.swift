@@ -76,7 +76,7 @@ struct ProfilePageView: View {
                                 CustomButton(
                                     config: CustomButtonConfig(
                                         title: appState.localized("Stats"),
-                                        width: 100,
+                                        width: appState.currentLanguage == "EN" ? 100 : 150,
                                         buttonColor: .darkBlue,
                                         destination: AnyView(StatisticsPageView(userViewModel: userViewModel))  // Ensure type erasure with AnyView
                                     )

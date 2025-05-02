@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SentPageView: View {
     @ObservedObject var userViewModel: UserViewModel
+    @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var appState: AppState
     @State private var errorMessage: String?
     @State private var requests: [FriendRequest] = []
@@ -32,7 +33,7 @@ struct SentPageView: View {
                         
                         CustomButton(config: CustomButtonConfig(
                             title: appState.localized("Pending"),
-                            width: 100,
+                            width: appState.currentLanguage == "EN" ? 100 : 125,
                             buttonColor: .darkBlue,
                             destination: AnyView(PendingPageView(userViewModel: userViewModel))
                         ))
@@ -61,6 +62,16 @@ struct SentPageView: View {
         }.onAppear() {
             getSentRequests(userId: userViewModel.userid, requests: $requests)
         }
+        .navigationBarBackButtonHidden(true)
+        .navigationBarItems(
+            leading: Button(action: {
+                presentationMode.wrappedValue.dismiss()
+            }) {
+                Image(systemName: "arrow.left.circle.fill")
+                    .font(.title)
+                    .foregroundColor(appState.darkMode ? .white : .darkBlue)
+            }
+        )
     }
     
     
