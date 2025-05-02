@@ -16,11 +16,18 @@ struct LeaderboardView: View {
     
     @State private var leaderboardEntries: [(username: String, profilePicId: String, score: Int)] = []
     @State private var friendsLeaderboardEntries: [(username: String, profilePicId: String, score: Int)] = []
+    @State private var isLoading = false
+    @State private var didFetchTopScores = false
     
 
     private func refreshLeaderboard() {
-        fetchTopScores()
-        fetchTopFriendScores(userId: userViewModel.userid, gameId: 1)
+        guard !isLoading else { return }
+            isLoading = true
+            fetchTopScores()
+            fetchTopFriendScores(userId: userViewModel.userid, gameId: 1)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                isLoading = false
+            }
        
     }
 
@@ -37,8 +44,10 @@ struct LeaderboardView: View {
 
                     HStack {
                         //CustomSelectedButton(config: .init(title: "Public", width: 100, action: { withAnimation { publicLeaderboardVisible = true }}))
-                        CustomButton(config: .init(title: appState.localized("Public"), width: 100, buttonColor: publicLeaderboardVisible ? .darkBlue : .white.opacity(0.25), action: { withAnimation { publicLeaderboardVisible = true }}))
-                        CustomButton(config: .init(title: appState.localized("Friends"), width: 100, buttonColor: !publicLeaderboardVisible ? .darkBlue : .white.opacity(0.5), action: { withAnimation { publicLeaderboardVisible = false }}))
+                        CustomButton(config: .init(title: appState.localized("Public"), width: 100, buttonColor: publicLeaderboardVisible ? .darkBlue : .white.opacity(0.25), action: { fetchTopScores()
+                            withAnimation { publicLeaderboardVisible = true }}))
+                        CustomButton(config: .init(title: appState.localized("Friends"), width: 100, buttonColor: !publicLeaderboardVisible ? .darkBlue : .white.opacity(0.5), action: { fetchTopFriendScores(userId: userViewModel.userid, gameId: 1)
+                            withAnimation { publicLeaderboardVisible = false }}))
 
                         /*Button(action: {
                             withAnimation { publicLeaderboardVisible = true }
@@ -165,7 +174,12 @@ struct LeaderboardView: View {
             )
         }
         .onAppear {
-            refreshLeaderboard()
+            if !appState.offlineMode && !didFetchTopScores {
+                fetchTopScores()
+                didFetchTopScores = true
+                print("fetched top scores once")
+            }
+            //fetchTopFriendScores(userId: userViewModel.userid, gameId: 1)
         }
         
     }

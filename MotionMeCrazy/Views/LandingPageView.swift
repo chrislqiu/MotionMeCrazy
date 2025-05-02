@@ -133,7 +133,7 @@ struct LandingPageView: View {
 
                                 
                                 Button(action: {
-                                    loginUser()
+                                    loginUser(appState: appState)
                                 }) {
                                     Text("Login")
                                         .font(.title2)
@@ -316,7 +316,7 @@ struct LandingPageView: View {
         }.resume()
     }
 
-    func loginUser() {
+    func loginUser(appState: AppState) {
         guard let url = URL(string: APIHelper.getBaseURL() + "/signin") else {
             print("Invalid URL")
             return
@@ -353,6 +353,7 @@ struct LandingPageView: View {
                                 userViewModel.userid = userResponse.userid
                                 userViewModel.username = userResponse.username
                                 userViewModel.profilePicId = "pfp1"
+                                fetchLangSettings(userId: userResponse.userid, appState: appState)
                                 self.errorMessage = nil
                             } catch {
                                 self.errorMessage = "Failed to parse response"
@@ -371,6 +372,50 @@ struct LandingPageView: View {
     }
 }
 
+func fetchLangSettings(userId: Int, appState: AppState) {
+    guard let url = URL(string: APIHelper.getBaseURL() + "/appSettings?userId=\(userId)") else {
+        print("Invalid URL")
+        return
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        DispatchQueue.main.async {
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid response from server")
+                return
+            }
+
+            if httpResponse.statusCode == 200, let data = data {
+                do {
+                    let settings = try JSONDecoder().decode(AppSettings.self, from: data)
+
+
+                    if let language = Language(rawValue: settings.language) {
+
+                        appState.currentLanguage = settings.language
+                        print("Updated appState.currentLanguage to \(settings.language)")
+                    } else {
+                        print("Invalid language stored in server")
+                    }
+
+                } catch {
+                    print("Failed to decode JSON: \(error.localizedDescription)")
+                }
+            } else {
+                print("Failed to fetch app settings. Status code: \(httpResponse.statusCode)")
+            }
+        }
+    }.resume()
+}
 
 
 struct UserResponse: Codable {

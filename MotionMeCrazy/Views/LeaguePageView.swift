@@ -38,6 +38,7 @@ struct LeaguePageView: View {
     @State private var leagueCodeToJoin: String = "" // Added for league code input
     @State private var isJoiningLeague: Bool = false // Added for tracking league join state
     @State private var inputJoinLeagueCode = ""
+    @State private var didFetchLeagues = false
     
     @ObservedObject var userViewModel: UserViewModel
     @EnvironmentObject var appState: AppState
@@ -150,9 +151,11 @@ struct LeaguePageView: View {
                 
             }
             .onAppear {
-                if !appState.offlineMode {
+                if !appState.offlineMode && !didFetchLeagues {
                     fetchLeagues()
                     fetchOtherLeagues()
+                    didFetchLeagues = true
+                    print("Fetch league once")
                 }
             }
         }
