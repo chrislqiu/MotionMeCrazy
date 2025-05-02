@@ -30,7 +30,7 @@ struct HIWGameLobbyView: View {
     
     @State private var obstacles: [String] = []
     @State private var levelImageMap: [Int: [String]] = [:]
-    @State private var checkCollisionOn: String!
+    @State private var obstacleFile: String!
     @StateObject private var countdownManager = CountdownManager()
     @State private var isPaused = false
     @State private var savedObstacleIndex = 0
@@ -109,7 +109,7 @@ struct HIWGameLobbyView: View {
 
 
             //pass in gameState so we can update and use the gameState variables in HIWGameLobbyView and the viewcontroller with the detection
-            ViewControllerView(obstacleImageName: $checkCollisionOn, gameState: gameState)
+            ViewControllerView(obstacleImageName: $obstacleFile, gameState: gameState)
                 .edgesIgnoringSafeArea(.all)
 
             // 2. Obstacle View
@@ -449,8 +449,6 @@ struct HIWGameLobbyView: View {
                     audioPlayer: $audioPlayer,
                     onNextLevel: {
                         gameState.currentLevel += 1
-                        gameState.scoreGainedInLevel = 0
-                        gameState.healthLostInLevel = 0
                         showCompletionScreen = false
                         gameState.endOfLevel = false
                         isPlaying = false
@@ -475,7 +473,7 @@ struct HIWGameLobbyView: View {
                         showFailureScreen = false
                         isPlaying = false
                         stopObstacleCycle()
-                        gameState.health += 3
+                        gameState.resetLevel()
                         //startObstacleCycle()
                     },
                     onQuitGame: {
@@ -526,6 +524,12 @@ struct HIWGameLobbyView: View {
         .onChange(of: selectedDifficulty) { newDifficulty in
             loadLevelImageMap()
             obstacles = levelImageMap[gameState.currentLevel] ?? []
+        }
+        .onChange(of: gameState.health) { newHealth in
+            if newHealth < 1 {
+                stopObstacleCycle()
+                showFailureScreen = true
+            }
         }
     }
 
@@ -612,18 +616,8 @@ struct HIWGameLobbyView: View {
     }
     
     private func scheduleNextObstacle() {
-        //if health reaches 0 before level is over, show failure screen
-        if gameState.health == 0 {
-          stopObstacleCycle()
-          showFailureScreen = true
-          return
-        }
-        
-        gameState.scoreGainedInLevel = 0
-        gameState.healthLostInLevel = 0
-        
         // If we've gone through all obstacles or have an invalid index, show completion screen
-        if (obstacleIndex < 0 && gameState.health > 0) || (obstacleIndex >= obstacles.count) {
+        if (obstacleIndex >= obstacles.count) {
             // Safety check: ensure we stop any running timers
             stopObstacleCycle()
             
@@ -636,44 +630,41 @@ struct HIWGameLobbyView: View {
             return
         }
         
-        // Show current obstacle
-        checkCollisionOn = obstacles[obstacleIndex]
+        let wall = obstacles[obstacleIndex] //tells ViewController what wall is being displayed
+        
         if !isSoundEffectMuted {
+            self.soundEffectPlayer?.stop()
+            self.soundEffectPlayer?.currentTime = 0
+            self.soundEffectPlayer?.prepareToPlay()
+            self.soundEffectPlayer?.play()
+        } else {
+            self.soundEffectPlayer?.stop()
+        }
+        
+        // Schedule the next one after a delay
+        var difficultyTimer = 3.0
+        if (selectedMode == .normal) {
+            difficultyTimer = selectedDifficulty == .easy ? 3.0 : 1.5
+        }
+        
+        timer = Timer.scheduledTimer(withTimeInterval: difficultyTimer, repeats: false) { _ in
+            if !isSoundEffectMuted {
                 self.soundEffectPlayer?.stop()
                 self.soundEffectPlayer?.currentTime = 0
                 self.soundEffectPlayer?.prepareToPlay()
-                
                 self.soundEffectPlayer?.play()
-
             } else {
                 self.soundEffectPlayer?.stop()
             }
-        
-        // Schedule the next one after a delay
-        var difficultyTimer = 1.5
-        if (selectedMode != .random) {
-            difficultyTimer = selectedDifficulty == .easy ? 3.0 : 1.0
-        }
-        timer = Timer.scheduledTimer(withTimeInterval: difficultyTimer, repeats: false) { _ in
-//            updateScore(lobbyCode: webSocketManager.lobbyCode, userId: userViewModel.userid, score: score, health: Int(health))
-            print(self.obstacleIndex)
-
-            if !isSoundEffectMuted {
-                    self.soundEffectPlayer?.stop()
-                    self.soundEffectPlayer?.currentTime = 0
-                    self.soundEffectPlayer?.prepareToPlay()
-                    
-                    self.soundEffectPlayer?.play()
 
 
-                } else {
-                    self.soundEffectPlayer?.stop()
-                }
-//            getAllScores(lobbyCode: webSocketManager.lobbyCode, webSocketManager: webSocketManager)
-
-            //print(isSoundEffectMuted)
-            // Show current obstacle
-            checkCollisionOn = obstacles[obstacleIndex]
+            obstacleFile = wall //tells ViewController what wall to check collisions with
+            gameState.shouldCheckCollisions = true //tells ViewController to check for collisions
+            Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
+                gameState.shouldCheckCollisions = false
+            }
+            
+            //go to next obstacle
             self.obstacleIndex += 1
             self.scheduleNextObstacle()
         }

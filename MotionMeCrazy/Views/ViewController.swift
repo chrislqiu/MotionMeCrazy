@@ -27,73 +27,17 @@ struct ViewControllerView: UIViewControllerRepresentable {
     
     func makeUIViewController(context: Context) -> ViewController {
         let vc = ViewController()
-        //need this thing to stop having the view controller representable and ui view controller to stop tweaking
-        vc.delegate = context.coordinator //if using gamestate, cant directly update it
+        vc.gameState = gameState
         return vc
     }
     
     func updateUIViewController(_ uiViewController: ViewController, context: Context) {
-        guard obstacleImageName != nil else { return }
-        uiViewController.detectCollisions(imageName: obstacleImageName)
-    }
-    
-    //this basically allows us to actually access and use the gameState object in the View controller without causing unpredictable behavior (that one purple warning)
-    func makeCoordinator() -> Coordinator {
-        return Coordinator(gameState: gameState)
-    }
-    
-    //this is how we can update the gameState data from inside the view controller
-    class Coordinator: NSObject {
-        var gameState: GameState
-        
-        init(gameState: GameState) {
-            self.gameState = gameState
-        }
-        
-        // update score
-        func updateScore(with collisionCount: Int) {
-            DispatchQueue.main.async {
-                print("current game level: \(self.gameState.currentLevel)")
-                if collisionCount > 8 {
-                    self.gameState.health = max(self.gameState.health - 1, 0)
-                    self.gameState.healthLostInLevel += 1
-                    print("Health when collision is greater than 8: \(self.gameState.health)")
-                    print("Health  lost when collision is greater than 8: \(self.gameState.healthLostInLevel)")
-                } else if collisionCount > 4 && collisionCount <= 8 {
-                    self.gameState.score += 50
-                    self.gameState.scoreGainedInLevel += 50
-                    print("Score when 4 < collision <= 8: \(self.gameState.score)")
-                    print("score gained when 4 < collision <= 8: \(self.gameState.scoreGainedInLevel)")
-                } else if collisionCount > 0 && collisionCount <= 4{
-                    self.gameState.score += 75
-                    self.gameState.scoreGainedInLevel += 75
-                    print("Score when 0 < collision count <= 4: \(self.gameState.score)")
-                    print("score gained when 0 < collision <= 4: \(self.gameState.scoreGainedInLevel)")
-                } else {
-                    self.gameState.score += 100
-                    self.gameState.scoreGainedInLevel += 100
-                    print("Score when 0 collisions: \(self.gameState.score)")
-                    print("score gained when 0 collisions: \(self.gameState.scoreGainedInLevel)")
-                }
-                
-                //  total collisions for level
-                self.gameState.collisionsInLevel += collisionCount
-                
-                // end of level sheesh
-                if self.gameState.endOfLevel {
-                    if self.gameState.collisionsInLevel == 0 {
-                        self.gameState.score += 100
-                        self.gameState.scoreGainedInLevel += 100
-                        print("Score of end of level bonus: \(self.gameState.score)")
-                        print("Score gained from end of level bonus: \(self.gameState.scoreGainedInLevel)")
-                    }
-                    self.gameState.collisionsInLevel = 0
-                }
-                
-            }
-        }
+        guard let imageName = obstacleImageName else { return }
+        guard gameState.shouldCheckCollisions else { return }
+        uiViewController.detectCollisions(imageName: imageName)
     }
 }
+
 class ViewController: UIViewController {
     @IBOutlet private var previewLayer: AVCaptureVideoPreviewLayer!
     @IBOutlet private var overlayView: OverlayView!
@@ -102,14 +46,10 @@ class ViewController: UIViewController {
     var skeleton: [KeyPoint]?
     var collisionPoints: [CGPoint] = []
     var isRunning = false
-    var delegate: ViewControllerView.Coordinator?
+    var gameState: GameState = GameState()
     
     let queue = DispatchQueue(label: "serial_queue")
     let minimumScore: Float32 = 0.3
-    
-    //keeps track of image (the obstacles) that have been scored already
-    var scoredImages: [String] = []
-
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -162,21 +102,34 @@ class ViewController: UIViewController {
     }
 
     func detectCollisions(imageName: String) {
-        guard let keypoints = skeleton else { return }
-        
-        if keypoints.isEmpty {
-            print("Skeleton not ready yet")
+        if gameState.scoredImages.contains(imageName) {
+            print("already checked \(imageName)")
             return
         }
         
-        var imageNameArray = imageName.split(separator: "_")
-        var obstacleImageName = "\(imageNameArray[0])_\(imageNameArray[1])"
+        gameState.addImage(imageName)
+        
+        guard let keypoints = skeleton else {
+            print("mr skelly is not in the room with us")
+            return
+        }
+        
+        if keypoints.isEmpty {
+            print("mr skelly has no points")
+            return
+        }
+        
+        let imageNameArray = imageName.split(separator: "_")
+        let obstacleImageName = "\(imageNameArray[0])_\(imageNameArray[1])"
         guard let obstacleImage = UIImage(named: obstacleImageName)?.cgImage else {
             print("Image not loaded correctly")
             return
         }
         
-        guard let pixelData = getPixelData(from: obstacleImage) else { return }
+        guard let pixelData = getPixelData(from: obstacleImage) else {
+            print("pixel data is not here")
+            return
+        }
         
         var points = keypoints
         if imageName.suffix(1) == "a" {
@@ -187,18 +140,17 @@ class ViewController: UIViewController {
         
         checkCollision(keypoints: points, pixelData: pixelData, imageWidth: obstacleImage.width, imageHeight: obstacleImage.height, tolerance: tolerance)
         
-        if collisionPoints.count > 0 {
-            print("Detected \(collisionPoints.count) collisions on obstacle \(imageName).")
+        let cpCount = collisionPoints.count
+        
+        if cpCount > 0 {
+            print("Detected \(cpCount) collisions on obstacle \(imageName).")
         } else {
             print("No collisions detected on obstacle \(imageName)!")
         }
         
-        //checks if image has been scored already, if it hasn't update the score
-        if !scoredImages.contains(imageName) {
-            scoredImages.append(imageName)
-            delegate?.updateScore(with: collisionPoints.count)
+        DispatchQueue.main.async {
+            self.gameState.updateGameState(with: cpCount)
         }
-        
         
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
             self.collisionPoints.removeAll()
@@ -268,7 +220,7 @@ class ViewController: UIViewController {
             }
             
             // If we get here, the keypoint is in white and has no transparent pixels nearby.
-            print("Collision detected at (\(x), \(y))")
+            //print("Collision detected at (\(x), \(y))")
             collisionPoints.append(CGPoint(x: x, y: y))
         }
     }
@@ -284,7 +236,6 @@ extension ViewController: VideoCaptureDelegate {
         // Run inference on a serial queue to avoid race condition.
         queue.async {
             self.isRunning = true
-            self.skeleton = nil
             defer { self.isRunning = false }
 
             // Run pose estimation
@@ -295,12 +246,11 @@ extension ViewController: VideoCaptureDelegate {
                 DispatchQueue.main.async {
                     let image = UIImage(ciImage: CIImage(cvPixelBuffer: pixelBuffer))
 
-                    // If score is too low, clear result remaining in the overlayView.
+                    // ensures skeleton isn't drawn when pose confidence is low
                     if result.score < self.minimumScore {
-                        self.overlayView.image = image
+                        self.overlayView.clear(image)
                         return
                     }
-
                     self.overlayView.draw(at: image, person: result, collisions: self.collisionPoints)
                 }
             } catch {

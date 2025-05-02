@@ -43,6 +43,18 @@ class OverlayView: UIImageView {
 
   /// CGContext to draw the detection result.
   var context: CGContext!
+    
+    func clear(_ image: UIImage) {
+        if context == nil {
+          UIGraphicsBeginImageContext(image.size)
+          guard let context = UIGraphicsGetCurrentContext() else {
+            fatalError("set current context faild")
+          }
+          self.context = context
+        }
+        guard let newImage = UIGraphicsGetImageFromCurrentImageContext() else { fatalError() }
+        self.image = newImage
+    }
 
   /// Draw the detected keypoints on top of the input image.
   ///
