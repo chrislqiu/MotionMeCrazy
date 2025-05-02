@@ -20,6 +20,7 @@ import CoreVideo
 import SwiftUI
 import TensorFlowLite
 import UIKit
+import VideoToolbox
 
 struct ViewControllerView: UIViewControllerRepresentable {
     @Binding var obstacleImageName: String!
@@ -47,6 +48,7 @@ class ViewController: UIViewController {
     var collisionPoints: [CGPoint] = []
     var isRunning = false
     var gameState: GameState = GameState()
+    var lastCaptureTime = Date()
     
     let queue = DispatchQueue(label: "serial_queue")
     let minimumScore: Float32 = 0.3
@@ -244,14 +246,23 @@ extension ViewController: VideoCaptureDelegate {
                 self.skeleton = result.keyPoints
 
                 DispatchQueue.main.async {
-                    let image = UIImage(ciImage: CIImage(cvPixelBuffer: pixelBuffer))
+                    var cgImage: CGImage?
+                    VTCreateCGImageFromCVPixelBuffer(pixelBuffer, options: nil, imageOut: &cgImage)
+                    guard let cgImage = cgImage else { return }
+                    let image = UIImage(cgImage: cgImage)
 
                     // ensures skeleton isn't drawn when pose confidence is low
                     if result.score < self.minimumScore {
                         self.overlayView.clear(image)
-                        return
+                    } else {
+                        self.overlayView.draw(at: image, person: result, collisions: self.collisionPoints)
                     }
-                    self.overlayView.draw(at: image, person: result, collisions: self.collisionPoints)
+                    
+                    if Date().timeIntervalSince(self.lastCaptureTime) > 2.0 && self.gameState.takeScreenshot {
+                        print("screenshot!")
+                        self.gameState.addScreenshot(image)
+                        self.lastCaptureTime = Date()
+                    }
                 }
             } catch {
                 print("Error running pose estimation.")

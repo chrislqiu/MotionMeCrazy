@@ -19,6 +19,7 @@ struct CompletionScreenView: View {
     var score: Int
     var health: Double
     var userId: Int
+    var screenshots: [UIImage]
     @Binding var isMuted: Bool
     @Binding var audioPlayer: AVAudioPlayer?
     var onNextLevel: () -> Void
@@ -44,6 +45,27 @@ struct CompletionScreenView: View {
                     VStack(spacing: 10) {
                         CustomText(config: CustomTextConfig(text: String(format: appState.localized("Score: %d"),score), fontSize:20))
                         CustomText(config: CustomTextConfig(text: String(format: appState.localized("Remaining Lives: %d"),Int(health)), fontSize:20))
+                        if !screenshots.isEmpty {
+                            Text(appState.localized("Highlights"))
+                                .font(.headline)
+                                .padding(.top, 10)
+
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 10) {
+                                    ForEach(Array(screenshots.enumerated()), id: \.offset) { _, image in
+                                        Image(uiImage: image)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: 80, height: 120)
+                                            .clipped()
+                                            .cornerRadius(6)
+                                            .shadow(radius: 3)
+                                    }
+                                }
+                                .padding(.horizontal)
+                            }
+                            .frame(height: 130)
+                        }
                     }
                    
 

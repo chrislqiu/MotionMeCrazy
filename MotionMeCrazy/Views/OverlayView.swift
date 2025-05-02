@@ -52,6 +52,7 @@ class OverlayView: UIImageView {
           }
           self.context = context
         }
+        image.draw(at: .zero)
         guard let newImage = UIGraphicsGetImageFromCurrentImageContext() else { fatalError() }
         self.image = newImage
     }
