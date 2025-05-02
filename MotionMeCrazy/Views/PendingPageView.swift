@@ -11,6 +11,7 @@ private var friendRequests: [FriendRequest] = []
 
 struct PendingPageView: View {
     @ObservedObject var userViewModel: UserViewModel
+    @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var appState: AppState
     
     @State private var errorMessage: String?
@@ -41,7 +42,7 @@ struct PendingPageView: View {
                         
                         CustomButton(config: CustomButtonConfig(
                             title: appState.localized("Sent"),
-                            width: 75,
+                            width: appState.currentLanguage == "EN" ? 75 : 100,
                             buttonColor: .darkBlue,
                             destination: AnyView(SentPageView(userViewModel: userViewModel))
                         ))
@@ -71,6 +72,16 @@ struct PendingPageView: View {
         }.onAppear() {
             getFriends(userId: userViewModel.userid, requests: $requests)
         }
+        .navigationBarBackButtonHidden(true)
+        .navigationBarItems(
+            leading: Button(action: {
+                presentationMode.wrappedValue.dismiss()
+            }) {
+                Image(systemName: "arrow.left.circle.fill")
+                    .font(.title)
+                    .foregroundColor(appState.darkMode ? .white : .darkBlue)
+            }
+        )
     }
 }
 

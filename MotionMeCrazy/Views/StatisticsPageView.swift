@@ -8,7 +8,7 @@ import SwiftUI
 
 struct StatisticsPageView: View {
     @EnvironmentObject var appState: AppState
-
+    @Environment(\.presentationMode) var presentationMode
     @State private var highScore: Int = 0
     @State private var timePlayed: String = "0h 0m"
     @State private var errorMessage: String?
@@ -156,7 +156,7 @@ struct StatisticsPageView: View {
                         CustomButton(
                             config: CustomButtonConfig(
                                 title: appState.localized("Share"),
-                                width: 100,
+                                width: appState.currentLanguage == "EN" ? 100 : 115,
                                 buttonColor: .darkBlue,
                                 action: {
                                     // TODO: Add share function
@@ -186,6 +186,16 @@ struct StatisticsPageView: View {
         .onAppear {
             fetchUserStatistics(userId: userViewModel.userid, gameId: selectedGameId, days: 1)
         }
+        .navigationBarBackButtonHidden(true)
+        .navigationBarItems(
+            leading: Button(action: {
+                presentationMode.wrappedValue.dismiss()
+            }) {
+                Image(systemName: "arrow.left.circle.fill")
+                    .font(.title)
+                    .foregroundColor(appState.darkMode ? .white : .darkBlue)
+            }
+        )
     }
 
     // filtered game stats for scroll view

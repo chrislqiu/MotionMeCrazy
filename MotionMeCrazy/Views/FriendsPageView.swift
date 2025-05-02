@@ -11,7 +11,7 @@ struct FriendsPageView: View {
     @State private var searchText = ""
     @State private var errorMessage: String?  // For displaying errors
     @State private var friends: [UserViewModel] = []
-    
+    @Environment(\.presentationMode) var presentationMode
     @ObservedObject var userViewModel: UserViewModel
     
     @EnvironmentObject var appState: AppState
@@ -37,14 +37,14 @@ struct FriendsPageView: View {
                             
                             CustomButton(config: CustomButtonConfig(
                                 title: appState.localized("Pending"),
-                                width: 100,
+                                width: appState.currentLanguage == "EN" ? 100 : 125,
                                 buttonColor: .darkBlue,
                                 destination: AnyView(PendingPageView(userViewModel: userViewModel))
                             ))
                             
                             CustomButton(config: CustomButtonConfig(
                                 title: appState.localized("Sent"),
-                                width: 75,
+                                width: appState.currentLanguage == "EN" ? 75 : 100,
                                 buttonColor: .darkBlue,
                                 destination: AnyView(SentPageView(userViewModel: userViewModel))
                             ))
@@ -85,6 +85,17 @@ struct FriendsPageView: View {
                 getFriends()
             }
         }
+        .navigationBarBackButtonHidden(true)
+        .navigationBarItems(
+            leading: Button(action: {
+                presentationMode.wrappedValue.dismiss()
+            }) {
+                Image(systemName: "arrow.left.circle.fill")
+                    .font(.title)
+                    .foregroundColor(appState.darkMode ? .white : .darkBlue)
+            }
+        )
+        
     }
     
     

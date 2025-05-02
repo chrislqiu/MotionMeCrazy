@@ -226,7 +226,7 @@ struct ThemeSelectionPopup: View {
                     .cornerRadius(10)
                 
 
-                CustomButton(config: .init(title: appState.localized("Default"), width: 150, buttonColor: .darkBlue) {
+                CustomButton(config: .init(title: appState.localized("Default"), width: appState.currentLanguage == "EN" ? 120 : 175, buttonColor: .darkBlue) {
                     theme = .light
                     if !appState.offlineMode {
                         updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue, mode: mode.rawValue)
@@ -253,6 +253,7 @@ struct LanguageSelectionPopup: View {
     var audioLevel: Double
     var theme: Theme
     var mode: GameMode
+    
     @Binding var language: Language
     @EnvironmentObject var appState: AppState
     
@@ -302,8 +303,9 @@ struct GameModeSelectionPopup: View {
     var audioLevel: Double
     var theme: Theme
     var language: Language
-    @Binding var mode: GameMode
     @EnvironmentObject var appState: AppState
+    @Binding var mode: GameMode
+
     
     var body: some View {
         VStack(spacing: 20) {
@@ -317,9 +319,9 @@ struct GameModeSelectionPopup: View {
                 }
             }
             
-            CustomText(config: .init(text: "Game Mode Options:"))
+            CustomText(config: .init(text: appState.localized("Game Mode Options:")))
             
-            CustomButton(config: .init(title: "Normal", width: 200, buttonColor: .darkBlue) {
+            CustomButton(config: .init(title: appState.localized("Normal"), width: 200, buttonColor: .darkBlue) {
                 mode = .normal
                 
                 if !appState.offlineMode{
@@ -327,7 +329,7 @@ struct GameModeSelectionPopup: View {
                 }
             })
             
-            CustomButton(config: .init(title: "Accessibility", width: 200, buttonColor: .darkBlue) {
+            CustomButton(config: .init(title: appState.localized("Accessibility"), width: 200, buttonColor: .darkBlue) {
                 mode = .accessibility
                 
                 if !appState.offlineMode{
@@ -335,7 +337,7 @@ struct GameModeSelectionPopup: View {
                 }
             })
             
-            CustomButton(config: .init(title: "Random", width: 200, buttonColor: .darkBlue) {
+            CustomButton(config: .init(title: appState.localized("Random"), width: 200, buttonColor: .darkBlue) {
                 mode = .random
                 
                 if !appState.offlineMode{
