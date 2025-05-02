@@ -726,7 +726,8 @@ struct HIWGameLobbyView: View {
                             rawValue: settings.theme)
                         {
                             self.selectedTheme = theme
-                            print(self.selectedTheme)
+                            self.loadLevelImageMap()
+                            self.obstacles = self.levelImageMap[gameState.currentLevel] ?? []
                         } else {
                             self.selectedTheme = .basic
                             print("Invalid theme stored in server")
@@ -735,7 +736,9 @@ struct HIWGameLobbyView: View {
                         // fetching game mode
                         if let mode = SettingsView.GameMode(rawValue: settings.mode) {
                             self.selectedMode = mode
-                            print(self.selectedMode)
+                            self.loadLevelImageMap()
+                            self.obstacles = self.levelImageMap[gameState.currentLevel] ?? []
+                            //print(self.selectedMode)
                         } else {
                             self.selectedMode = .normal
                             print("Invalid mode stored in server")
