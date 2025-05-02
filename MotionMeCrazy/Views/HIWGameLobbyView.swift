@@ -445,6 +445,7 @@ struct HIWGameLobbyView: View {
                     score: gameState.score,
                     health: gameState.health,
                     userId: userId,
+                    screenshots: gameState.screenshots,
                     isMuted: $isMuted,
                     audioPlayer: $audioPlayer,
                     onNextLevel: {
@@ -453,10 +454,12 @@ struct HIWGameLobbyView: View {
                         gameState.endOfLevel = false
                         isPlaying = false
                         stopObstacleCycle()
+                        gameState.clearScreenshots()
                         //startObstacleCycle()
                     },
                     onQuitGame: {
                         stopObstacleCycle()
+                        gameState.clearScreenshots()
                         presentationMode.wrappedValue.dismiss()
                     }
                 )
@@ -598,6 +601,7 @@ struct HIWGameLobbyView: View {
             print("resume countdown")
             // Resume from where we left off (skip countdown if it wasn't active)
             obstacleIndex = savedObstacleIndex
+            gameState.takeScreenshot = true
             
             // Create a non-repeating timer that shows each obstacle and schedules the next one
             scheduleNextObstacle()
@@ -605,6 +609,7 @@ struct HIWGameLobbyView: View {
             // Normal start (with countdown)
             print("Start countdown")
             obstacleIndex = 0
+            gameState.takeScreenshot = true
             
             // Start the countdown
             countdownManager.start {
@@ -620,6 +625,7 @@ struct HIWGameLobbyView: View {
         if (obstacleIndex >= obstacles.count) {
             // Safety check: ensure we stop any running timers
             stopObstacleCycle()
+            gameState.takeScreenshot = false
             
             if gameState.currentLevel >= 5 {
                 showEndGameScreen = true
@@ -677,6 +683,8 @@ struct HIWGameLobbyView: View {
         
         // Stop countdown if active
         countdownManager.stop()
+        gameState.shouldCheckCollisions = false
+        gameState.takeScreenshot = false
         print("timer stopped")
     }
 

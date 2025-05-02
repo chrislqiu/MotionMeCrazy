@@ -18,7 +18,9 @@ class GameState: ObservableObject {
     @Published var scoreGainedInLevel: Int = 0
     @Published var endOfLevel: Bool = false
     @Published var shouldCheckCollisions: Bool = false
+    @Published var takeScreenshot: Bool = false
     @Published var scoredImages: [String] = []
+    @Published var screenshots: [UIImage] = []
     
     func updateGameState(with collisionCount: Int) {
         DispatchQueue.main.async { [self] in
@@ -68,6 +70,20 @@ class GameState: ObservableObject {
             healthLostInLevel = 0
             scoreGainedInLevel = 0
             scoredImages.removeAll{ $0.hasPrefix("level\(currentLevel)") }
+            clearScreenshots()
         }
+    }
+    
+    func addScreenshot(_ image: UIImage) {
+        DispatchQueue.main.async {
+            if self.screenshots.count >= 8 {
+                self.screenshots.removeFirst()
+            }
+            self.screenshots.append(image)
+        }
+    }
+
+    func clearScreenshots() {
+        screenshots.removeAll()
     }
 }
