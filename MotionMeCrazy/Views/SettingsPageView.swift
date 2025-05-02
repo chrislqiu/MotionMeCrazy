@@ -39,6 +39,7 @@ struct SettingsPageView: View {
     @State private var showGameModePopup: Bool = false
     @ObservedObject var userViewModel: UserViewModel
     @EnvironmentObject var appState: AppState
+    @State private var didFetchSettings = false
     
     var body: some View {
         ZStack {
@@ -65,9 +66,10 @@ struct SettingsPageView: View {
                     .transition(.scale)
             }
         }
-        .onAppear() {
-            if !appState.offlineMode{
+        .onAppear {
+            if !appState.offlineMode && !didFetchSettings {
                 fetchAppSettings(userId: userViewModel.userid)
+                didFetchSettings = true
             }
         }
         .animation(.easeInOut, value: showThemePopup) //transition for opening
@@ -91,11 +93,13 @@ struct SettingsPageView: View {
             
             CustomButton(config: .init(title: appState.localized("Change Language"), width: 200, buttonColor: .darkBlue) {
                 showLanguagePopup = true
+                print("language: \(selectedLanguage)")
             })
         }
     }
     
     func fetchAppSettings(userId: Int) {
+        
         guard let url = URL(string: APIHelper.getBaseURL() + "/appSettings?userId=\(userId)") else {
             print("Invalid URL")
             return
@@ -128,6 +132,7 @@ struct SettingsPageView: View {
                         }
                         if let language = Language(rawValue: settings.language) {
                             self.selectedLanguage = language
+
                         } else {
                             print("Invalid language stored in server")
                         }
@@ -254,8 +259,10 @@ struct LanguageSelectionPopup: View {
     var theme: Theme
     var mode: GameMode
     
+    
     @Binding var language: Language
     @EnvironmentObject var appState: AppState
+    
     
     var body: some View {
         VStack(spacing: 20) {
@@ -274,18 +281,20 @@ struct LanguageSelectionPopup: View {
             CustomButton(config: .init(title: appState.localized("English"), width: 100, buttonColor: .darkBlue) {
                 language = .en
 
-                appState.currentLanguage = language.rawValue
+                appState.currentLanguage = "EN"
                 if !appState.offlineMode {
                     updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue, mode: mode.rawValue)
                 }
+                showLangOpt = false
             })
 
             CustomButton(config: .init(title: appState.localized("Spanish"), width: 100, buttonColor: .darkBlue) {
                 language = .es
-                appState.currentLanguage = language.rawValue
+                appState.currentLanguage = "ES"
                 if !appState.offlineMode {
                     updateAppSettings(userId: userId, audio: audioLevel, lan: language.rawValue, theme: theme.rawValue, mode: mode.rawValue)
                 }
+                showLangOpt = false
             })
         }
         .padding()
@@ -359,7 +368,7 @@ struct AppSettings: Codable {
     let language: String
     let mode: String
 }
-
-#Preview {
-    SettingsPageView(userViewModel: UserViewModel(userid: 421, username: "JazzyLegend633", profilePicId: "pfp2"))
-}
+//
+//#Preview {
+//    SettingsPageView(userViewModel: UserViewModel(userid: 421, username: "JazzyLegend633", profilePicId: "pfp2"))
+//}

@@ -514,6 +514,7 @@ struct HIWGameLobbyView: View {
             loadLevelImageMap()
             obstacles = levelImageMap[gameState.currentLevel] ?? []
             fetchGameSettings(userId: userId, gameId: gameId)
+            print("fetched game settings")
             loadSoundEffect()
             loadAudio()
         }
