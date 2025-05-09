@@ -13,4 +13,4 @@ With VR technology becoming increasingly more common, the price and accessibilit
 * User-friendly and aesthetic interface that creates an enjoyable and engaging environment for players. 
 * A backend written in Python that connects to an AWS RDS database that contains necessary game information.
 ## Installation
-[Dev Document](Dev Document.pdf)
+[Dev Document](doc/DevDocument.pdf)
